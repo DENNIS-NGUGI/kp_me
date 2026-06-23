@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP - KP M&E System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #1a5632;
+            --secondary-green: #2d8a4e;
+        }
+        body {
+            background: linear-gradient(135deg, #f5f7f5 0%, #e8f5e9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        .otp-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            padding: 40px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+        }
+        .otp-header {
+            margin-bottom: 25px;
+        }
+        .otp-header i {
+            font-size: 3rem;
+            color: var(--primary-green);
+        }
+        .otp-header h2 {
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-top: 10px;
+        }
+        .otp-header p {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        .otp-input {
+            font-size: 1.5rem;
+            letter-spacing: 10px;
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            width: 100%;
+            max-width: 200px;
+            margin: 0 auto;
+        }
+        .otp-input:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 0.2rem rgba(26, 86, 50, 0.25);
+            outline: none;
+        }
+        .btn-primary {
+            background: var(--primary-green);
+            border-color: var(--primary-green);
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            background: var(--secondary-green);
+            border-color: var(--secondary-green);
+        }
+        .btn-outline-primary {
+            color: var(--primary-green);
+            border-color: var(--primary-green);
+        }
+        .btn-outline-primary:hover {
+            background: var(--primary-green);
+            color: white;
+        }
+        .email-display {
+            color: var(--primary-green);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="otp-card">
+        <div class="otp-header">
+            <i class="bi bi-envelope-check"></i>
+            <h2>Verify Your Email</h2>
+            <p>
+                We sent a verification code to<br>
+                <span class="email-display">{{ email }}</span>
+            </p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                <i class="bi bi-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="otp" class="form-label fw-semibold">Verification Code</label>
+                <input type="text" name="otp" id="otp" class="form-control otp-input" 
+                       placeholder="000000" maxlength="6" required>
+                <small class="text-muted d-block mt-2">
+                    <i class="bi bi-clock me-1"></i>Code expires in 10 minutes
+                </small>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check2-circle me-2"></i>Verify
+            </button>
+        </form>
+
+        <div class="mt-4">
+            <p class="text-muted small">Didn't receive the code?</p>
+            <a href="{% url 'users:resend_otp' %}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-arrow-repeat me-1"></i>Resend Code
+            </a>
+            <a href="{% url 'users:login' %}" class="btn btn-outline-secondary btn-sm ms-2">
+                <i class="bi bi-arrow-left me-1"></i>Back to Login
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

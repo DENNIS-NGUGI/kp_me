@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Profile</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_first_name" class="form-label">First Name</label>
+                            <input type="text" name="first_name" id="id_first_name" 
+                                   class="form-control" value="{{ user.first_name }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_last_name" class="form-label">Last Name</label>
+                            <input type="text" name="last_name" id="id_last_name" 
+                                   class="form-control" value="{{ user.last_name }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label">Email</label>
+                        <input type="email" name="email" id="id_email" 
+                               class="form-control" value="{{ user.email }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_phone_number" class="form-label">Phone Number</label>
+                        <input type="tel" name="phone_number" id="id_phone_number" 
+                               class="form-control" value="{{ user.phone_number }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_organization" class="form-label">Organization</label>
+                        <input type="text" name="organization" id="id_organization" 
+                               class="form-control" value="{{ user.organization }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                    <a href="{% url 'users:profile' %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

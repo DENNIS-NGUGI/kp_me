@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if project %}Edit{% else %}Add{% endif %} Project - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title">
+        <i class="bi bi-{% if project %}pencil-square{% else %}plus-circle{% endif %} me-2"></i>
+        {% if project %}Edit{% else %}Add{% endif %} Project
+    </h3>
+    <a href="{% url 'partners:project_list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Projects
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-folder me-2"></i>Project Information
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <h6 class="mb-3"><i class="bi bi-info-circle me-2"></i>Basic Information</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="code" class="form-label fw-semibold">Project Code <span class="text-danger">*</span></label>
+                            <input type="text" name="code" id="code" class="form-control" 
+                                   value="{{ project.code|default:'' }}" 
+                                   placeholder="e.g., PRJ-001" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="name" class="form-label fw-semibold">Project Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" id="name" class="form-control" 
+                                   value="{{ project.name|default:'' }}" 
+                                   placeholder="Project title" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="partner" class="form-label fw-semibold">Partner <span class="text-danger">*</span></label>
+                            <select name="partner" id="partner" class="form-select" required>
+                                <option value="">Select Partner</option>
+                                {% for partner in partners %}
+                                <option value="{{ partner.id }}" {% if project and project.partner.id == partner.id %}selected{% endif %}>
+                                    {{ partner.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="status" class="form-label fw-semibold">Status</label>
+                            <select name="status" id="status" class="form-select">
+                                {% for code, name in status_choices %}
+                                <option value="{{ code }}" {% if project and project.status == code %}selected{% endif %}>
+                                    {{ name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="description" class="form-label fw-semibold">Description</label>
+                            <textarea name="description" id="description" class="form-control" rows="3" 
+                                      placeholder="Project description">{{ project.description|default:'' }}</textarea>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Timeline & Budget -->
+                    <h6 class="mb-3"><i class="bi bi-calendar3 me-2"></i>Timeline & Budget</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="start_date" class="form-label fw-semibold">Start Date <span class="text-danger">*</span></label>
+                            <input type="date" name="start_date" id="start_date" class="form-control" 
+                                   value="{{ project.start_date|date:'Y-m-d'|default:'' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="end_date" class="form-label fw-semibold">End Date <span class="text-danger">*</span></label>
+                            <input type="date" name="end_date" id="end_date" class="form-control" 
+                                   value="{{ project.end_date|date:'Y-m-d'|default:'' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="budget" class="form-label fw-semibold">Budget (KSh)</label>
+                            <input type="number" name="budget" id="budget" class="form-control" 
+                                   value="{{ project.budget|default:'0' }}" step="0.01">
+                        </div>
+                        {% if project %}
+                        <div class="col-md-4">
+                            <label for="expenditure" class="form-label fw-semibold">Expenditure (KSh)</label>
+                            <input type="number" name="expenditure" id="expenditure" class="form-control" 
+                                   value="{{ project.expenditure|default:'0' }}" step="0.01">
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" name="is_active" id="is_active" 
+                                       {% if project.is_active %}checked{% endif %}>
+                                <label class="form-check-label" for="is_active">
+                                    Active Project
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <hr>
+
+                    <!-- Links -->
+                    <h6 class="mb-3"><i class="bi bi-link-45deg me-2"></i>Links</h6>
+                    <div class="row g-3">
+                        <!-- Indicators -->
+                        <div class="col-md-6">
+                            <label for="indicators" class="form-label fw-semibold">Linked Indicators</label>
+                            <select name="indicators" id="indicators" class="form-select select2" multiple style="width: 100%;">
+                                {% for indicator in indicators %}
+                                <option value="{{ indicator.id }}" {% if project and indicator in project.indicators.all %}selected{% endif %}>
+                                    {{ indicator.code }} - {{ indicator.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Search and select indicators</small>
+                        </div>
+
+                        <!-- Counties -->
+                        <div class="col-md-6">
+                            <label for="counties" class="form-label fw-semibold">Counties</label>
+                            <select name="counties" id="counties" class="form-select select2" multiple style="width: 100%;">
+                                {% for county in counties %}
+                                <option value="{{ county.id }}" {% if project and county in project.counties.all %}selected{% endif %}>
+                                    {{ county.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Search and select counties</small>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Contact -->
+                    <h6 class="mb-3"><i class="bi bi-person me-2"></i>Project Contact</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="project_lead" class="form-label fw-semibold">Project Lead</label>
+                            <input type="text" name="project_lead" id="project_lead" class="form-control" 
+                                   value="{{ project.project_lead|default:'' }}" 
+                                   placeholder="Full name">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="project_email" class="form-label fw-semibold">Email</label>
+                            <input type="email" name="project_email" id="project_email" class="form-control" 
+                                   value="{{ project.project_email|default:'' }}" 
+                                   placeholder="project@example.com">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="project_phone" class="form-label fw-semibold">Phone</label>
+                            <input type="tel" name="project_phone" id="project_phone" class="form-control" 
+                                   value="{{ project.project_phone|default:'' }}" 
+                                   placeholder="+254 712 345 678">
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>{% if project %}Update{% else %}Add{% endif %} Project
+                        </button>
+                        <a href="{% url 'partners:project_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+
+{% block title %}Generate Custom Report - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-gear me-2"></i>Custom Report Generator</h3>
+    <a href="{% url 'reports:report_list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Reports
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-sliders me-2"></i>Select Report Criteria
+    </div>
+    <div class="card-body p-4">
+        <form method="post" id="reportForm">
+            {% csrf_token %}
+            
+            <!-- Report Type -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Report Type</label>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="report_type" id="type_summary" value="summary" checked>
+                            <label class="form-check-label" for="type_summary">
+                                <i class="bi bi-file-earmark-text me-1"></i>Summary
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="report_type" id="type_detailed" value="detailed">
+                            <label class="form-check-label" for="type_detailed">
+                                <i class="bi bi-list-ul me-1"></i>Detailed
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="report_type" id="type_comparative" value="comparative">
+                            <label class="form-check-label" for="type_comparative">
+                                <i class="bi bi-arrow-left-right me-1"></i>Comparative
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="report_type" id="type_thematic" value="thematic">
+                            <label class="form-check-label" for="type_thematic">
+                                <i class="bi bi-tags me-1"></i>Thematic
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <!-- Filters -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label for="county" class="form-label fw-semibold">County</label>
+                    <select name="county" id="county" class="form-select">
+                        <option value="">All Counties</option>
+                        {% for county in counties %}
+                        <option value="{{ county.id }}">{{ county.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="quarter" class="form-label fw-semibold">Quarter</label>
+                    <select name="quarter" id="quarter" class="form-select">
+                        <option value="">All Quarters</option>
+                        {% for quarter in quarters %}
+                        <option value="{{ quarter.id }}">{{ quarter.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="thematic_area" class="form-label fw-semibold">Thematic Area</label>
+                    <select name="thematic_area" id="thematic_area" class="form-select">
+                        <option value="">All Thematic Areas</option>
+                        {% for area in thematic_areas %}
+                        <option value="{{ area.id }}">{{ area.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="indicator" class="form-label fw-semibold">Indicator</label>
+                    <select name="indicator" id="indicator" class="form-select">
+                        <option value="">All Indicators</option>
+                        {% for indicator in indicators %}
+                        <option value="{{ indicator.id }}">{{ indicator.code }} - {{ indicator.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Format -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Export Format</label>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="format" id="format_html" value="html" checked>
+                            <label class="form-check-label" for="format_html">
+                                <i class="bi bi-browser-chrome me-1"></i>HTML (View)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="format" id="format_csv" value="csv">
+                            <label class="form-check-label" for="format_csv">
+                                <i class="bi bi-file-earmark-excel me-1"></i>CSV
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="format" id="format_json" value="json">
+                            <label class="form-check-label" for="format_json">
+                                <i class="bi bi-file-code me-1"></i>JSON
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="format" id="format_print" value="print">
+                            <label class="form-check-label" for="format_print">
+                                <i class="bi bi-printer me-1"></i>Print
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <!-- Actions -->
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary" id="generateBtn">
+                    <i class="bi bi-file-earmark-arrow-down me-2"></i>Generate Report
+                </button>
+                <button type="reset" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>Reset
+                </button>
+                <a href="{% url 'reports:report_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-2"></i>Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Loading Spinner -->
+<div id="loadingSpinner" style="display: none;">
+    <div class="text-center py-5">
+        <div class="spinner-border text-green" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Generating report...</span>
+        </div>
+        <p class="mt-3 text-muted">Generating your report, please wait...</p>
+    </div>
+</div>
+
+<script>
+    document.getElementById('reportForm').addEventListener('submit', function(e) {
+        const format = document.querySelector('input[name="format"]:checked');
+        if (format && (format.value === 'csv' || format.value === 'json')) {
+            // For CSV/JSON, let the form submit normally (download)
+            return true;
+        }
+        
+        // For HTML/Print, show loading spinner
+        e.preventDefault();
+        document.getElementById('loadingSpinner').style.display = 'block';
+        document.getElementById('generateBtn').disabled = true;
+        
+        const formData = new FormData(this);
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('generateBtn').disabled = false;
+            
+            // Display results in a new section
+            const resultsDiv = document.createElement('div');
+            resultsDiv.innerHTML = html;
+            
+            // Scroll to results
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Show results
+            const existingResults = document.getElementById('reportResults');
+            if (existingResults) {
+                existingResults.remove();
+            }
+            
+            const container = document.createElement('div');
+            container.id = 'reportResults';
+            container.innerHTML = html;
+            
+            // Insert after the card
+            const card = document.querySelector('.card');
+            card.parentNode.insertBefore(container, card.nextSibling);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('generateBtn').disabled = false;
+            alert('Error generating report. Please try again.');
+        });
+    });
+    
+    // Handle print format
+    document.querySelector('input[name="format"][value="print"]').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('reportForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                window.print();
+            });
+        }
+    });
+</script>
+
+<style>
+    @media print {
+        .btn, .form-control, .form-select, .form-check, .card-header, .navbar, .sidebar {
+            display: none !important;
+        }
+        .main-wrapper {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .card {
+            box-shadow: none !important;
+            border: 1px solid #ddd !important;
+        }
+    }
+</style>
+{% endblock %}

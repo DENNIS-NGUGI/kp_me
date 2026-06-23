@@ -1,0 +1,367 @@
+{% extends 'base.html' %}
+{% load data_entry_extras %}
+
+
+{% block title %}Data Entry - KP M&E System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .value-input {
+        min-width: 120px;
+    }
+    .validation-feedback {
+        font-size: 0.75rem;
+    }
+    .existing-data-badge {
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: #fff3cd;
+        color: #856404;
+    }
+    .table th {
+        font-size: 0.8rem;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-pencil-square me-2"></i>Data Entry</h3>
+    <a href="{% url 'data_entry:list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+</div>
+
+{% if is_county_user %}
+<div class="alert alert-info">
+    <i class="bi bi-geo-alt me-2"></i>
+    <strong>County:</strong> {{ default_county.name }}
+    <span class="text-muted ms-2">- Data will be submitted for your county automatically.</span>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-body p-4">
+        <form method="post" id="dataEntryForm" action="{% url 'data_entry:entry' %}">
+            {% csrf_token %}
+            
+            <!-- Selection Row -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">County</label>
+                    {% if is_county_user and default_county %}
+                        <input type="hidden" name="county" value="{{ default_county.id }}" id="county">
+                        <div class="form-control bg-light">{{ default_county.name }}</div>
+                        <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Locked to your county</small>
+                    {% else %}
+                        <select name="county" id="county" class="form-select" required>
+                            <option value="">Select County</option>
+                            {% for county in counties %}
+                            <option value="{{ county.id }}" {% if request.GET.county == county.id|stringformat:"s" %}selected{% endif %}>
+                                {{ county.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Quarter</label>
+                    <select name="quarter" id="quarter" class="form-select" required>
+                        <option value="">Select Quarter</option>
+                        {% for quarter in quarters %}
+                        <option value="{{ quarter.id }}" {% if request.GET.quarter == quarter.id|stringformat:"s" %}selected{% endif %}>
+                            {{ quarter.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Load Existing Data Button -->
+            <div class="mb-3">
+                <button type="button" class="btn btn-sm btn-outline-info" onclick="loadExistingData()">
+                    <i class="bi bi-arrow-repeat me-1"></i>Load Existing Data
+                </button>
+                <small class="text-muted ms-2">Load previously saved data for this county and quarter</small>
+            </div>
+
+            <hr>
+
+            <!-- Indicators Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 80px;">Code</th>
+                            <th>Indicator</th>
+                            <th style="width: 130px;">Thematic Area</th>
+                            <th style="width: 80px;">Target</th>
+                            <th style="width: 100px;">Unit</th>
+                            <th style="width: 140px;">Valid Range</th>
+                            <th style="width: 200px;">Value</th>
+                            <th style="width: 80px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for indicator in indicators %}
+                        <tr>
+                            <td><code>{{ indicator.code }}</code></td>
+                            <td>{{ indicator.name }}</td>
+                            <td>{{ indicator.thematic_area.name }}</td>
+                            <td>{{ indicator.target_value|default:"—" }}</td>
+                            <td>{{ indicator.unit }}</td>
+                            <td>
+                                <span class="text-muted small" id="range_{{ indicator.id }}">
+                                    {% if indicator.min_value is not None and indicator.max_value is not None %}
+                                        {{ indicator.min_value }} - {{ indicator.max_value }}
+                                    {% elif indicator.min_value is not None %}
+                                        ≥ {{ indicator.min_value }}
+                                    {% elif indicator.max_value is not None %}
+                                        ≤ {{ indicator.max_value }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <input type="text" 
+                                       name="indicator_{{ indicator.id }}" 
+                                       class="form-control form-control-sm value-input"
+                                       placeholder="Enter value"
+                                       data-indicator="{{ indicator.id }}"
+                                       data-code="{{ indicator.code }}"
+                                       data-unit="{{ indicator.unit }}"
+                                       data-min="{{ indicator.min_value|default:'' }}"
+                                       data-max="{{ indicator.max_value|default:'' }}"
+                                       data-type="{{ indicator.data_type }}"
+                                       value="{{ existing_data|get_item:indicator.id|default:'' }}"
+                                       style="min-width: 120px;">
+                                <div class="validation-feedback text-danger small mt-1" id="feedback_{{ indicator.id }}"></div>
+                            </td>
+                            <td>
+                                {% with status=existing_status|get_item:indicator.id %}
+                                    {% if status == 'approved' %}
+                                        <span class="badge bg-success status-badge">Approved</span>
+                                        <br><small class="text-muted">Locked</small>
+                                    {% elif status == 'submitted' %}
+                                        <span class="badge bg-warning status-badge">Submitted</span>
+                                    {% elif status == 'rejected' %}
+                                        <span class="badge bg-danger status-badge">Rejected</span>
+                                    {% elif existing_data|get_item:indicator.id %}
+                                        <span class="badge bg-secondary status-badge">Saved</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary status-badge" id="status_{{ indicator.id }}">Pending</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-3">
+                                <i class="bi bi-inbox me-2"></i>No active indicators found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <hr>
+
+            <!-- Actions -->
+            <div class="d-flex gap-2">
+                <button type="submit" name="action" value="draft" class="btn btn-secondary" id="saveDraftBtn">
+                    <i class="bi bi-save me-2"></i>Save Draft
+                </button>
+                <button type="submit" name="action" value="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="bi bi-send me-2"></i>Submit for Approval
+                </button>
+                <a href="{% url 'data_entry:list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-2"></i>Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ===== REAL-TIME VALIDATION =====
+    document.querySelectorAll('.value-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const indicatorId = this.dataset.indicator;
+            const code = this.dataset.code;
+            const unit = this.dataset.unit;
+            const min = this.dataset.min !== '' ? parseFloat(this.dataset.min) : null;
+            const max = this.dataset.max !== '' ? parseFloat(this.dataset.max) : null;
+            const dataType = this.dataset.type;
+            const value = this.value.trim();
+            const feedback = document.getElementById('feedback_' + indicatorId);
+            const statusBadge = document.getElementById('status_' + indicatorId);
+            
+            // Clear feedback if empty
+            if (value === '') {
+                feedback.textContent = '';
+                this.classList.remove('is-valid', 'is-invalid');
+                statusBadge.textContent = 'Pending';
+                statusBadge.className = 'badge bg-secondary status-badge';
+                return;
+            }
+            
+            let numVal;
+            let isValid = true;
+            let errors = [];
+            
+            // Check data type
+            if (dataType === 'numeric' || dataType === 'count') {
+                numVal = parseFloat(value);
+                if (isNaN(numVal)) {
+                    isValid = false;
+                    errors.push('Must be a whole number');
+                } else if (!Number.isInteger(numVal)) {
+                    isValid = false;
+                    errors.push('Must be a whole number (no decimals)');
+                } else if (dataType === 'count' && numVal < 0) {
+                    isValid = false;
+                    errors.push('Cannot be negative');
+                }
+            } else if (dataType === 'percentage' || dataType === 'decimal') {
+                numVal = parseFloat(value);
+                if (isNaN(numVal)) {
+                    isValid = false;
+                    errors.push('Must be a number');
+                }
+            } else {
+                // Boolean or text - skip numeric validation
+                this.classList.remove('is-valid', 'is-invalid');
+                feedback.textContent = '';
+                statusBadge.textContent = 'Entered';
+                statusBadge.className = 'badge bg-info status-badge';
+                return;
+            }
+            
+            // Range validation
+            if (!isNaN(numVal) && isValid) {
+                if (dataType === 'percentage') {
+                    if (numVal < 0 || numVal > 100) {
+                        isValid = false;
+                        errors.push('Must be between 0 and 100');
+                    }
+                }
+                if (min !== null && numVal < min) {
+                    isValid = false;
+                    errors.push('Must be ≥ ' + min + ' ' + unit);
+                }
+                if (max !== null && numVal > max) {
+                    isValid = false;
+                    errors.push('Must be ≤ ' + max + ' ' + unit);
+                }
+            }
+            
+            // Show feedback
+            if (isValid) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+                feedback.textContent = '✓ Valid';
+                feedback.className = 'text-success small mt-1 validation-feedback';
+                statusBadge.textContent = '✓ Valid';
+                statusBadge.className = 'badge bg-success status-badge';
+            } else {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+                feedback.textContent = '✗ ' + errors.join('; ');
+                feedback.className = 'text-danger small mt-1 validation-feedback';
+                statusBadge.textContent = '✗ Invalid';
+                statusBadge.className = 'badge bg-danger status-badge';
+            }
+        });
+    });
+    
+    // ===== LOAD EXISTING DATA =====
+    function loadExistingData() {
+        const county = document.getElementById('county')?.value;
+        const quarter = document.getElementById('quarter')?.value;
+        
+        if (!county || !quarter) {
+            alert('Please select both county and quarter first.');
+            return;
+        }
+        
+        // Reload page with query parameters
+        window.location.href = window.location.pathname + '?county=' + county + '&quarter=' + quarter;
+    }
+    
+    // ===== AUTO-LOAD DATA ON COUNTY/QUARTER CHANGE =====
+    document.getElementById('county')?.addEventListener('change', autoLoadData);
+    document.getElementById('quarter')?.addEventListener('change', autoLoadData);
+    
+    function autoLoadData() {
+        const county = document.getElementById('county')?.value;
+        const quarter = document.getElementById('quarter')?.value;
+        
+        if (county && quarter) {
+            // Use a small delay to avoid multiple rapid requests
+            clearTimeout(window.loadTimeout);
+            window.loadTimeout = setTimeout(() => {
+                window.location.href = window.location.pathname + '?county=' + county + '&quarter=' + quarter;
+            }, 300);
+        }
+    }
+    
+    // ===== VALIDATE ALL BEFORE SUBMIT =====
+    function validateAll() {
+        const inputs = document.querySelectorAll('.value-input');
+        let hasError = false;
+        let hasValue = false;
+        
+        inputs.forEach(input => {
+            if (input.value.trim() !== '') {
+                hasValue = true;
+                if (input.classList.contains('is-invalid')) {
+                    hasError = true;
+                }
+            }
+        });
+        
+        if (!hasValue) {
+            alert('Please enter at least one indicator value before submitting.');
+            return false;
+        }
+        
+        if (hasError) {
+            alert('Please fix all validation errors before submitting.');
+            return false;
+        }
+        
+        // Check if county and quarter are selected
+        const county = document.getElementById('county')?.value;
+        const quarter = document.getElementById('quarter')?.value;
+        if (!county || !quarter) {
+            alert('Please select both county and quarter.');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // ===== UPDATE SUBMIT BUTTONS =====
+    document.getElementById('saveDraftBtn')?.addEventListener('click', function(e) {
+        if (!validateAll()) {
+            e.preventDefault();
+        }
+    });
+    
+    document.getElementById('submitBtn')?.addEventListener('click', function(e) {
+        if (!validateAll()) {
+            e.preventDefault();
+        } else {
+            if (!confirm('Submit all entered data for approval?')) {
+                e.preventDefault();
+            }
+        }
+    });
+</script>
+{% endblock %}

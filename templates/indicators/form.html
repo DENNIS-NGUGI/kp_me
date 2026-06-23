@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if indicator %}Edit{% else %}Add{% endif %} Indicator - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-{% if indicator %}pencil-square{% else %}plus-circle{% endif %} me-2"></i>
+                    {% if indicator %}Edit{% else %}Add{% endif %} Indicator
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="code" class="form-label fw-semibold">Code <span class="text-danger">*</span></label>
+                            <input type="text" name="code" id="code" class="form-control" 
+                                   value="{{ indicator.code|default:'' }}" 
+                                   {% if indicator %}readonly{% endif %}
+                                   placeholder="e.g., FERT-14" required>
+                            {% if indicator %}
+                            <small class="text-muted">Code cannot be changed</small>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="thematic_area" class="form-label fw-semibold">Thematic Area <span class="text-danger">*</span></label>
+                            <select name="thematic_area" id="thematic_area" class="form-select" required>
+                                <option value="">Select Thematic Area</option>
+                                {% for area in areas %}
+                                <option value="{{ area.id }}" {% if indicator and indicator.thematic_area.id == area.id %}selected{% endif %}>
+                                    {{ area.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label fw-semibold">Indicator Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" id="name" class="form-control" 
+                               value="{{ indicator.name|default:'' }}" 
+                               placeholder="Enter indicator name" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="indicator_type" class="form-label fw-semibold">Type</label>
+                            <select name="indicator_type" id="indicator_type" class="form-select">
+                                <option value="impact" {% if indicator and indicator.indicator_type == 'impact' %}selected{% endif %}>Impact</option>
+                                <option value="outcome" {% if indicator and indicator.indicator_type == 'outcome' %}selected{% endif %}>Outcome</option>
+                                <option value="output" {% if indicator and indicator.indicator_type == 'output' %}selected{% endif %}>Output</option>
+                                <option value="action" {% if indicator and indicator.indicator_type == 'action' %}selected{% endif %}>Action/Programme</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="data_type" class="form-label fw-semibold">Data Type</label>
+                            <select name="data_type" id="data_type" class="form-select">
+                                <option value="numeric" {% if indicator and indicator.data_type == 'numeric' %}selected{% endif %}>Numeric</option>
+                                <option value="percentage" {% if indicator and indicator.data_type == 'percentage' %}selected{% endif %}>Percentage</option>
+                                <option value="decimal" {% if indicator and indicator.data_type == 'decimal' %}selected{% endif %}>Decimal</option>
+                                <option value="boolean" {% if indicator and indicator.data_type == 'boolean' %}selected{% endif %}>Boolean</option>
+                                <option value="count" {% if indicator and indicator.data_type == 'count' %}selected{% endif %}>Count</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="unit" class="form-label fw-semibold">Unit</label>
+                            <input type="text" name="unit" id="unit" class="form-control" 
+                                   value="{{ indicator.unit|default:'' }}" 
+                                   placeholder="e.g., %, per 100,000">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="target_value" class="form-label fw-semibold">Target Value</label>
+                            <input type="text" name="target_value" id="target_value" class="form-control" 
+                                   value="{{ indicator.target_value|default:'' }}" 
+                                   placeholder="e.g., 3.0">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="frequency" class="form-label fw-semibold">Frequency</label>
+                            <select name="frequency" id="frequency" class="form-select">
+                                <option value="annual" {% if indicator and indicator.frequency == 'annual' %}selected{% endif %}>Annual</option>
+                                <option value="quarterly" {% if indicator and indicator.frequency == 'quarterly' %}selected{% endif %}>Quarterly</option>
+                                <option value="monthly" {% if indicator and indicator.frequency == 'monthly' %}selected{% endif %}>Monthly</option>
+                                <option value="5_years" {% if indicator and indicator.frequency == '5_years' %}selected{% endif %}>5 Years</option>
+                                <option value="10_years" {% if indicator and indicator.frequency == '10_years' %}selected{% endif %}>10 Years</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- ===== NEW: Range Validation Fields ===== -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="min_value" class="form-label fw-semibold">Minimum Value</label>
+                            <input type="text" name="min_value" id="min_value" class="form-control" 
+                                   value="{{ indicator.min_value|default:'' }}" 
+                                   placeholder="e.g., 0">
+                            <small class="text-muted">Leave blank for no minimum</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="max_value" class="form-label fw-semibold">Maximum Value</label>
+                            <input type="text" name="max_value" id="max_value" class="form-control" 
+                                   value="{{ indicator.max_value|default:'' }}" 
+                                   placeholder="e.g., 100">
+                            <small class="text-muted">Leave blank for no maximum</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="source_system" class="form-label fw-semibold">Source System</label>
+                        <input type="text" name="source_system" id="source_system" class="form-control" 
+                               value="{{ indicator.source_system|default:'' }}" 
+                               placeholder="e.g., KNBS, MOH, UNDP">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-semibold">Description</label>
+                        <textarea name="description" id="description" class="form-control" rows="3" 
+                                  placeholder="Enter indicator description">{{ indicator.description|default:'' }}</textarea>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>{% if indicator %}Update{% else %}Add{% endif %} Indicator
+                        </button>
+                        <a href="{% url 'indicators:list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

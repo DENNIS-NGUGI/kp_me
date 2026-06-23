@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Setting - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="page-title"><i class="bi bi-plus-circle me-2"></i>Add System Setting</h3>
+            <a href="{% url 'settings:index' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Settings
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-gear me-2"></i>Setting Details
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="key" class="form-label fw-semibold">Setting Key <span class="text-danger">*</span></label>
+                        <input type="text" name="key" id="key" class="form-control" 
+                               placeholder="e.g., APP_NAME, MAX_UPLOAD_SIZE" required>
+                        <small class="text-muted">Use uppercase letters and underscores (e.g., APP_NAME)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="value" class="form-label fw-semibold">Value <span class="text-danger">*</span></label>
+                        <input type="text" name="value" id="value" class="form-control" 
+                               placeholder="e.g., Kenya Population Programme" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="setting_type" class="form-label fw-semibold">Setting Type</label>
+                        <select name="setting_type" id="setting_type" class="form-select">
+                            {% for code, name in setting_types %}
+                            <option value="{{ code }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-semibold">Description</label>
+                        <textarea name="description" id="description" class="form-control" rows="3" 
+                                  placeholder="What does this setting control?"></textarea>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_editable" id="is_editable" checked>
+                                <label class="form-check-label" for="is_editable">
+                                    Editable
+                                    <span class="d-block text-muted small">Can be edited by admin</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_public" id="is_public">
+                                <label class="form-check-label" for="is_public">
+                                    Public
+                                    <span class="d-block text-muted small">Visible to all users</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>Add Setting
+                        </button>
+                        <a href="{% url 'settings:index' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

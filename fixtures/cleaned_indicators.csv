@@ -1,0 +1,30 @@
+Code,Name,Thematic Area,Type,Data Type,Unit,Target,Source,Frequency,Min Value,Max Value,Description
+FERT-01,Human Development Index,FERT,impact,decimal,Index (0-1),0.70,UNDP,annual,0,1,Composite index measuring average achievement in key dimensions of human development
+FERT-02,Population Growth Rate,FERT,outcome,percentage,%,2.0,KNBS,annual,0,5,The annual rate of population growth
+FERT-03,Total Fertility Rate (National),FERT,outcome,decimal,Births per woman,3.0,KNBS,5_years,0,8,Average number of children a woman would have during her reproductive lifetime
+FERT-04,Total Fertility Rate (by County),FERT,outcome,decimal,Births per woman,0,KNBS,5_years,0,8,County-specific total fertility rates
+FERT-05,Contraceptive Prevalence Rate (CPR),FERT,output,percentage,%,65,KNBS,5_years,0,100,Percentage of women using any method of contraception
+FERT-06,Modern Contraceptive Prevalence Rate (mCPR),FERT,output,percentage,%,55,KNBS,5_years,0,100,Percentage of women using modern contraceptive methods
+FERT-07,Unmet Need for Family Planning,FERT,output,percentage,%,10,KNBS,5_years,0,100,Percentage of women with unmet need for family planning
+FERT-08,Prevalence of Child Marriages (National),FERT,output,percentage,%,0,KNBS,5_years,0,100,Percentage of women married before age 18
+FERT-09,Prevalence of Child Marriages (by County),FERT,output,percentage,%,0,KNBS,5_years,0,100,County-specific child marriage prevalence
+FERT-10,Prevalence of FGM (National),FERT,output,percentage,%,15,KNBS,5_years,0,100,Percentage of women who have undergone FGM
+FERT-11,Prevalence of FGM (by County),FERT,output,percentage,%,0,KNBS,5_years,0,100,County-specific FGM prevalence
+FERT-12,Adolescent Pregnancies (National),FERT,output,percentage,%,10,KNBS/MOH,annual,0,100,Percentage of adolescent girls who have given birth
+FERT-13,Adolescent Pregnancies (by County),FERT,output,percentage,%,0,KNBS/MOH,annual,0,100,County-specific adolescent pregnancy rates
+MM-01,Life Expectancy at Birth,MM,outcome,numeric,Years,70,KNBS/DCRS,annual,40,85,Average number of years a newborn is expected to live
+MM-02,Maternal Mortality Ratio,MM,output,numeric,Per 100000,70,MOH/KNBS,annual,0,1000,Number of maternal deaths per 100000 live births
+MM-03,Neonatal Mortality Rate,MM,output,numeric,Per 1000,12,MOH/KNBS,annual,0,100,Number of neonatal deaths per 1000 live births
+MM-04,Infant Mortality Rate,MM,output,numeric,Per 1000,25,MOH/KNBS,annual,0,100,Number of infant deaths per 1000 live births
+MM-05,Child Mortality Rate,MM,output,numeric,Per 1000,40,MOH/KNBS,annual,0,200,Number of child deaths per 1000 live births
+MM-06,Adult Mortality Rate,MM,output,numeric,Per 1000,0,KNBS/DCRS,annual,0,500,Adult mortality rate per 1000 population
+MIG-01,Migration Rate,MIG,outcome,percentage,%,0,KNBS/NCPD,annual,0,100,Rate of population migration
+MIG-02,Net Migration Flow (Rural to Urban),MIG,output,numeric,Persons,0,KNBS/NCPD,annual,-1000000,1000000,Net number of people moving from rural to urban areas
+MIG-03,Migration Database in Place,MIG,output,boolean,Yes/No,0,NCM/NCPD,annual,0,1,Whether a functional migration database exists
+MIG-04,No. of Reviewed & Implemented Policies on Urbanization & Migration,MIG,output,count,Count,0,NCM/NCPD,annual,0,100,Number of policies reviewed and implemented
+PHED-01,Disaster & Climate Change Mortality Rate,PHED,outcome,numeric,Per 100000,0,NDOC/NDMA,annual,0,1000,Mortality rate related to disasters and climate change
+PHED-02,Disaster & Climate Change Morbidities,PHED,outcome,numeric,Cases,0,NDOC/NDMA,annual,0,100000,Morbidity cases related to disasters and climate change
+PHED-03,No. of Population Programmes Integrating PHED Approaches,PHED,output,count,Count,0,NCPD,annual,0,1000,Number of programmes integrating PHED approaches
+PHED-04,Mortality Rates Related to Natural Disasters & Climate Change,PHED,output,numeric,Per 100000,0,NDOC,annual,0,1000,Mortality rates from natural disasters and climate change
+PHED-05,No. of Casualties Related to Natural Disasters & Climate Change,PHED,output,numeric,Persons,0,NDOC,annual,0,100000,Number of casualties from natural disasters and climate change
+PHED-06,No. of Development Plans Integrating Population Issues,PHED,output,count,Count,0,NCPD,annual,0,1000,Number of development plans integrating population issues

@@ -1,0 +1,42 @@
+[
+  {
+    "model": "indicators.thematicarea",
+    "pk": 1,
+    "fields": {
+      "name": "Fertility",
+      "code": "FERT",
+      "description": "Indicators related to fertility, family planning, population growth, and reproductive health",
+      "sort_order": 1
+    }
+  },
+  {
+    "model": "indicators.thematicarea",
+    "pk": 2,
+    "fields": {
+      "name": "Morbidity & Mortality",
+      "code": "MM",
+      "description": "Indicators related to death, disease, life expectancy, and health outcomes",
+      "sort_order": 2
+    }
+  },
+  {
+    "model": "indicators.thematicarea",
+    "pk": 3,
+    "fields": {
+      "name": "Migration & Urbanization",
+      "code": "MIG",
+      "description": "Indicators related to population movement, migration patterns, and urbanization",
+      "sort_order": 3
+    }
+  },
+  {
+    "model": "indicators.thematicarea",
+    "pk": 4,
+    "fields": {
+      "name": "Population, Health, Environment & Disaster",
+      "code": "PHED",
+      "description": "Integrated indicators covering population, health, environment, and disaster management",
+      "sort_order": 4
+    }
+  }
+]

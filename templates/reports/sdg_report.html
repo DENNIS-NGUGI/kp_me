@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}SDG Indicators Report - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-globe-americas me-2"></i>SDG Indicators Report</h3>
+    <div>
+        <button class="btn btn-success" onclick="window.print()">
+            <i class="bi bi-printer me-1"></i>Print
+        </button>
+        <button class="btn btn-primary" onclick="exportCSV()">
+            <i class="bi bi-file-earmark-excel me-1"></i>Export CSV
+        </button>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <select name="quarter" class="form-select">
+                    <option value="">All Quarters</option>
+                    {% for q in quarters %}
+                    <option value="{{ q.id }}" {% if selected_quarter|add:"0" == q.id %}selected{% endif %}>
+                        {{ q.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="county" class="form-select">
+                    <option value="">All Counties</option>
+                    {% for c in counties %}
+                    <option value="{{ c.id }}" {% if selected_county|add:"0" == c.id %}selected{% endif %}>
+                        {{ c.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel me-1"></i>Filter
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="{% url 'reports:sdg_report' %}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="stat-card">
+            <div class="stat-label">Total SDG-Related Entries</div>
+            <div class="stat-number">{{ total_entries }}</div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="stat-card">
+            <div class="stat-label">Overall Performance</div>
+            <div class="stat-number text-green">{{ overall_percentage }}%</div>
+            <small class="text-muted">{{ total_met }} of {{ total_entries }} met target</small>
+        </div>
+    </div>
+</div>
+
+<!-- SDG Performance Cards -->
+<div class="row g-4 mb-4">
+    {% for code, data in sdg_performance.items %}
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><strong>{{ data.goal }}</strong></span>
+                <span class="badge bg-green">{{ data.percentage }}%</span>
+            </div>
+            <div class="card-body">
+                <h6>{{ data.description }}</h6>
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <span class="text-muted small">Indicators</span>
+                        <div class="fw-bold">{{ data.indicators }}</div>
+                    </div>
+                    <div class="col-6">
+                        <span class="text-muted small">Total Submissions</span>
+                        <div class="fw-bold">{{ data.total }}</div>
+                    </div>
+                    <div class="col-6">
+                        <span class="text-muted small">Met</span>
+                        <div class="fw-bold text-green">{{ data.met }}</div>
+                    </div>
+                    <div class="col-6">
+                        <span class="text-muted small">Not Met</span>
+                        <div class="fw-bold text-danger">{{ data.not_met }}</div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-green" style="width: {{ data.percentage }}%;">
+                            {{ data.percentage }}% Met
+                        </div>
+                        <div class="progress-bar bg-danger" style="width: {% if data.total > 0 %}{% widthratio data.not_met data.total 100 %}{% else %}0{% endif %}%;"></div>
+                            {% widthratio data.not_met data.total 100 %}% Not Met
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>No SDG data available.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- SDG Mapping Reference -->
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-info-circle me-2"></i>SDG Mapping Reference
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>SDG Goal</th>
+                        <th>Description</th>
+                        <th>Related Thematic Area</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge bg-green">SDG 3</span></td>
+                        <td>Good Health and Well-being</td>
+                        <td>Morbidity & Mortality</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge bg-success">SDG 5</span></td>
+                        <td>Gender Equality</td>
+                        <td>Fertility</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge bg-warning">SDG 11</span></td>
+                        <td>Sustainable Cities and Communities</td>
+                        <td>Migration & Urbanization</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge bg-danger">SDG 13</span></td>
+                        <td>Climate Action</td>
+                        <td>PHED</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function exportCSV() {
+        const params = new URLSearchParams(window.location.search);
+        window.location.href = "{% url 'reports:export_report' 'csv' %}?" + params.toString();
+    }
+</script>
+{% endblock %}

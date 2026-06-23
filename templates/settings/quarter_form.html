@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if quarter %}Edit{% else %}Add{% endif %} Quarter - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="page-title">
+                <i class="bi bi-{% if quarter %}pencil-square{% else %}plus-circle{% endif %} me-2"></i>
+                {% if quarter %}Edit{% else %}Add{% endif %} Quarter
+            </h3>
+            <a href="{% url 'settings:quarters' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Quarters
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-calendar3 me-2"></i>Quarter Details
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label fw-semibold">Quarter Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" id="name" class="form-control" 
+                                   value="{{ quarter.name|default:'' }}" 
+                                   placeholder="e.g., Q1 2025" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="fiscal_year" class="form-label fw-semibold">Fiscal Year <span class="text-danger">*</span></label>
+                            <input type="text" name="fiscal_year" id="fiscal_year" class="form-control" 
+                                   value="{{ quarter.fiscal_year|default:'' }}" 
+                                   placeholder="e.g., 2024/2025" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="quarter_number" class="form-label fw-semibold">Quarter Number <span class="text-danger">*</span></label>
+                            <select name="quarter_number" id="quarter_number" class="form-select" required>
+                                <option value="1" {% if quarter and quarter.quarter_number == 1 %}selected{% endif %}>Q1 (Jan-Mar)</option>
+                                <option value="2" {% if quarter and quarter.quarter_number == 2 %}selected{% endif %}>Q2 (Apr-Jun)</option>
+                                <option value="3" {% if quarter and quarter.quarter_number == 3 %}selected{% endif %}>Q3 (Jul-Sep)</option>
+                                <option value="4" {% if quarter and quarter.quarter_number == 4 %}selected{% endif %}>Q4 (Oct-Dec)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="start_date" class="form-label fw-semibold">Start Date <span class="text-danger">*</span></label>
+                            <input type="date" name="start_date" id="start_date" class="form-control" 
+                                   value="{{ quarter.start_date|date:'Y-m-d'|default:'' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="end_date" class="form-label fw-semibold">End Date <span class="text-danger">*</span></label>
+                            <input type="date" name="end_date" id="end_date" class="form-control" 
+                                   value="{{ quarter.end_date|date:'Y-m-d'|default:'' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="submission_deadline" class="form-label fw-semibold">Submission Deadline <span class="text-danger">*</span></label>
+                            <input type="date" name="submission_deadline" id="submission_deadline" class="form-control" 
+                                   value="{{ quarter.submission_deadline|date:'Y-m-d'|default:'' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="is_active" 
+                                               {% if quarter and quarter.is_active or not quarter %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_active">Active</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="is_closed" id="is_closed" 
+                                               {% if quarter and quarter.is_closed %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_closed">Closed</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>{% if quarter %}Update{% else %}Add{% endif %} Quarter
+                        </button>
+                        <a href="{% url 'settings:quarters' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

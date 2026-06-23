@@ -1,0 +1,473 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - KP M&E System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+        border-left: 4px solid #1a5632;
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+    .stat-card .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a5632;
+        line-height: 1.2;
+    }
+    .stat-card .stat-label {
+        color: #6c757d;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .stat-card .stat-icon {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        font-size: 2.5rem;
+        opacity: 0.1;
+        color: #1a5632;
+    }
+    .stat-card.danger { border-left-color: #b71c1c; }
+    .stat-card.danger .stat-number { color: #b71c1c; }
+    .stat-card.danger .stat-icon { color: #b71c1c; }
+    .stat-card.warning { border-left-color: #f39c12; }
+    .stat-card.warning .stat-number { color: #f39c12; }
+    .stat-card.warning .stat-icon { color: #f39c12; }
+    .stat-card.info { border-left-color: #17a2b8; }
+    .stat-card.info .stat-number { color: #17a2b8; }
+    .stat-card.info .stat-icon { color: #17a2b8; }
+    
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .card-header {
+        background: white;
+        border-bottom: 2px solid #e8f5e9;
+        border-radius: 12px 12px 0 0 !important;
+        padding: 15px 20px;
+        font-weight: 600;
+    }
+    .thematic-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    .thematic-item:last-child {
+        border-bottom: none;
+    }
+    .thematic-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 10px;
+        flex-shrink: 0;
+    }
+    .county-item {
+        display: flex;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    .county-item:last-child {
+        border-bottom: none;
+    }
+    .county-name {
+        flex: 1;
+        font-size: 0.9rem;
+    }
+    .county-bar {
+        width: 100px;
+        height: 6px;
+        background: #e9ecef;
+        border-radius: 3px;
+        overflow: hidden;
+        margin: 0 10px;
+    }
+    .county-bar .fill {
+        height: 100%;
+        border-radius: 3px;
+        background: #1a5632;
+        transition: width 0.5s ease;
+    }
+    .county-percent {
+        font-size: 0.8rem;
+        font-weight: 600;
+        min-width: 40px;
+        text-align: right;
+    }
+    .refresh-btn {
+        font-size: 0.7rem;
+        padding: 2px 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="page-title"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h3>
+        <p class="text-muted small">
+            Real-time monitoring and analytics for Kenya Population Programme
+            {% if is_county_user %}
+            <span class="badge bg-info ms-2">
+                <i class="bi bi-geo-alt me-1"></i>{{ county_name }}
+            </span>
+            {% endif %}
+            <span class="badge bg-secondary ms-1">{{ user_role|title }}</span>
+        </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-green me-1">{% now "F Y" %}</span>
+        <span class="badge bg-secondary">Q{% now "q" %} {% now "Y" %}</span>
+        <button class="btn btn-sm btn-outline-secondary refresh-btn" onclick="location.reload()">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+        </button>
+    </div>
+</div>
+
+<!-- Stats Cards - ALL RBAC SPECIFIC -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-lg-6 col-md-6">
+        <div class="stat-card">
+            <div class="stat-label">Total Indicators</div>
+            <div class="stat-number">{{ total_indicators }}</div>
+            <div class="stat-icon"><i class="bi bi-list-ul"></i></div>
+            {% if is_county_user %}
+            <small class="text-muted">With data for your county</small>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-md-6">
+        <div class="stat-card">
+            <div class="stat-label">Counties</div>
+            <div class="stat-number">{{ total_counties }}</div>
+            <div class="stat-icon"><i class="bi bi-geo-alt"></i></div>
+            {% if is_county_user %}
+            <small class="text-muted">Your county</small>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-md-6">
+        <div class="stat-card">
+            <div class="stat-label">Approved Submissions</div>
+            <div class="stat-number">{{ approved_entries }}</div>
+            <div class="stat-icon"><i class="bi bi-file-earmark-check"></i></div>
+            <small class="text-muted">Total: {{ total_entries }}</small>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-md-6">
+        <div class="stat-card {% if pending_approvals > 0 %}warning{% endif %}">
+            <div class="stat-label">Pending Approvals</div>
+            <div class="stat-number">{{ pending_approvals }}</div>
+            <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
+            {% if pending_approvals > 0 and user_role in 'admin,ncpd_me' or is_superuser %}
+            <a href="{% url 'reports:pending_reports' %}" class="btn btn-sm btn-warning mt-2 text-white">
+                <i class="bi bi-eye me-1"></i>Review Now
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card info">
+            <div class="stat-label">Submission Rate</div>
+            <div class="stat-number">{{ submission_rate }}%</div>
+            <div class="stat-icon"><i class="bi bi-percent"></i></div>
+            {% if current_quarter %}
+            <small class="text-muted">
+                {% if is_county_user %}
+                    Your submission for {{ current_quarter.name }}
+                {% else %}
+                    {{ current_quarter.name }}
+                {% endif %}
+            </small>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-label">Overall Performance</div>
+            <div class="stat-number">
+                {% if total_entries > 0 %}
+                    {{ overall_performance }}%
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="stat-icon"><i class="bi bi-graph-up"></i></div>
+            <small class="text-muted">
+                {% if is_county_user %}
+                    Your county's performance
+                {% else %}
+                    National performance
+                {% endif %}
+            </small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card danger">
+            <div class="stat-label">Counties with No Data</div>
+            <div class="stat-number">{{ counties_with_no_data }}</div>
+            <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+            <small class="text-muted">
+                {% if is_county_user %}
+                    Your county has data: {% if counties_with_no_data == 0 %}Yes{% else %}No{% endif %}
+                {% else %}
+                    Out of {{ total_counties }} counties
+                {% endif %}
+            </small>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-graph-up-arrow me-2"></i>Performance Trend</span>
+                <span class="badge bg-secondary">Last 6 quarters</span>
+            </div>
+            <div class="card-body">
+                <canvas id="trendChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-pie-chart me-2"></i>Status Distribution
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Thematic & County Performance -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-tags me-2"></i>Thematic Areas Performance
+                {% if is_county_user %}
+                <span class="badge bg-info ms-2">Your County</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if thematic_performance %}
+                    {% for area in thematic_performance %}
+                    <div class="thematic-item">
+                        <span class="thematic-dot" style="background: {{ area.color }}"></span>
+                        <span class="flex-grow-1">{{ area.name }}</span>
+                        <div style="width: 120px;">
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar" style="width: {{ area.percentage }}%; background: {{ area.color }}"></div>
+                            </div>
+                        </div>
+                        <span class="ms-2" style="font-size: 0.8rem; font-weight: 600; min-width: 40px; text-align: right;">
+                            {{ area.percentage }}%
+                        </span>
+                        <span class="ms-2 text-muted" style="font-size: 0.7rem;">
+                            ({{ area.met }}/{{ area.total_entries }})
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-3">
+                        <i class="bi bi-inbox me-2"></i>
+                        {% if is_county_user %}
+                            No thematic data available for your county yet.
+                        {% else %}
+                            No thematic data available.
+                        {% endif %}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-trophy me-2"></i>Top Performing Counties
+                {% if is_county_user %}
+                <span class="badge bg-info ms-2">Your County Only</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if county_performance %}
+                    {% for county in county_performance %}
+                    <div class="county-item">
+                        <span class="county-name">{{ county.name }}</span>
+                        <div class="county-bar">
+                            <div class="fill" style="width: {{ county.percentage }}%; background: {% if county.percentage >= 80 %}#1a5632{% elif county.percentage >= 50 %}#f39c12{% else %}#b71c1c{% endif %};"></div>
+                        </div>
+                        <span class="county-percent">{{ county.percentage }}%</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-3">
+                        <i class="bi bi-inbox me-2"></i>
+                        {% if is_county_user %}
+                            No performance data available for your county yet.
+                        {% else %}
+                            No county performance data available.
+                        {% endif %}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history me-2"></i>Recent Activity</span>
+        <a href="{% url 'data_entry:list' %}" class="btn btn-sm btn-primary">View All</a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>County</th>
+                        <th>Quarter</th>
+                        <th>Indicator</th>
+                        <th>Value</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in recent_entries %}
+                    <tr>
+                        <td>{{ entry.county.name }}</td>
+                        <td>{{ entry.quarter.name }}</td>
+                        <td><code>{{ entry.indicator.code }}</code></td>
+                        <td>{{ entry.get_value_display }}</td>
+                        <td>
+                            <span class="badge {% if entry.status == 'approved' %}badge-green{% elif entry.status == 'submitted' %}badge-warning-custom{% elif entry.status == 'rejected' %}badge-red{% else %}bg-secondary{% endif %}">
+                                {{ entry.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ entry.created_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-3">
+                            <i class="bi bi-inbox me-2"></i>
+                            {% if is_county_user %}
+                                No activity for your county yet.
+                            {% else %}
+                                No recent activity.
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===== TREND CHART =====
+    const ctx1 = document.getElementById('trendChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [
+                {
+                    label: 'Indicators Met (%)',
+                    data: {{ chart_data|safe }},
+                    borderColor: '#1a5632',
+                    backgroundColor: 'rgba(26, 86, 50, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#1a5632',
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                },
+                {
+                    label: 'Target',
+                    data: {{ chart_target|safe }},
+                    borderColor: '#b71c1c',
+                    borderDash: [6, 4],
+                    fill: false,
+                    pointRadius: 0,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { boxWidth: 12, padding: 15 }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: { callback: v => v + '%' }
+                }
+            }
+        }
+    });
+
+    // ===== STATUS CHART =====
+    const ctx2 = document.getElementById('statusChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: ['Approved', 'Pending', 'Rejected', 'Draft'],
+            datasets: [{
+                data: [
+                    {{ status_data.approved }},
+                    {{ status_data.submitted }},
+                    {{ status_data.rejected }},
+                    {{ status_data.draft }}
+                ],
+                backgroundColor: ['#1a5632', '#f39c12', '#b71c1c', '#6c757d'],
+                borderWidth: 2,
+                borderColor: '#fff',
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { boxWidth: 12, padding: 15 }
+                }
+            },
+            cutout: '65%'
+        }
+    });
+</script>
+{% endblock %}

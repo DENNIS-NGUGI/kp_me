@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Indicators - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-list-ul me-2"></i>Indicators</h3>
+    <div>
+        {% if user.role == 'admin' or user.role == 'ncpd_me' or user.is_superuser %}
+        <a href="{% url 'indicators:add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Add Indicator
+        </a>
+        {% endif %}
+        <button class="btn btn-outline-secondary" onclick="window.print()">
+            <i class="bi bi-printer me-1"></i>Print
+        </button>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <select name="thematic_area" class="form-select">
+                    <option value="">All Thematic Areas</option>
+                    {% for area in areas %}
+                    <option value="{{ area.id }}" {% if request.GET.thematic_area == area.id|stringformat:"s" %}selected{% endif %}>
+                        {{ area.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="indicator_type" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="impact" {% if request.GET.indicator_type == 'impact' %}selected{% endif %}>Impact</option>
+                    <option value="outcome" {% if request.GET.indicator_type == 'outcome' %}selected{% endif %}>Outcome</option>
+                    <option value="output" {% if request.GET.indicator_type == 'output' %}selected{% endif %}>Output</option>
+                    <option value="action" {% if request.GET.indicator_type == 'action' %}selected{% endif %}>Action</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="frequency" class="form-select">
+                    <option value="">All Frequencies</option>
+                    <option value="annual" {% if request.GET.frequency == 'annual' %}selected{% endif %}>Annual</option>
+                    <option value="quarterly" {% if request.GET.frequency == 'quarterly' %}selected{% endif %}>Quarterly</option>
+                    <option value="monthly" {% if request.GET.frequency == 'monthly' %}selected{% endif %}>Monthly</option>
+                    <option value="5_years" {% if request.GET.frequency == '5_years' %}selected{% endif %}>5 Years</option>
+                    <option value="10_years" {% if request.GET.frequency == '10_years' %}selected{% endif %}>10 Years</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel me-1"></i>Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Indicators Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="indicatorTable">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Indicator</th>
+                        <th>Thematic Area</th>
+                        <th>Type</th>
+                        <th>Target</th>
+                        <th>Unit</th>
+                        <th>Valid Range</th>
+                        <th>Frequency</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for indicator in indicators %}
+                    <tr>
+                        <td><code>{{ indicator.code }}</code></td>
+                        <td>{{ indicator.name }}</td>
+                        <td>{{ indicator.thematic_area.name }}</td>
+                        <td><span class="badge bg-info">{{ indicator.get_indicator_type_display }}</span></td>
+                        <td>{{ indicator.target_value|default:"—" }}</td>
+                        <td>{{ indicator.unit }}</td>
+                        <td>
+                            {% if indicator.min_value is not None or indicator.max_value is not None %}
+                                <span class="badge bg-secondary">
+                                    {% if indicator.min_value is not None and indicator.max_value is not None %}
+                                        {{ indicator.min_value }} - {{ indicator.max_value }}
+                                    {% elif indicator.min_value is not None %}
+                                        ≥ {{ indicator.min_value }}
+                                    {% elif indicator.max_value is not None %}
+                                        ≤ {{ indicator.max_value }}
+                                    {% endif %}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ indicator.get_frequency_display }}</td>
+                        <td>
+                            {% if user.role == 'admin' or user.role == 'ncpd_me' %}
+                            <a href="{% url 'indicators:edit' indicator.code %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'indicators:delete' indicator.code %}" class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('Deactivate indicator {{ indicator.code }}?')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                            {% else %}
+                            <button class="btn btn-sm btn-outline-secondary" disabled>
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            No indicators found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#indicatorTable').DataTable({
+            pageLength: 25,
+            order: [[0, 'asc']],
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ indicators"
+            }
+        });
+    });
+</script>
+{% endblock %}

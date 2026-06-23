@@ -1,0 +1,278 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - KP M&E System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #1a5632;
+            --secondary-green: #2d8a4e;
+            --primary-red: #b71c1c;
+        }
+        body {
+            background: linear-gradient(135deg, #f5f7f5 0%, #e8f5e9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        .register-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            overflow: hidden;
+            max-width: 560px;
+            width: 100%;
+        }
+        .register-header {
+            background: linear-gradient(135deg, #1a5632, #2d8a4e);
+            padding: 25px 40px;
+            text-align: center;
+            color: white;
+        }
+        .register-header h2 {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .register-header p {
+            opacity: 0.8;
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+        .register-body {
+            padding: 25px 35px 35px;
+        }
+        .register-body .form-control, .register-body .form-select {
+            border-radius: 8px;
+            padding: 10px 14px;
+        }
+        .register-body .form-control:focus, .register-body .form-select:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 0.2rem rgba(26, 86, 50, 0.25);
+        }
+        .register-body .btn-primary {
+            background: var(--primary-green);
+            border-color: var(--primary-green);
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .register-body .btn-primary:hover {
+            background: var(--secondary-green);
+            border-color: var(--secondary-green);
+        }
+        .register-footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            margin-top: 20px;
+        }
+        .register-footer a {
+            color: var(--primary-green);
+            text-decoration: none;
+        }
+        .register-footer a:hover {
+            text-decoration: underline;
+        }
+        .alert {
+            border-radius: 8px;
+        }
+        .role-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .role-option .role-name {
+            font-weight: 500;
+        }
+        .role-option .role-system {
+            font-size: 0.6rem;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background: #6c757d;
+            color: white;
+        }
+        .role-option .role-desc {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-left: 5px;
+        }
+        .form-text {
+            font-size: 0.7rem;
+        }
+        .captcha-container {
+            text-align: center;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        .captcha-container img {
+            max-width: 200px;
+            height: auto;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-card">
+        <div class="register-header">
+            <div class="fs-1">
+                <img src="{% static 'images/coat.png' %}" alt="KP Logo" class="img-fluid mb-2" style="max-height: 50px;">
+            </div>
+            <h2>Create Account</h2>
+            <p>Register for KP M&E System</p>
+        </div>
+        <div class="register-body">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post" id="registerForm">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_first_name" class="form-label fw-semibold">First Name</label>
+                        <input type="text" name="first_name" id="id_first_name" class="form-control" placeholder="First name">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_last_name" class="form-label fw-semibold">Last Name</label>
+                        <input type="text" name="last_name" id="id_last_name" class="form-control" placeholder="Last name">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_username" class="form-label fw-semibold">Username <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                        <input type="text" name="username" id="id_username" class="form-control" placeholder="Choose a username" required>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_email" class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                        <input type="email" name="email" id="id_email" class="form-control" placeholder="Enter your email" required>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_organization" class="form-label fw-semibold">Organization</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-building"></i></span>
+                        <input type="text" name="organization" id="id_organization" class="form-control" placeholder="Your organization">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_phone" class="form-label fw-semibold">Phone Number</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
+                        <input type="tel" name="phone_number" id="id_phone" class="form-control" placeholder="e.g., 0712345678">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_role" class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
+                    <select name="role" id="id_role" class="form-select" required>
+                        <option value="">Select your role</option>
+                        {% for role in roles %}
+                        <option value="{{ role.id }}">
+                            {{ role.get_display_name }}
+                            {% if role.is_system %}
+                            <span class="role-system">System</span>
+                            {% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted form-text">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Select the role that best describes your responsibilities.
+                    </small>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_password1" class="form-label fw-semibold">Password <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                        <input type="password" name="password1" id="id_password1" class="form-control" placeholder="Enter password" required>
+                    </div>
+                    <small class="text-muted form-text">Password must be at least 8 characters long.</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_password2" class="form-label fw-semibold">Confirm Password <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-lock-fill"></i></span>
+                        <input type="password" name="password2" id="id_password2" class="form-control" placeholder="Confirm password" required>
+                    </div>
+                </div>
+
+                <!-- ===== CAPTCHA SECTION ===== -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Verification <span class="text-danger">*</span></label>
+                    <div class="captcha-container">
+                        <img src="{{ captcha_image }}" alt="Captcha" id="captcha_image_register">
+                        <br>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-1" onclick="refreshCaptchaRegister()">
+                            <i class="bi bi-arrow-repeat me-1"></i>Refresh
+                        </button>
+                    </div>
+                    <input type="hidden" name="captcha_0" value="{{ captcha_key }}" id="captcha_key_register">
+                    <input type="text" name="captcha_1" class="form-control mt-2" placeholder="Enter the code shown" required>
+                    <small class="text-muted">Please enter the characters from the image above.</small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-person-plus me-2"></i>Register
+                </button>
+            </form>
+            
+            <div class="register-footer">
+                <p class="mb-0 text-muted">
+                    <i class="bi bi-arrow-left me-1"></i>Already have an account?
+                    <a href="{% url 'users:login' %}">Sign In</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function refreshCaptchaRegister() {
+            fetch('/captcha/refresh/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP error ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('captcha_key_register').value = data.key;
+                    document.getElementById('captcha_image_register').src = data.image_url;
+                })
+                .catch(error => {
+                    console.error('Error refreshing captcha:', error);
+                    // Fallback: reload the page to get new captcha
+                    window.location.reload();
+                });
+        }
+    </script>
+
+</body>
+</html>

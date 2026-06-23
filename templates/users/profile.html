@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-id-card me-2"></i>My Profile</h4>
+            </div>
+            <div class="card-body">
+                {% if not user.is_verified and not user.is_superuser %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Account Pending Verification!</strong>
+                    <p class="mb-0 mt-1">
+                        Your account is currently pending verification. Please contact the system administrator 
+                        to verify your account. You will not be able to access system features until verified.
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div class="text-center py-3">
+                    <i class="bi bi-clock-history text-warning" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 text-muted">Waiting for Administrator Approval</h5>
+                    <p class="text-muted small">
+                        Please contact the administrator at <strong>admin@kpme.go.ke</strong> 
+                        or wait for verification.
+                    </p>
+                </div>
+                {% endif %}
+                
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <div class="avatar-circle bg-primary text-white mx-auto mb-3" 
+                             style="width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:48px;">
+                            {{ user.username|first|upper }}
+                        </div>
+                        <h5>{{ user.get_full_name }}</h5>
+                        <p class="text-muted">{{ user.role.get_display_name|default:"No Role" }}</p>
+                        <span class="badge {% if user.is_verified %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                            {% if user.is_verified %}Verified{% else %}Pending Verification{% endif %}
+                        </span>
+                    </div>
+                    <div class="col-md-8">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="150">Username</th>
+                                <td>{{ user.username }}</td>
+                            </tr>
+                            <tr>
+                                <th>Full Name</th>
+                                <td>{{ user.get_full_name|default:"Not provided" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Email</th>
+                                <td>{{ user.email }}</td>
+                            </tr>
+                            <tr>
+                                <th>Phone</th>
+                                <td>{{ user.phone_number|default:"Not provided" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Organization</th>
+                                <td>{{ user.organization|default:"Not provided" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Role</th>
+                                <td>{{ user.role.get_display_name|default:"No Role Assigned" }}</td>
+                            </tr>
+                            <tr>
+                                <th>County</th>
+                                <td>{{ user.county.name|default:"Not assigned" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Member Since</th>
+                                <td>{{ user.date_joined|date:"F d, Y" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Last Login</th>
+                                <td>{{ user.last_login|date:"F d, Y H:i"|default:"Never" }}</td>
+                            </tr>
+                        </table>
+                        <div class="mt-3">
+                            <a href="{% url 'users:edit_profile' %}" class="btn btn-primary">
+                                <i class="bi bi-pencil me-2"></i>Edit Profile
+                            </a>
+                            <a href="{% url 'users:logout' %}" class="btn btn-danger">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

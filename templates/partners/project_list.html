@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Projects - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-folder me-2"></i>Projects</h3>
+    {% if user.role in 'admin,ncpd_me' %}
+    <a href="{% url 'partners:project_add' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>Add Project
+    </a>
+    {% endif %}
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-3">
+                <select name="partner" class="form-select form-select-sm">
+                    <option value="">All Partners</option>
+                    {% for partner in partners %}
+                    <option value="{{ partner.id }}" {% if request.GET.partner == partner.id|stringformat:"s" %}selected{% endif %}>
+                        {{ partner.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">All Status</option>
+                    {% for code, name in status_choices %}
+                    <option value="{{ code }}" {% if request.GET.status == code %}selected{% endif %}>
+                        {{ name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-funnel me-1"></i>Filter
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="{% url 'partners:project_list' %}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Projects Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="projectTable">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Project Name</th>
+                        <th>Partner</th>
+                        <th>Status</th>
+                        <th>Budget</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Progress</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr>
+                        <td><code>{{ project.code }}</code></td>
+                        <td>{{ project.name }}</td>
+                        <td>{{ project.partner.name }}</td>
+                        <td>
+                            <span class="badge bg-{% if project.status == 'active' %}success{% elif project.status == 'completed' %}secondary{% elif project.status == 'planning' %}info{% elif project.status == 'suspended' %}warning{% else %}danger{% endif %}">
+                                {{ project.get_status_display }}
+                            </span>
+                        </td>
+                        <td>KSh {{ project.budget|floatformat:0 }}</td>
+                        <td>{{ project.start_date|date:"M d, Y" }}</td>
+                        <td>{{ project.end_date|date:"M d, Y" }}</td>
+                        <td style="min-width: 120px;">
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-green" style="width: {{ project.get_progress }}%;">
+                                    {{ project.get_progress }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{% url 'partners:project_detail' project.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if user.role in 'admin,ncpd_me' %}
+                            <a href="{% url 'partners:project_edit' project.id %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            No projects found
+                            {% if user.role in 'admin,ncpd_me' %}
+                            <br>
+                            <a href="{% url 'partners:project_add' %}" class="btn btn-sm btn-primary mt-2">
+                                <i class="bi bi-plus-circle me-1"></i>Add First Project
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#projectTable').DataTable({
+            pageLength: 25,
+            order: [[0, 'asc']],
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ projects"
+            }
+        });
+    });
+</script>
+{% endblock %}

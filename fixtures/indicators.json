@@ -1,0 +1,76 @@
+{
+  "model": "indicators.indicator",
+  "pk": 1,
+  "fields": {
+    "code": "FERT-01",
+    "name": "Human Development Index",
+    "thematic_area": 1,
+    "indicator_type": "impact",
+    "description": "A composite index measuring average achievement in key dimensions of human development",
+    "data_type": "decimal",
+    "unit": "Index (0-1)",
+    "target_value": "0.70",
+    "source_system": "UNDP",
+    "frequency": "annual",
+    "min_value": "0",
+    "max_value": "1",
+    "is_active": true
+  }
+},
+{
+  "model": "indicators.indicator",
+  "pk": 2,
+  "fields": {
+    "code": "FERT-02",
+    "name": "Population Growth Rate",
+    "thematic_area": 1,
+    "indicator_type": "outcome",
+    "description": "The annual rate of population growth",
+    "data_type": "percentage",
+    "unit": "%",
+    "target_value": "2.0",
+    "source_system": "KNBS",
+    "frequency": "annual",
+    "min_value": "0",
+    "max_value": "100",
+    "is_active": true
+  }
+},
+{
+  "model": "indicators.indicator",
+  "pk": 3,
+  "fields": {
+    "code": "FERT-03",
+    "name": "Total Fertility Rate (National)",
+    "thematic_area": 1,
+    "indicator_type": "outcome",
+    "description": "The average number of children a woman would have during her reproductive lifetime",
+    "data_type": "decimal",
+    "unit": "Births per woman",
+    "target_value": "3.0",
+    "source_system": "KNBS",
+    "frequency": "5_years",
+    "min_value": "0",
+    "max_value": "8",
+    "is_active": true
+  }
+},
+{
+  "model": "indicators.indicator",
+  "pk": 5,
+  "fields": {
+    "code": "FERT-05",
+    "name": "Contraceptive Prevalence Rate (CPR)",
+    "thematic_area": 1,
+    "indicator_type": "output",
+    "description": "The percentage of women using any method of contraception",
+    "data_type": "percentage",
+    "unit": "%",
+    "target_value": "65",
+    "source_system": "KNBS",
+    "frequency": "5_years",
+    "min_value": "0",
+    "max_value": "100",
+    "is_active": true
+  }
+}

@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Partner Dashboard - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-speedometer2 me-2"></i>Partner Dashboard</h3>
+    <span class="badge bg-info">{{ user_role|title }}</span>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-lg-6 col-md-6">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">Total Projects</div>
+                    <div class="stat-number">{{ total_projects }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-folder"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-md-6">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">Active Projects</div>
+                    <div class="stat-number text-green">{{ active_projects }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-play-circle"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-md-6">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">Completed Projects</div>
+                    <div class="stat-number text-secondary">{{ completed_projects }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-md-6">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">Active Partners</div>
+                    <div class="stat-number">{{ partners.count }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-buildings"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Projects -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history me-2"></i>Recent Projects</span>
+        <a href="{% url 'partners:project_list' %}" class="btn btn-sm btn-primary">View All</a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Project Name</th>
+                        <th>Partner</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in recent_projects %}
+                    <tr>
+                        <td><code>{{ project.code }}</code></td>
+                        <td>{{ project.name }}</td>
+                        <td>{{ project.partner.name }}</td>
+                        <td>
+                            <span class="badge bg-{% if project.status == 'active' %}success{% elif project.status == 'completed' %}secondary{% elif project.status == 'planning' %}info{% elif project.status == 'suspended' %}warning{% else %}danger{% endif %}">
+                                {{ project.get_status_display }}
+                            </span>
+                        </td>
+                        <td style="min-width: 120px;">
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-green" style="width: {{ project.get_progress }}%;">
+                                    {{ project.get_progress }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{% url 'partners:project_detail' project.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-3">No projects found</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Partner List -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-buildings me-2"></i>Active Partners</span>
+        <a href="{% url 'partners:list' %}" class="btn btn-sm btn-primary">View All</a>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            {% for partner in partners %}
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm bg-light">
+                    <div class="card-body">
+                        <h6>
+                            <a href="{% url 'partners:detail' partner.id %}" class="text-decoration-none">
+                                {{ partner.name }}
+                            </a>
+                        </h6>
+                        <small class="text-muted">
+                            <i class="bi bi-folder me-1"></i>{{ partner.get_project_count }} Projects
+                        </small><br>
+                        <small class="text-muted">
+                            <i class="bi bi-geo-alt me-1"></i>{{ partner.counties.count }} Counties
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <p class="text-muted text-center py-3">No active partners</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title">
+        <i class="bi bi-bell me-2"></i>Notifications
+        {% if unread_count > 0 %}
+        <span class="badge bg-danger ms-2">{{ unread_count }}</span>
+        {% endif %}
+    </h3>
+    <div>
+        {% if notifications %}
+        <a href="{% url 'notifications:mark_all_read' %}" class="btn btn-outline-success btn-sm me-1">
+            <i class="bi bi-check2-all me-1"></i>Mark All Read
+        </a>
+        <a href="{% url 'notifications:clear_all' %}" class="btn btn-outline-danger btn-sm" 
+           onclick="return confirm('Clear all notifications?')">
+            <i class="bi bi-trash me-1"></i>Clear All
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-3">
+                <select name="type" class="form-select form-select-sm">
+                    <option value="">All Types</option>
+                    <option value="info" {% if filter_type == 'info' %}selected{% endif %}>Information</option>
+                    <option value="success" {% if filter_type == 'success' %}selected{% endif %}>Success</option>
+                    <option value="warning" {% if filter_type == 'warning' %}selected{% endif %}>Warning</option>
+                    <option value="error" {% if filter_type == 'error' %}selected{% endif %}>Error</option>
+                    <option value="approval" {% if filter_type == 'approval' %}selected{% endif %}>Approval</option>
+                    <option value="rejection" {% if filter_type == 'rejection' %}selected{% endif %}>Rejection</option>
+                    <option value="submission" {% if filter_type == 'submission' %}selected{% endif %}>Submission</option>
+                    <option value="deadline" {% if filter_type == 'deadline' %}selected{% endif %}>Deadline</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="read" class="form-select form-select-sm">
+                    <option value="">All Status</option>
+                    <option value="unread" {% if read_filter == 'unread' %}selected{% endif %}>Unread</option>
+                    <option value="read" {% if read_filter == 'read' %}selected{% endif %}>Read</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-funnel me-1"></i>Filter
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="{% url 'notifications:center' %}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Notification List -->
+<div class="card">
+    <div class="card-body p-0">
+        {% if notifications %}
+        <div class="list-group list-group-flush">
+            {% for notification in notifications %}
+            <div class="list-group-item list-group-item-action {% if not notification.is_read %}bg-light{% endif %}" 
+                 data-notification-id="{{ notification.id }}">
+                <div class="d-flex align-items-start">
+                    <!-- Icon -->
+                    <div class="flex-shrink-0 me-3">
+                        <span class="badge bg-{% if notification.notification_type == 'approval' %}success{% elif notification.notification_type == 'rejection' %}danger{% elif notification.notification_type == 'submission' %}info{% elif notification.notification_type == 'deadline' %}warning{% elif notification.notification_type == 'error' %}danger{% elif notification.notification_type == 'warning' %}warning{% else %}secondary{% endif %} p-2">
+                            <i class="bi bi-{% if notification.notification_type == 'approval' %}check-circle{% elif notification.notification_type == 'rejection' %}x-circle{% elif notification.notification_type == 'submission' %}send{% elif notification.notification_type == 'deadline' %}calendar{% elif notification.notification_type == 'error' %}exclamation-triangle{% elif notification.notification_type == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+                        </span>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1 {% if not notification.is_read %}fw-bold{% endif %}">
+                                    {{ notification.title }}
+                                </h6>
+                                <p class="mb-1 text-muted small">{{ notification.message }}</p>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i>
+                                    {{ notification.created_at|timesince }} ago
+                                    {% if notification.notification_type %}
+                                    <span class="badge bg-secondary ms-2">{{ notification.get_notification_type_display }}</span>
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <div class="d-flex gap-1">
+                                {% if not notification.is_read %}
+                                <a href="{% url 'notifications:mark_read' notification.id %}" class="btn btn-sm btn-outline-success" title="Mark as read">
+                                    <i class="bi bi-check"></i>
+                                </a>
+                                {% else %}
+                                <a href="{% url 'notifications:mark_unread' notification.id %}" class="btn btn-sm btn-outline-secondary" title="Mark as unread">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                </a>
+                                {% endif %}
+                                {% if notification.action_url %}
+                                <a href="{{ notification.action_url }}" class="btn btn-sm btn-primary">
+                                    {{ notification.action_text|default:"View" }}
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'notifications:delete' notification.id %}" class="btn btn-sm btn-outline-danger" 
+                                   onclick="return confirm('Delete this notification?')" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <div class="card-footer">
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    {% if page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page|add:"-1" }}{% if filter_type %}&type={{ filter_type }}{% endif %}{% if read_filter %}&read={{ read_filter }}{% endif %}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for p in total_pages|make_list %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ p }}{% if filter_type %}&type={{ filter_type }}{% endif %}{% if read_filter %}&read={{ read_filter }}{% endif %}">
+                            {{ p }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                    
+                    {% if page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page|add:"1" }}{% if filter_type %}&type={{ filter_type }}{% endif %}{% if read_filter %}&read={{ read_filter }}{% endif %}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-bell-slash fs-1 text-muted d-block mb-3"></i>
+            <h5 class="text-muted">No notifications</h5>
+            <p class="text-muted small">You're all caught up!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh unread count every 30 seconds
+    function updateUnreadCount() {
+        fetch('{% url "notifications:api_unread_count" %}')
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('unread-badge');
+                if (badge) {
+                    if (data.count > 0) {
+                        badge.textContent = data.count;
+                        badge.style.display = 'inline';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            });
+    }
+    setInterval(updateUnreadCount, 30000);
+</script>
+{% endblock %}

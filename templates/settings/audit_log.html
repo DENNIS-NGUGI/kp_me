@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Audit Log - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-clock-history me-2"></i>Audit Log</h3>
+    <span class="badge bg-secondary">{{ total }} entries</span>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-3">
+                <select name="action" class="form-select form-select-sm">
+                    <option value="">All Actions</option>
+                    {% for action in actions %}
+                    <option value="{{ action }}" {% if selected_action == action %}selected{% endif %}>
+                        {{ action|title }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="model" class="form-select form-select-sm">
+                    <option value="">All Models</option>
+                    {% for model in models %}
+                    <option value="{{ model }}" {% if selected_model == model %}selected{% endif %}>
+                        {{ model }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="user" class="form-select form-select-sm">
+                    <option value="">All Users</option>
+                    {% for user in users %}
+                    <option value="{{ user }}" {% if selected_user == user %}selected{% endif %}>
+                        {{ user }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-funnel me-1"></i>Filter
+                </button>
+            </div>
+            <div class="col-md-1">
+                <a href="{% url 'settings:audit_log' %}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Audit Log Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="auditTable">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Model</th>
+                        <th>Object</th>
+                        <th>Changes</th>
+                        <th>IP Address</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>
+                            {% if log.user %}
+                            <span class="fw-semibold">{{ log.user.username }}</span>
+                            <br><small class="text-muted">{{ log.user.get_role_display }}</small>
+                            {% else %}
+                            <span class="text-muted">System</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge {% if log.action == 'CREATE' %}bg-success{% elif log.action == 'UPDATE' %}bg-info{% elif log.action == 'DELETE' %}bg-danger{% elif log.action == 'LOGIN' %}bg-primary{% elif log.action == 'LOGOUT' %}bg-secondary{% elif log.action == 'APPROVE' %}bg-success{% elif log.action == 'REJECT' %}bg-danger{% elif log.action == 'SUBMIT' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                {{ log.get_action_display }}
+                            </span>
+                        </td>
+                        <td><code>{{ log.model_name }}</code></td>
+                        <td>
+                            {% if log.object_repr %}
+                            {{ log.object_repr }}
+                            {% else %}
+                            <span class="text-muted">ID: {{ log.object_id }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if log.changes %}
+                            <button class="btn btn-sm btn-outline-secondary" 
+                                    onclick="showChanges({{ log.id }})" 
+                                    data-bs-toggle="modal" data-bs-target="#changesModal">
+                                <i class="bi bi-eye"></i> View
+                            </button>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ log.ip_address|default:"—" }}</td>
+                        <td>
+                            {{ log.timestamp|date:"M d, Y H:i:s" }}
+                            <br><small class="text-muted">{{ log.timestamp|timesince }} ago</small>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            No audit logs found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Changes Modal -->
+<div class="modal fade" id="changesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Changes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="changesContent">
+                <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#auditTable').DataTable({
+            pageLength: 25,
+            order: [[6, 'desc']],
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries"
+            }
+        });
+    });
+    
+    // Store changes data
+    const changesData = {};
+    {% for log in logs %}
+        {% if log.changes %}
+        changesData[{{ log.id }}] = {{ log.changes|safe }};
+        {% endif %}
+    {% endfor %}
+    
+    function showChanges(logId) {
+        const modal = document.getElementById('changesContent');
+        const data = changesData[logId];
+        
+        if (!data) {
+            modal.innerHTML = '<p class="text-muted text-center">No changes recorded</p>';
+            return;
+        }
+        
+        let html = '<div class="table-responsive">';
+        html += '<table class="table table-sm table-bordered">';
+        html += '<thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead>';
+        html += '<tbody>';
+        
+        for (const [field, value] of Object.entries(data)) {
+            const before = value.before !== undefined ? value.before : '—';
+            const after = value.after !== undefined ? value.after : '—';
+            html += `<tr>
+                <td><strong>${field}</strong></td>
+                <td><code>${before}</code></td>
+                <td><code>${after}</code></td>
+            </tr>`;
+        }
+        
+        html += '</tbody></table></div>';
+        modal.innerHTML = html;
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}System Settings - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-gear me-2"></i>System Settings</h3>
+    {% if user.role == 'admin' or user.is_superuser %}
+    <a href="{% url 'settings:add' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>Add Setting
+    </a>
+    {% endif %}
+</div>
+
+<div class="row">
+    <!-- Categories -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6><i class="bi bi-tags me-2"></i>Categories</h6>
+                <div class="list-group">
+                    {% for category, settings in categories.items %}
+                    <a href="#{{ category|lower }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        {{ category }}
+                        <span class="badge bg-secondary rounded-pill">{{ settings|length }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings -->
+    <div class="col-md-9">
+        {% for category, settings in categories.items %}
+        <div id="{{ category|lower }}" class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-folder me-2"></i>{{ category }}
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Key</th>
+                                <th>Value</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for setting in settings %}
+                            <tr>
+                                <td><code>{{ setting.key }}</code></td>
+                                <td>
+                                    {% if setting.setting_type == 'boolean' %}
+                                        <span class="badge {% if setting.get_typed_value %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {{ setting.get_typed_value|yesno:"True,False" }}
+                                        </span>
+                                    {% else %}
+                                        {{ setting.value|truncatechars:50 }}
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge bg-info">{{ setting.get_setting_type_display }}</span></td>
+                                <td>
+                                    <a href="{% url 'settings:edit' setting.key %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    {% if user.role == 'admin' %}
+                                    <a href="{% url 'settings:delete' setting.key %}" class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Delete this setting?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <i class="bi bi-gear fs-1 text-muted d-block mb-3"></i>
+            <h5 class="text-muted">No settings configured</h5>
+            <p class="text-muted">Add system settings to configure the application.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

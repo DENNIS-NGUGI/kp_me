@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Entry Detail - {{ entry.indicator.code }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-file-earmark-text me-2"></i>Entry Detail</h3>
+    <div>
+        <a href="{% url 'data_entry:list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i>Entry Information
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="200">County</th>
+                        <td>{{ entry.county.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Quarter</th>
+                        <td>{{ entry.quarter.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Indicator</th>
+                        <td>
+                            <code>{{ entry.indicator.code }}</code> - {{ entry.indicator.name }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Thematic Area</th>
+                        <td>{{ entry.indicator.thematic_area.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Value</th>
+                        <td>
+                            <span class="fw-bold">{{ entry.get_value_display }}</span>
+                            <br><small class="text-muted">{{ entry.indicator.unit }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Target</th>
+                        <td>{{ entry.indicator.target_value|default:"Not set" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status</th>
+                        <td>
+                            <span class="badge {% if entry.status == 'approved' %}badge-green{% elif entry.status == 'rejected' %}badge-red{% elif entry.status == 'submitted' %}badge-warning-custom{% else %}bg-secondary{% endif %}">
+                                {{ entry.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Submitted By</th>
+                        <td>{{ entry.submitted_by.get_full_name|default:entry.submitted_by.username|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Submitted At</th>
+                        <td>{{ entry.submitted_at|date:"M d, Y H:i"|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Approved By</th>
+                        <td>{{ entry.approved_by.get_full_name|default:entry.approved_by.username|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Approved At</th>
+                        <td>{{ entry.approved_at|date:"M d, Y H:i"|default:"—" }}</td>
+                    </tr>
+                    {% if entry.rejection_reason %}
+                    <tr>
+                        <th>Rejection Reason</th>
+                        <td class="text-danger">{{ entry.rejection_reason }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Actions Card -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-gear me-2"></i>Actions
+            </div>
+            <div class="card-body">
+                {% if entry.can_edit %}
+                <a href="{% url 'data_entry:edit' entry.id %}" class="btn btn-primary w-100 mb-2">
+                    <i class="bi bi-pencil me-2"></i>Edit Entry
+                </a>
+                {% endif %}
+                
+                {% if entry.status == 'draft' and entry.can_edit %}
+                <a href="{% url 'data_entry:submit' entry.id %}" class="btn btn-success w-100 mb-2"
+                   onclick="return confirm('Submit this entry for approval?')">
+                    <i class="bi bi-send me-2"></i>Submit for Approval
+                </a>
+                {% endif %}
+                
+                {% if entry.status == 'submitted' and user.role.name in 'admin,ncpd_me' or user.is_superuser %}
+                <a href="{% url 'data_entry:approve' entry.id %}" class="btn btn-success w-100 mb-2"
+                   onclick="return confirm('Approve this entry?')">
+                    <i class="bi bi-check-lg me-2"></i>Approve
+                </a>
+                <a href="{% url 'data_entry:reject' entry.id %}" class="btn btn-danger w-100 mb-2">
+                    <i class="bi bi-x-lg me-2"></i>Reject with Reason
+                </a>
+                {% endif %}
+                
+                {% if entry.status != 'approved' and entry.can_edit %}
+                <a href="{% url 'data_entry:delete' entry.id %}" class="btn btn-outline-danger w-100"
+                   onclick="return confirm('Delete this entry?')">
+                    <i class="bi bi-trash me-2"></i>Delete Entry
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Status Timeline -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-clock-history me-2"></i>Timeline
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="bi bi-plus-circle text-success me-2"></i>
+                        Created: {{ entry.created_at|date:"M d, Y H:i" }}
+                    </li>
+                    {% if entry.submitted_at %}
+                    <li class="mb-2">
+                        <i class="bi bi-send text-primary me-2"></i>
+                        Submitted: {{ entry.submitted_at|date:"M d, Y H:i" }}
+                    </li>
+                    {% endif %}
+                    {% if entry.approved_at %}
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Approved: {{ entry.approved_at|date:"M d, Y H:i" }}
+                    </li>
+                    {% endif %}
+                    {% if entry.rejection_reason %}
+                    <li class="mb-2">
+                        <i class="bi bi-x-circle text-danger me-2"></i>
+                        Rejected: {{ entry.updated_at|date:"M d, Y H:i" }}
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Quarter Management - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-calendar3 me-2"></i>Quarter Management</h3>
+    <a href="{% url 'settings:quarter_add' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>Add Quarter
+    </a>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-label">Total Quarters</div>
+            <div class="stat-number">{{ quarters|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-label">Active Quarters</div>
+            <div class="stat-number text-green">{{ quarters|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card warning">
+            <div class="stat-label">Closed Quarters</div>
+            <div class="stat-number">{{ quarters|length }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quarters Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="quarterTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Fiscal Year</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Deadline</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quarter in quarters %}
+                    <tr>
+                        <td><strong>{{ quarter.name }}</strong></td>
+                        <td>{{ quarter.fiscal_year }}</td>
+                        <td>{{ quarter.start_date|date:"M d, Y" }}</td>
+                        <td>{{ quarter.end_date|date:"M d, Y" }}</td>
+                        <td>
+                            {{ quarter.submission_deadline|date:"M d, Y" }}
+                            {% if quarter.is_open_for_submission %}
+                            <span class="badge bg-success ms-1">
+                                {{ quarter.days_until_deadline }} days left
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge {% if quarter.is_active and not quarter.is_closed %}bg-success{% elif quarter.is_closed %}bg-secondary{% else %}bg-warning{% endif %}">
+                                {% if quarter.is_closed %}
+                                    Closed
+                                {% elif quarter.is_active %}
+                                    Active
+                                {% else %}
+                                    Inactive
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'settings:quarter_edit' quarter.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'settings:quarter_toggle' quarter.id %}" class="btn btn-sm {% if quarter.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}" 
+                               onclick="return confirm('Toggle quarter status?')">
+                                <i class="bi {% if quarter.is_active %}bi-pause{% else %}bi-play{% endif %}"></i>
+                            </a>
+                            <a href="{% url 'settings:quarter_delete' quarter.id %}" class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('Delete this quarter?')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="bi bi-calendar3 fs-2 d-block mb-2"></i>
+                            No quarters defined
+                            <br>
+                            <a href="{% url 'settings:quarter_add' %}" class="btn btn-sm btn-primary mt-2">
+                                <i class="bi bi-plus-circle me-1"></i>Add First Quarter
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#quarterTable').DataTable({
+            pageLength: 25,
+            order: [[2, 'desc']],
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ quarters"
+            }
+        });
+    });
+</script>
+{% endblock %}

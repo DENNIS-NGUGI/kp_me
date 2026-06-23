@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Pending Approvals - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-clock-history me-2"></i>Pending Approvals</h3>
+    <span class="badge bg-warning-custom fs-6">{{ pending|length }}</span>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="pendingTable">
+                <thead>
+                    <tr>
+                        <th>County</th>
+                        <th>Quarter</th>
+                        <th>Indicator</th>
+                        <th>Value</th>
+                        <th>Submitted By</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in pending %}
+                    <tr>
+                        <td>{{ entry.county.name }}</td>
+                        <td>{{ entry.quarter.name }}</td>
+                        <td><code>{{ entry.indicator.code }}</code></td>
+                        <td>{{ entry.get_value_display }}</td>
+                        <td>{{ entry.submitted_by.username|default:"—" }}</td>
+                        <td>{{ entry.submitted_at|date:"M d, Y H:i" }}</td>
+                        <td>
+                            <a href="{% url 'data_entry:approve' entry.id %}" class="btn btn-sm btn-success"
+                               onclick="return confirm('Approve this entry?')">
+                                <i class="bi bi-check-lg me-1"></i>Approve
+                            </a>
+                            <a href="{% url 'data_entry:reject' entry.id %}" class="btn btn-sm btn-danger"
+                               onclick="return confirm('Reject this entry?')">
+                                <i class="bi bi-x-lg me-1"></i>Reject
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="bi bi-check-circle fs-2 d-block mb-2 text-success"></i>
+                            No pending approvals!
+                            <p class="mt-2">All submissions have been reviewed.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#pendingTable').DataTable({
+            pageLength: 25,
+            order: [[5, 'asc']],
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries"
+            }
+        });
+    });
+</script>
+{% endblock %}

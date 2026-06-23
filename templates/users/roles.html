@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Role Management - KP M&E System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .role-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        cursor: pointer;
+    }
+    .role-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+    .role-card .card-header {
+        background: white;
+        border-bottom: 2px solid #e8f5e9;
+        border-radius: 12px 12px 0 0 !important;
+        padding: 15px 20px;
+    }
+    .role-card .card-body {
+        padding: 15px 20px;
+    }
+    .role-card .card-footer {
+        background: white;
+        border-top: 1px solid #e9ecef;
+        padding: 12px 20px;
+        border-radius: 0 0 12px 12px !important;
+    }
+    .badge-system {
+        background: #6c757d;
+        color: white;
+        font-size: 0.65rem;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+    .badge-active {
+        background: #1a5632;
+        color: white;
+        font-size: 0.65rem;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+    .badge-inactive {
+        background: #dc3545;
+        color: white;
+        font-size: 0.65rem;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+    .action-buttons .btn {
+        font-size: 0.7rem;
+        padding: 3px 10px;
+    }
+    .role-description {
+        font-size: 0.85rem;
+        color: #6c757d;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-height: 40px;
+    }
+    .perm-badge-mini {
+        font-size: 0.55rem;
+        padding: 1px 5px;
+        border-radius: 3px;
+        display: inline-block;
+        font-weight: 500;
+    }
+    .perm-badge-view { background: #d4edda; color: #155724; }
+    .perm-badge-add { background: #cce5ff; color: #004085; }
+    .perm-badge-change { background: #fff3cd; color: #856404; }
+    .perm-badge-delete { background: #f8d7da; color: #721c24; }
+    .perm-badge-empty { background: #e9ecef; color: #6c757d; }
+    .permission-summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+        margin-top: 8px;
+    }
+    .stat-item {
+        font-size: 0.7rem;
+        color: #6c757d;
+        display: inline-flex;
+        align-items: center;
+        margin-right: 12px;
+    }
+    .stat-item i {
+        margin-right: 3px;
+        font-size: 0.8rem;
+    }
+    .stat-item .num {
+        font-weight: 600;
+        color: #1a5632;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title">
+        <i class="bi bi-shield-lock me-2"></i>Role Management
+        <span class="badge bg-secondary ms-2">{{ roles|length }}</span>
+    </h3>
+    <div>
+        <a href="{% url 'users:role_add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Add Role
+        </a>
+    </div>
+</div>
+
+<!-- Roles Grid -->
+<div class="row g-4">
+    {% for role in roles %}
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <div class="card role-card h-100" onclick="window.location.href='{% url 'users:role_edit' role.id %}'">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-shield-{% if role.is_system %}fill{% else %}check{% endif %} text-green"></i>
+                    <strong class="text-truncate" style="max-width: 120px;" title="{{ role.name }}">{{ role.name }}</strong>
+                </div>
+                <div>
+                    {% if role.is_system %}
+                    <span class="badge-system">System</span>
+                    {% endif %}
+                    {% if role.is_active %}
+                    <span class="badge-active">Active</span>
+                    {% else %}
+                    <span class="badge-inactive">Inactive</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <!-- Description -->
+                <div class="role-description">
+                    {{ role.description|default:"No description"|truncatechars:60 }}
+                </div>
+                
+                <!-- Mini Permission Summary -->
+                <div class="permission-summary">
+                    {% with perm_count=role.perm_codenames|length %}
+                        {% if perm_count > 0 %}
+                            {% for module in modules|slice:":3" %}
+                                {% with module_perms=role.perm_codenames %}
+                                    {% for action in actions %}
+                                        {% with perm_check=action|add:"_"|add:module %}
+                                            {% if perm_check in module_perms %}
+                                                <span class="perm-badge-mini perm-badge-{{ action }}" title="{{ action|title }} {{ module|title }}">
+                                                    {{ action|slice:":1"|upper }}{{ module|slice:":1"|upper }}
+                                                </span>
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% endfor %}
+                                {% endwith %}
+                            {% endfor %}
+                            {% if perm_count > 9 %}
+                                <span class="perm-badge-mini perm-badge-empty">+{{ perm_count|add:"-9" }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted small">No permissions</span>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+            
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="stat-item">
+                        <i class="bi bi-people"></i>
+                        <span class="num">{{ role.user_count }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="bi bi-key"></i>
+                        <span class="num">{{ role.perm_codenames|length }}</span>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="{% url 'users:role_edit' role.id %}" class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation();">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% if not role.is_system %}
+                        <a href="{% url 'users:role_delete' role.id %}" class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); return confirm('Delete role {{ role.name }}?')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="bi bi-shield-slash fs-1 text-muted d-block mb-3"></i>
+            <h5 class="text-muted">No roles defined</h5>
+            <a href="{% url 'users:role_add' %}" class="btn btn-primary mt-2">
+                <i class="bi bi-plus-circle me-1"></i>Create First Role
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Legend -->
+<div class="card mt-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Quick Stats</h6>
+                <div class="mt-2">
+                    <span class="badge bg-secondary me-2">System</span> = Protected role
+                    <span class="badge bg-success ms-2">Active</span> = Role is active
+                </div>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <small class="text-muted">
+                    <i class="bi bi-pencil me-1"></i>
+                    Click card to edit role details
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Ensure click works on card */
+    .role-card {
+        cursor: pointer;
+    }
+    .role-card .card-footer a {
+        position: relative;
+        z-index: 2;
+    }
+</style>
+{% endblock %}

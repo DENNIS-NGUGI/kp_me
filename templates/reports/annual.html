@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Annual Report - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-calendar-year me-2"></i>Annual Report {{ year }}</h3>
+    <div>
+        <button class="btn btn-success" onclick="window.print()">
+            <i class="bi bi-printer me-1"></i>Print
+        </button>
+        <button class="btn btn-primary" onclick="exportCSV()">
+            <i class="bi bi-file-earmark-excel me-1"></i>Export CSV
+        </button>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Total Submissions</div>
+            <div class="stat-number">{{ total_entries }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Overall Performance</div>
+            <div class="stat-number text-green">{{ overall_percentage }}%</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Met Target</div>
+            <div class="stat-number text-green">{{ total_met }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card danger">
+            <div class="stat-label">Not Met</div>
+            <div class="stat-number">{{ total_not_met }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quarterly Performance -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-graph-up-arrow me-2"></i>Quarterly Performance
+    </div>
+    <div class="card-body">
+        <canvas id="quarterlyChart" height="250"></canvas>
+    </div>
+</div>
+
+<!-- Thematic Performance -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-tags me-2"></i>Performance by Thematic Area
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Thematic Area</th>
+                        <th>Total</th>
+                        <th>Met</th>
+                        <th>Not Met</th>
+                        <th>No Data</th>
+                        <th>Performance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for name, data in thematic_performance.items %}
+                    <tr>
+                        <td><strong>{{ name }}</strong></td>
+                        <td>{{ data.total }}</td>
+                        <td><span class="text-green">{{ data.met }}</span></td>
+                        <td><span class="text-danger">{{ data.not_met }}</span></td>
+                        <td><span class="text-muted">{{ data.no_data }}</span></td>
+                        <td style="min-width: 150px;">
+                            <div class="progress" style="height: 22px;">
+                                <div class="progress-bar bg-green" style="width: {{ data.percentage }}%;">
+                                    {{ data.percentage }}%
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted">No data available</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Year Selector -->
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-calendar3 me-2"></i>Select Year
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <input type="number" name="year" class="form-control" value="{{ year }}" min="2020" max="2030">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-eye me-1"></i>View Report
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // Quarterly Chart
+        const ctx = document.getElementById('quarterlyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [{% for name, data in quarterly_performance.items %}'{{ name }}',{% endfor %}],
+                datasets: [
+                    {
+                        label: 'Met',
+                        data: [{% for name, data in quarterly_performance.items %}{{ data.met }},{% endfor %}],
+                        backgroundColor: '#1a5632'
+                    },
+                    {
+                        label: 'Not Met',
+                        data: [{% for name, data in quarterly_performance.items %}{{ data.not_met }},{% endfor %}],
+                        backgroundColor: '#b71c1c'
+                    },
+                    {
+                        label: 'No Data',
+                        data: [{% for name, data in quarterly_performance.items %}{{ data.no_data }},{% endfor %}],
+                        backgroundColor: '#6c757d'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+    });
+
+    function exportCSV() {
+        window.location.href = "{% url 'reports:export_report' 'csv' %}?year={{ year }}";
+    }
+</script>
+{% endblock %}

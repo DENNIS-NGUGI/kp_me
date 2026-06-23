@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Pending Approvals Report - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-clock-history me-2"></i>Pending Approvals Report</h3>
+    <span class="badge bg-warning-custom fs-6">{{ total_pending }}</span>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card warning">
+            <div class="stat-label">Total Pending</div>
+            <div class="stat-number">{{ total_pending }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-label">Counties with Pending</div>
+            <div class="stat-number">{{ county_pending|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-label">Quarters with Pending</div>
+            <div class="stat-number">{{ quarter_pending|length }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- By County -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-geo-alt me-2"></i>Pending by County
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>County</th>
+                        <th>Pending Entries</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for county, data in county_pending.items %}
+                    <tr>
+                        <td><strong>{{ county }}</strong></td>
+                        <td><span class="badge bg-warning">{{ data.count }}</span></td>
+                        <td>
+                            <a href="{% url 'data_entry:pending' %}?county={{ county|urlencode }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye me-1"></i>Review
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="text-center text-muted">No pending entries</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- By Quarter -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-calendar3 me-2"></i>Pending by Quarter
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Quarter</th>
+                        <th>Pending Entries</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quarter, data in quarter_pending.items %}
+                    <tr>
+                        <td><strong>{{ quarter }}</strong></td>
+                        <td><span class="badge bg-warning">{{ data.count }}</span></td>
+                        <td>
+                            <a href="{% url 'data_entry:pending' %}?quarter={{ quarter|urlencode }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye me-1"></i>Review
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="text-center text-muted">No pending entries</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed List -->
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-list-ul me-2"></i>All Pending Entries
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="pendingTable">
+                <thead>
+                    <tr>
+                        <th>County</th>
+                        <th>Quarter</th>
+                        <th>Indicator</th>
+                        <th>Value</th>
+                        <th>Submitted By</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in pending_entries %}
+                    <tr>
+                        <td>{{ entry.county.name }}</td>
+                        <td>{{ entry.quarter.name }}</td>
+                        <td><code>{{ entry.indicator.code }}</code></td>
+                        <td>{{ entry.get_value_display }}</td>
+                        <td>{{ entry.submitted_by.username|default:"—" }}</td>
+                        <td>{{ entry.submitted_at|date:"M d, Y H:i" }}</td>
+                        <td>
+                            <a href="{% url 'data_entry:approve' entry.id %}" class="btn btn-sm btn-success"
+                               onclick="return confirm('Approve this entry?')">
+                                <i class="bi bi-check-lg me-1"></i>Approve
+                            </a>
+                            <a href="{% url 'data_entry:reject' entry.id %}" class="btn btn-sm btn-danger"
+                               onclick="return confirm('Reject this entry?')">
+                                <i class="bi bi-x-lg me-1"></i>Reject
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted py-4">
+                        <i class="bi bi-check-circle fs-2 d-block mb-2 text-success"></i>
+                        No pending approvals!
+                    </td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#pendingTable').DataTable({
+            pageLength: 25,
+            order: [[5, 'asc']],
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries"
+            }
+        });
+    });
+</script>
+{% endblock %}

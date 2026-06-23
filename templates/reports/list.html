@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Reports - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-file-earmark-text me-2"></i>Reports</h3>
+    <span class="badge bg-info">{{ user_role|title }}</span>
+</div>
+
+{% if is_county_user %}
+<div class="alert alert-info">
+    <i class="bi bi-geo-alt me-2"></i>
+    <strong>County:</strong> {{ county_name }}
+    <span class="text-muted ms-2">- You are viewing reports for your county only.</span>
+</div>
+{% endif %}
+
+<p class="text-muted">Generate and view monitoring & evaluation reports (Approved data only)</p>
+
+<div class="row g-4">
+    <!-- Standard Reports -->
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-clock-history me-2"></i>Standard Reports
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-calendar3 fs-1 text-green"></i>
+                                <h6 class="mt-2">Quarterly Report</h6>
+                                <p class="text-muted small">County performance by quarter</p>
+                                <a href="{% url 'reports:quarterly_report' %}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye me-1"></i>View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-calendar-year fs-1 text-green"></i>
+                                <h6 class="mt-2">Annual Report</h6>
+                                <p class="text-muted small">Yearly programme overview</p>
+                                <a href="{% url 'reports:annual_report' %}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye me-1"></i>View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-globe-americas fs-1 text-green"></i>
+                                <h6 class="mt-2">SDG Report</h6>
+                                <p class="text-muted small">SDG indicators progress</p>
+                                <a href="{% url 'reports:sdg_report' %}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye me-1"></i>View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-gear fs-1 text-green"></i>
+                                <h6 class="mt-2">Custom Report</h6>
+                                <p class="text-muted small">Build your own report</p>
+                                <a href="{% url 'reports:generate_report' %}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-gear me-1"></i>Build
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thematic Areas -->
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-tags me-2"></i>Thematic Area Reports
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    {% for area in thematic_areas %}
+                    <div class="col-md-3">
+                        <a href="{% url 'reports:thematic_report' area.code %}" class="text-decoration-none">
+                            <div class="card h-100 border-0 bg-light-green">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-{% if area.code == 'FERT' %}baby{% elif area.code == 'MM' %}heart-pulse{% elif area.code == 'MIG' %}people{% else %}globe-africa{% endif %} fs-1 text-green"></i>
+                                    <h6 class="mt-2 text-dark">{{ area.name }}</h6>
+                                    <span class="badge bg-green">{{ indicators|length }} indicators</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <p class="text-muted text-center py-3">No thematic areas available.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Only: Pending Reports -->
+    {% if user_role in 'admin,ncpd_me' or user.is_superuser %}
+    <div class="col-md-12">
+        <div class="card border-warning">
+            <div class="card-header bg-warning bg-opacity-10">
+                <i class="bi bi-clock-history me-2"></i>Pending Approvals
+                <span class="badge bg-warning ms-2">{{ pending_count }}</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Review and approve pending data submissions</p>
+                <a href="{% url 'reports:pending_reports' %}" class="btn btn-warning">
+                    <i class="bi bi-eye me-1"></i>View Pending ({{ pending_count }})
+                </a>
+                <a href="{% url 'data_entry:pending' %}" class="btn btn-outline-warning ms-2">
+                    <i class="bi bi-check-lg me-1"></i>Review & Approve
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

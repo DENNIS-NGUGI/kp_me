@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if partner %}Edit{% else %}Add{% endif %} Partner - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title">
+        <i class="bi bi-{% if partner %}pencil-square{% else %}plus-circle{% endif %} me-2"></i>
+        {% if partner %}Edit{% else %}Add{% endif %} Partner
+    </h3>
+    <a href="{% url 'partners:list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Partners
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-building me-2"></i>Partner Information
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <h6 class="mb-3"><i class="bi bi-info-circle me-2"></i>Basic Information</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="code" class="form-label fw-semibold">Partner Code <span class="text-danger">*</span></label>
+                            <input type="text" name="code" id="code" class="form-control" 
+                                   value="{{ partner.code|default:'' }}" 
+                                   placeholder="e.g., P-001" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="name" class="form-label fw-semibold">Partner Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" id="name" class="form-control" 
+                                   value="{{ partner.name|default:'' }}" 
+                                   placeholder="Organization name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="partner_type" class="form-label fw-semibold">Partner Type</label>
+                            <select name="partner_type" id="partner_type" class="form-select">
+                                {% for code, name in partner_types %}
+                                <option value="{{ code }}" {% if partner and partner.partner_type == code %}selected{% endif %}>
+                                    {{ name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="status" class="form-label fw-semibold">Status</label>
+                            <select name="status" id="status" class="form-select">
+                                {% for code, name in status_choices %}
+                                <option value="{{ code }}" {% if partner and partner.status == code %}selected{% endif %}>
+                                    {{ name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="description" class="form-label fw-semibold">Description</label>
+                            <textarea name="description" id="description" class="form-control" rows="3" 
+                                      placeholder="Brief description of the organization">{{ partner.description|default:'' }}</textarea>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Contact Information -->
+                    <h6 class="mb-3"><i class="bi bi-person me-2"></i>Contact Information</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="contact_person" class="form-label fw-semibold">Contact Person <span class="text-danger">*</span></label>
+                            <input type="text" name="contact_person" id="contact_person" class="form-control" 
+                                   value="{{ partner.contact_person|default:'' }}" 
+                                   placeholder="Full name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="contact_email" class="form-label fw-semibold">Contact Email <span class="text-danger">*</span></label>
+                            <input type="email" name="contact_email" id="contact_email" class="form-control" 
+                                   value="{{ partner.contact_email|default:'' }}" 
+                                   placeholder="email@example.com" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="contact_phone" class="form-label fw-semibold">Contact Phone</label>
+                            <input type="tel" name="contact_phone" id="contact_phone" class="form-control" 
+                                   value="{{ partner.contact_phone|default:'' }}" 
+                                   placeholder="+254 712 345 678">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="website" class="form-label fw-semibold">Website</label>
+                            <input type="url" name="website" id="website" class="form-control" 
+                                   value="{{ partner.website|default:'' }}" 
+                                   placeholder="https://example.com">
+                        </div>
+                        <div class="col-12">
+                            <label for="address" class="form-label fw-semibold">Physical Address</label>
+                            <textarea name="address" id="address" class="form-control" rows="2" 
+                                      placeholder="Physical address">{{ partner.address|default:'' }}</textarea>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Location & Users -->
+                    <h6 class="mb-3"><i class="bi bi-geo-alt me-2"></i>Location & Users</h6>
+                    <div class="row g-3">
+                        <!-- Counties -->
+                        <div class="col-md-6">
+                            <label for="counties" class="form-label fw-semibold">Counties</label>
+                            <select name="counties" id="counties" class="form-select select2" multiple style="width: 100%;">
+                                {% for county in counties %}
+                                <option value="{{ county.id }}" {% if partner and county in partner.counties.all %}selected{% endif %}>
+                                    {{ county.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Search and select counties</small>
+                        </div>
+
+                        <!-- Users -->
+                        <div class="col-md-6">
+                            <label for="users" class="form-label fw-semibold">Users</label>
+                            <select name="users" id="users" class="form-select select2" multiple style="width: 100%;">
+                                {% for user in users %}
+                                <option value="{{ user.id }}" {% if partner and user in partner.users.all %}selected{% endif %}>
+                                    {{ user.username }} ({{ user.get_full_name|default:user.username }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Search and select users</small>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>{% if partner %}Update{% else %}Add{% endif %} Partner
+                        </button>
+                        <a href="{% url 'partners:list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

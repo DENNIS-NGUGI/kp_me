@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Partners - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-people me-2"></i>Implementing Partners</h3>
+    {% if user.role in 'admin,ncpd_me' or user.is_superuser %}
+    <a href="{% url 'partners:add' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>Add Partner
+    </a>
+    {% endif %}
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-3">
+                <select name="type" class="form-select form-select-sm">
+                    <option value="">All Types</option>
+                    {% for code, name in partner_types %}
+                    <option value="{{ code }}" {% if selected_type == code %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">All Status</option>
+                    {% for code, name in status_choices %}
+                    <option value="{{ code }}" {% if selected_status == code %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-funnel me-1"></i>Filter
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="{% url 'partners:list' %}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Partner Cards -->
+<div class="row g-4">
+    {% for partner in partners %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="card-title">
+                            <a href="{% url 'partners:detail' partner.id %}" class="text-decoration-none">
+                                {{ partner.name }}
+                            </a>
+                        </h5>
+                        <span class="badge bg-{% if partner.status == 'active' %}success{% elif partner.status == 'inactive' %}secondary{% elif partner.status == 'pending' %}warning{% else %}danger{% endif %}">
+                            {{ partner.get_status_display }}
+                        </span>
+                        <span class="badge bg-info">{{ partner.get_partner_type_display }}</span>
+                    </div>
+                    <div>
+                        <span class="badge bg-secondary">{{ partner.get_project_count }} Projects</span>
+                    </div>
+                </div>
+                <p class="text-muted small mt-2">{{ partner.description|truncatechars:100 }}</p>
+                <div class="mt-2">
+                    <small class="text-muted">
+                        <i class="bi bi-person me-1"></i>{{ partner.contact_person }}
+                    </small><br>
+                    <small class="text-muted">
+                        <i class="bi bi-envelope me-1"></i>{{ partner.contact_email }}
+                    </small>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent d-flex justify-content-between">
+                <small class="text-muted">
+                    <i class="bi bi-geo-alt me-1"></i>{{ partner.counties.count }} Counties
+                </small>
+                <a href="{% url 'partners:detail' partner.id %}" class="btn btn-sm btn-primary">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+            <h5 class="text-muted">No partners found</h5>
+            {% if user.role in 'admin,ncpd_me' or user.is_superuser %}
+            <a href="{% url 'partners:add' %}" class="btn btn-primary mt-2">
+                <i class="bi bi-plus-circle me-1"></i>Add First Partner
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

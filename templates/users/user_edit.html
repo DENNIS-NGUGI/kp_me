@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit User - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="page-title">
+                <i class="bi bi-pencil-square me-2"></i>
+                Edit User: {{ edit_user.username }}
+            </h3>
+            <a href="{% url 'users:user_management' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-person me-2"></i>User Details
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="first_name" class="form-label fw-semibold">First Name</label>
+                            <input type="text" name="first_name" id="first_name" class="form-control" 
+                                   value="{{ edit_user.first_name|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="last_name" class="form-label fw-semibold">Last Name</label>
+                            <input type="text" name="last_name" id="last_name" class="form-control" 
+                                   value="{{ edit_user.last_name|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label fw-semibold">Email</label>
+                            <input type="email" name="email" id="email" class="form-control" 
+                                   value="{{ edit_user.email|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phone_number" class="form-label fw-semibold">Phone Number</label>
+                            <input type="tel" name="phone_number" id="phone_number" class="form-control" 
+                                   value="{{ edit_user.phone_number|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="organization" class="form-label fw-semibold">Organization</label>
+                            <input type="text" name="organization" id="organization" class="form-control" 
+                                   value="{{ edit_user.organization|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="role" class="form-label fw-semibold">Role</label>
+                            <select name="role" id="role" class="form-select">
+                                <option value="">No Role</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if edit_user.role.id == role.id %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label for="county" class="form-label fw-semibold">County</label>
+                            <select name="county" id="county" class="form-select">
+                                <option value="">No County</option>
+                                {% for county in counties %}
+                                <option value="{{ county.id }}" {% if edit_user.county.id == county.id %}selected{% endif %}>
+                                    {{ county.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_active" id="is_active" 
+                                       {% if edit_user.is_active %}checked{% endif %}>
+                                <label class="form-check-label" for="is_active">Active</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_verified" id="is_verified" 
+                                       {% if edit_user.is_verified %}checked{% endif %}>
+                                <label class="form-check-label" for="is_verified">Verified</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>Update User
+                        </button>
+                        <a href="{% url 'users:user_management' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

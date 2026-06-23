@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block title %}Data Entries - KP M&E System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .action-buttons .btn {
+        padding: 2px 6px;
+        font-size: 0.7rem;
+        margin: 0 1px;
+    }
+    .action-buttons .btn i {
+        font-size: 0.8rem;
+    }
+    .status-badge {
+        font-size: 0.7rem;
+        padding: 4px 10px;
+    }
+    .rejection-reason {
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        cursor: help;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-list-check me-2"></i>Data Entries</h3>
+    <div>
+        <a href="{% url 'data_entry:entry' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>New Entry
+        </a>
+    </div>
+</div>
+
+{% if is_county_user %}
+<div class="alert alert-info">
+    <i class="bi bi-geo-alt me-2"></i>
+    <strong>County:</strong> {{ county_name }}
+    <span class="text-muted ms-2">- You are viewing data entries for your county only.</span>
+</div>
+{% endif %}
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="stat-label">Total</div>
+            <div class="stat-number">{{ total }}</div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="stat-label">Draft</div>
+            <div class="stat-number">{{ drafts }}</div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card warning">
+            <div class="stat-label">Submitted</div>
+            <div class="stat-number">{{ submitted }}</div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="stat-label">Approved</div>
+            <div class="stat-number text-green">{{ approved }}</div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card danger">
+            <div class="stat-label">Rejected</div>
+            <div class="stat-number">{{ rejected }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Entries Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="entriesTable">
+                <thead>
+                    <tr>
+                        <th>County</th>
+                        <th>Quarter</th>
+                        <th>Indicator</th>
+                        <th>Value</th>
+                        <th>Status</th>
+                        <th>Rejection Reason</th>
+                        <th>Submitted By</th>
+                        <th>Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in entries %}
+                    <tr>
+                        <td>{{ entry.county.name }}</td>
+                        <td>{{ entry.quarter.name }}</td>
+                        <td>
+                            <code>{{ entry.indicator.code }}</code>
+                            <br><small class="text-muted">{{ entry.indicator.name|truncatechars:20 }}</small>
+                        </td>
+                        <td>
+                            <span class="fw-semibold">{{ entry.get_value_display }}</span>
+                            <br><small class="text-muted">{{ entry.indicator.unit }}</small>
+                        </td>
+                        <td>
+                            <span class="badge status-badge {% if entry.status == 'approved' %}badge-green{% elif entry.status == 'rejected' %}badge-red{% elif entry.status == 'submitted' %}badge-warning-custom{% else %}bg-secondary{% endif %}">
+                                {{ entry.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if entry.status == 'rejected' %}
+                            <span class="rejection-reason text-danger" title="{{ entry.rejection_reason }}">
+                                <i class="bi bi-info-circle me-1"></i>{{ entry.rejection_reason|truncatechars:25 }}
+                            </span>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if entry.submitted_by %}
+                            {{ entry.submitted_by.get_full_name|default:entry.submitted_by.username }}
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if entry.submitted_at %}
+                            {{ entry.submitted_at|date:"M d, Y H:i" }}
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons d-flex flex-wrap gap-1">
+                                {% if entry.can_edit %}
+                                    <!-- View/Edit - Show for non-approved, non-submitted entries the user can edit -->
+                                    {% if entry.status in 'draft,rejected' and entry.can_edit %}
+                                    <a href="{% url 'data_entry:edit' entry.id %}" class="btn btn-sm btn-outline-primary" title="View/Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    {% endif %}
+                                    
+                                    <!-- Submit Button - For Draft entries -->
+                                    {% if entry.status == 'draft' %}
+                                    <a href="{% url 'data_entry:submit' entry.id %}" class="btn btn-sm btn-outline-success" 
+                                       onclick="return confirm('Submit this entry for approval?')" title="Submit for Approval">
+                                        <i class="bi bi-send"></i>
+                                    </a>
+                                    {% endif %}
+                                    
+                                    <!-- Resubmit Button - For Rejected entries -->
+                                    {% if entry.status == 'rejected' %}
+                                    <a href="{% url 'data_entry:edit' entry.id %}" class="btn btn-sm btn-outline-warning" 
+                                       title="Edit and Resubmit">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                    </a>
+                                    {% endif %}
+                                    
+                                    <!-- Delete Button - For Draft and Rejected entries -->
+                                    {% if entry.status != 'approved' %}
+                                    <a href="{% url 'data_entry:delete' entry.id %}" class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Delete this entry?')" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                    {% endif %}
+                                {% endif %}
+                                
+                                <!-- View Button - Always visible for all entries -->
+                                <a href="{% url 'data_entry:edit' entry.id %}" class="btn btn-sm btn-outline-secondary" title="View Details">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                
+                                <!-- Approve Button - For NCPD/Admin on Submitted entries -->
+                                {% if entry.status == 'submitted' and user.is_superuser or user.role and user.role.name in 'admin,ncpd_me' %}
+                                <a href="{% url 'data_entry:approve' entry.id %}" class="btn btn-sm btn-success"
+                                   onclick="return confirm('Approve this entry?')" title="Approve">
+                                    <i class="bi bi-check-lg"></i>
+                                </a>
+                                {% endif %}
+                                
+                                <!-- Reject Button - For NCPD/Admin on Submitted entries -->
+                                {% if entry.status == 'submitted' and user.is_superuser or user.role and user.role.name in 'admin,ncpd_me' %}
+                                <a href="{% url 'data_entry:reject' entry.id %}" class="btn btn-sm btn-danger"
+                                   title="Reject with reason">
+                                    <i class="bi bi-x-lg"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            No data entries found
+                            <br>
+                            <a href="{% url 'data_entry:entry' %}" class="btn btn-sm btn-primary mt-2">
+                                <i class="bi bi-plus-circle me-1"></i>Add Your First Entry
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#entriesTable').DataTable({
+            pageLength: 25,
+            order: [[7, 'desc']],
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                infoEmpty: "No entries found",
+                infoFiltered: "(filtered from _MAX_ total entries)"
+            },
+            columnDefs: [
+                { orderable: false, targets: [8] }
+            ]
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}County Management - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-geo-alt me-2"></i>County Management</h3>
+    <div>
+        <a href="{% url 'settings:county_export' %}" class="btn btn-outline-success btn-sm me-1">
+            <i class="bi bi-download me-1"></i>Export
+        </a>
+        <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="modal" data-bs-target="#importModal">
+            <i class="bi bi-upload me-1"></i>Import
+        </button>
+        <a href="{% url 'settings:county_add' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle me-1"></i>Add County
+        </a>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Total Counties</div>
+            <div class="stat-number">{{ total_counties }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Active Counties</div>
+            <div class="stat-number text-green">{{ counties|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Regions</div>
+            <div class="stat-number">{{ region_stats|length }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Counties Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="countyTable">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>County Name</th>
+                        <th>Headquarters</th>
+                        <th>Region</th>
+                        <th>Population</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for county in counties %}
+                    <tr>
+                        <td><strong>{{ county.code }}</strong></td>
+                        <td>{{ county.name }}</td>
+                        <td>{{ county.headquarters }}</td>
+                        <td>
+                            <span class="badge bg-{% if county.region == 'coast' %}info{% elif county.region == 'eastern' %}warning{% elif county.region == 'north_eastern' %}danger{% elif county.region == 'central' %}primary{% elif county.region == 'rift_valley' %}success{% elif county.region == 'western' %}secondary{% else %}dark{% endif %}">
+                                {{ county.get_region_display }}
+                            </span>
+                        </td>
+                        <td>{{ county.population|default:"—" }}</td>
+                        <td>
+                            <span class="badge {% if county.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                                {% if county.is_active %}Active{% else %}Inactive{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'settings:county_edit' county.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'settings:county_toggle' county.id %}" class="btn btn-sm {% if county.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}"
+                               onclick="return confirm('Toggle county status?')">
+                                <i class="bi {% if county.is_active %}bi-pause{% else %}bi-play{% endif %}"></i>
+                            </a>
+                            <a href="{% url 'settings:county_delete' county.id %}" class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('Delete {{ county.name }}?')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="bi bi-geo-alt fs-2 d-block mb-2"></i>
+                            No counties found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'settings:county_import' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-upload me-2"></i>Import Counties</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Upload a CSV file with the following columns: Code, Name, Headquarters, Region, Population, Area (sq km), Active
+                    </div>
+                    <div class="mb-3">
+                        <label for="file" class="form-label fw-semibold">CSV File</label>
+                        <input type="file" name="file" id="file" class="form-control" accept=".csv" required>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="bi bi-download me-1"></i>
+                            <a href="{% url 'settings:county_export' %}" class="text-decoration-none">Download template</a>
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#countyTable').DataTable({
+            pageLength: 25,
+            order: [[0, 'asc']],
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ counties"
+            }
+        });
+    });
+</script>
+{% endblock %}

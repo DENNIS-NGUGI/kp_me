@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Entry - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pencil me-2"></i>Edit Entry</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>County:</strong> {{ entry.county.name }}
+                </div>
+                <div class="mb-3">
+                    <strong>Quarter:</strong> {{ entry.quarter.name }}
+                </div>
+                <div class="mb-3">
+                    <strong>Indicator:</strong> {{ entry.indicator.code }} - {{ entry.indicator.name }}
+                </div>
+                <div class="mb-3">
+                    <strong>Unit:</strong> {{ entry.indicator.unit }}
+                </div>
+                <div class="mb-3">
+                    <strong>Target:</strong> {{ entry.indicator.target_value|default:"Not set" }}
+                </div>
+                <div class="mb-3">
+                    <strong>Valid Range:</strong>
+                    {% if entry.indicator.min_value is not None and entry.indicator.max_value is not None %}
+                        {{ entry.indicator.min_value }} - {{ entry.indicator.max_value }}
+                    {% elif entry.indicator.min_value is not None %}
+                        ≥ {{ entry.indicator.min_value }}
+                    {% elif entry.indicator.max_value is not None %}
+                        ≤ {{ entry.indicator.max_value }}
+                    {% else %}
+                        No range set
+                    {% endif %}
+                </div>
+                {% if entry.status == 'rejected' %}
+                <div class="alert alert-danger">
+                    <strong><i class="bi bi-exclamation-triangle me-2"></i>Rejection Reason:</strong>
+                    {{ entry.rejection_reason }}
+                </div>
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="value" class="form-label fw-semibold">Value</label>
+                        <input type="text" name="value" id="value" class="form-control" 
+                               value="{{ entry.value|default:'' }}" 
+                               placeholder="Enter value" required>
+                        <small class="text-muted">{{ entry.indicator.unit }}</small>
+                        <div id="value-feedback" class="text-danger small mt-1"></div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary" name="update" value="1">
+                            <i class="bi bi-save me-2"></i>Update
+                        </button>
+                        {% if entry.status == 'draft' %}
+                        <button type="submit" class="btn btn-success" name="submit" value="1">
+                            <i class="bi bi-send me-2"></i>Save & Submit
+                        </button>
+                        {% endif %}
+                        {% if entry.status == 'rejected' %}
+                        <button type="submit" class="btn btn-success" name="resubmit" value="1">
+                            <i class="bi bi-send me-2"></i>Update & Resubmit
+                        </button>
+                        {% endif %}
+                        <a href="{% url 'data_entry:list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Validation feedback on input
+    document.getElementById('value').addEventListener('input', function() {
+        const value = this.value.trim();
+        const feedback = document.getElementById('value-feedback');
+        if (!feedback) {
+            const div = document.createElement('div');
+            div.id = 'value-feedback';
+            div.className = 'text-danger small mt-1';
+            this.parentNode.appendChild(div);
+        }
+        
+        if (value !== '') {
+            const num = parseFloat(value);
+            const min = {{ entry.indicator.min_value|default:'null' }};
+            const max = {{ entry.indicator.max_value|default:'null' }};
+            let isValid = true;
+            let errors = [];
+            
+            if (isNaN(num)) {
+                isValid = false;
+                errors.push('Must be a number');
+            }
+            if (min !== null && num < min) {
+                isValid = false;
+                errors.push('Must be ≥ ' + min);
+            }
+            if (max !== null && num > max) {
+                isValid = false;
+                errors.push('Must be ≤ ' + max);
+            }
+            
+            const feedbackEl = document.getElementById('value-feedback');
+            if (isValid) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+                feedbackEl.textContent = '✓ Valid';
+                feedbackEl.className = 'text-success small mt-1';
+            } else {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+                feedbackEl.textContent = '✗ ' + errors.join('; ');
+                feedbackEl.className = 'text-danger small mt-1';
+            }
+        } else {
+            this.classList.remove('is-valid', 'is-invalid');
+            const feedbackEl = document.getElementById('value-feedback');
+            if (feedbackEl) feedbackEl.textContent = '';
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Quarterly Report - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-calendar3 me-2"></i>Quarterly Report</h3>
+    <div>
+        <button class="btn btn-success" onclick="window.print()">
+            <i class="bi bi-printer me-1"></i>Print
+        </button>
+        <button class="btn btn-primary" onclick="exportCSV()">
+            <i class="bi bi-file-earmark-excel me-1"></i>Export CSV
+        </button>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Total Entries</div>
+            <div class="stat-number">{{ total_entries }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Met Target</div>
+            <div class="stat-number text-green">{{ total_met }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card danger">
+            <div class="stat-label">Not Met</div>
+            <div class="stat-number">{{ total_not_met }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card warning">
+            <div class="stat-label">No Data</div>
+            <div class="stat-number">{{ total_no_data }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quarter Info -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <strong>Quarter:</strong> {{ quarter.name }}
+            </div>
+            <div class="col-md-6">
+                <strong>Period:</strong> {{ quarter.start_date|date:"M d, Y" }} - {{ quarter.end_date|date:"M d, Y" }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Thematic Performance -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-tags me-2"></i>Performance by Thematic Area
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Thematic Area</th>
+                        <th>Total</th>
+                        <th>Met</th>
+                        <th>Not Met</th>
+                        <th>No Data</th>
+                        <th>Performance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for name, data in thematic_data.items %}
+                    <tr>
+                        <td><strong>{{ name }}</strong></td>
+                        <td>{{ data.total }}</td>
+                        <td><span class="text-green">{{ data.met }}</span></td>
+                        <td><span class="text-danger">{{ data.not_met }}</span></td>
+                        <td><span class="text-muted">{{ data.no_data }}</span></td>
+                        <td style="min-width: 150px;">
+                            <div class="progress" style="height: 22px;">
+                                <div class="progress-bar bg-green" style="width: {% widthratio data.met data.total 100 %}%;">
+                                    {% widthratio data.met data.total 100 %}%
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted">No data available</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Entries -->
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-list-ul me-2"></i>Detailed Entries
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="entriesTable">
+                <thead>
+                    <tr>
+                        <th>County</th>
+                        <th>Indicator</th>
+                        <th>Thematic Area</th>
+                        <th>Value</th>
+                        <th>Target</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for name, data in thematic_data.items %}
+                        {% for entry in data.entries %}
+                        <tr>
+                            <td>{{ entry.county.name }}</td>
+                            <td><code>{{ entry.indicator.code }}</code> {{ entry.indicator.name }}</td>
+                            <td>{{ entry.indicator.thematic_area.name }}</td>
+                            <td>{{ entry.get_value_display }}</td>
+                            <td>{{ entry.indicator.target_value|default:"—" }}</td>
+                            <td>
+                                {% if entry.is_met is True %}
+                                    <span class="badge badge-green"><i class="bi bi-check-circle me-1"></i>Met</span>
+                                {% elif entry.is_met is False %}
+                                    <span class="badge badge-red"><i class="bi bi-x-circle me-1"></i>Not Met</span>
+                                {% else %}
+                                    <span class="badge bg-secondary"><i class="bi bi-dash-circle me-1"></i>No Data</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#entriesTable').DataTable({
+            pageLength: 25,
+            order: [[0, 'asc']],
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries"
+            }
+        });
+    });
+
+    function exportCSV() {
+        window.location.href = "{% url 'reports:export_report' 'csv' %}?quarter={{ quarter.id }}";
+    }
+</script>
+{% endblock %}

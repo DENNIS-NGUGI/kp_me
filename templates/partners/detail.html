@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ partner.name }} - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="page-title"><i class="bi bi-building me-2"></i>{{ partner.name }}</h3>
+    <div>
+        {% if user.role in 'admin,ncpd_me' %}
+        <a href="{% url 'partners:edit' partner.id %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i>Edit
+        </a>
+        {% endif %}
+        <a href="{% url 'partners:list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+</div>
+
+<!-- Partner Info -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <small class="text-muted">Code</small>
+                        <p><strong>{{ partner.code }}</strong></p>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">Status</small>
+                        <p>
+                            <span class="badge bg-{% if partner.status == 'active' %}success{% elif partner.status == 'inactive' %}secondary{% elif partner.status == 'pending' %}warning{% else %}danger{% endif %}">
+                                {{ partner.get_status_display }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">Type</small>
+                        <p>{{ partner.get_partner_type_display }}</p>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">Registered</small>
+                        <p>{{ partner.registration_date|date:"M d, Y" }}</p>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">Description</small>
+                    <p>{{ partner.description|default:"No description provided." }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h6><i class="bi bi-person me-2"></i>Contact Information</h6>
+                <div class="mb-2">
+                    <small class="text-muted">Contact Person</small>
+                    <p><strong>{{ partner.contact_person }}</strong></p>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">Email</small>
+                    <p><a href="mailto:{{ partner.contact_email }}">{{ partner.contact_email }}</a></p>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">Phone</small>
+                    <p>{{ partner.contact_phone }}</p>
+                </div>
+                {% if partner.website %}
+                <div>
+                    <small class="text-muted">Website</small>
+                    <p><a href="{{ partner.website }}" target="_blank">{{ partner.website }}</a></p>
+                </div>
+                {% endif %}
+                {% if partner.address %}
+                <div>
+                    <small class="text-muted">Address</small>
+                    <p>{{ partner.address }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Total Projects</div>
+            <div class="stat-number">{{ project_count }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Active Projects</div>
+            <div class="stat-number text-green">{{ active_count }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Total Budget</div>
+            <div class="stat-number">KSh {{ total_budget|floatformat:0 }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Budget Utilization</div>
+            <div class="stat-number">{{ budget_utilization }}%</div>
+        </div>
+    </div>
+</div>
+
+<!-- Projects -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-folder me-2"></i>Projects</span>
+        {% if user.role in 'admin,ncpd_me' %}
+        <a href="{% url 'partners:project_add' %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Add Project
+        </a>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Budget</th>
+                        <th>Progress</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr>
+                        <td><code>{{ project.code }}</code></td>
+                        <td>{{ project.name }}</td>
+                        <td>
+                            <span class="badge bg-{% if project.status == 'active' %}success{% elif project.status == 'completed' %}secondary{% elif project.status == 'planning' %}info{% elif project.status == 'suspended' %}warning{% else %}danger{% endif %}">
+                                {{ project.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ project.start_date|date:"M d, Y" }}</td>
+                        <td>{{ project.end_date|date:"M d, Y" }}</td>
+                        <td>KSh {{ project.budget|floatformat:0 }}</td>
+                        <td style="min-width: 100px;">
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-green" style="width: {{ project.get_progress }}%;">
+                                    {{ project.get_progress }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{% url 'partners:project_detail' project.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center text-muted py-3">No projects found</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

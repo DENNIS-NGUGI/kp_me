@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if role %}Edit{% else %}Add{% endif %} Role - KP M&E System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .permission-module {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 12px;
+        background: #f8f9fa;
+    }
+    .permission-module h6 {
+        color: #1a5632;
+        border-bottom: 2px solid #e8f5e9;
+        padding-bottom: 8px;
+        margin-bottom: 10px;
+    }
+    .perm-checkbox-lg {
+        width: 18px;
+        height: 18px;
+        accent-color: #1a5632;
+    }
+    .perm-label-lg {
+        font-size: 0.9rem;
+        margin-left: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="page-title">
+                <i class="bi bi-{% if role %}pencil-square{% else %}plus-circle{% endif %} me-2"></i>
+                {% if role %}Edit{% else %}Add{% endif %} Role
+            </h3>
+            <a href="{% url 'users:role_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Roles
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-shield-lock me-2"></i>Role Details
+                {% if role and role.is_system %}
+                <span class="badge bg-secondary ms-2">System Role</span>
+                {% endif %}
+            </div>
+            <div class="card-body p-4">
+                <form method="post" id="roleForm">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label fw-semibold">Role Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" id="name" class="form-control" 
+                                   value="{{ role.name|default:'' }}" 
+                                   placeholder="e.g., Data Entry Officer" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="description" class="form-label fw-semibold">Description</label>
+                            <input type="text" name="description" id="description" class="form-control" 
+                                   value="{{ role.description|default:'' }}" 
+                                   placeholder="Brief description of this role">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 mt-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_active" id="is_active" 
+                                   {% if role and role.is_active or not role %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">Active</label>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h5 class="mb-3"><i class="bi bi-key me-2"></i>Permissions</h5>
+                    <p class="text-muted small">Select the permissions this role should have.</p>
+
+                    {% for module, data in modules.items %}
+                    <div class="permission-module">
+                        <h6>
+                            {{ data.name }}
+                            <button type="button" class="btn btn-sm btn-outline-secondary toggle-all" data-module="{{ module }}">
+                                <i class="bi bi-check-all"></i> Toggle All
+                            </button>
+                        </h6>
+                        <div class="row">
+                            {% for perm in data.permissions %}
+                            <div class="col-md-3 col-sm-6">
+                                <div class="form-check">
+                                    <input class="form-check-input perm-checkbox-lg" 
+                                           type="checkbox" 
+                                           name="permissions" 
+                                           value="{{ perm.id }}"
+                                           id="perm_{{ perm.id }}"
+                                           data-module="{{ module }}"
+                                           {% if perm.checked %}checked{% endif %}>
+                                    <label class="form-check-label perm-label-lg" for="perm_{{ perm.id }}">
+                                        {{ perm.name }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        No permissions available. Run <code>python manage.py seed_permissions</code> to create them.
+                    </div>
+                    {% endfor %}
+
+                    <hr>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>{% if role %}Update{% else %}Add{% endif %} Role
+                        </button>
+                        <a href="{% url 'users:role_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle all permissions in a module
+    document.querySelectorAll('.toggle-all').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const module = this.dataset.module;
+            const checkboxes = document.querySelectorAll(`input[data-module="${module}"]`);
+            if (checkboxes.length === 0) return;
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+        });
+    });
+</script>
+{% endblock %}
