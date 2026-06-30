@@ -99,51 +99,26 @@ class DataEntry(models.Model):
         except:
             return None
     
-    def can_approve(self, user):
-        """Check if user can approve this entry"""
-        if user.is_superuser:
-            return True
-        if user.role and user.role.name in ['admin', 'ncpd_me']:
-            return self.status == 'submitted'
-        return False
-
-    def can_submit(self, user):
-        """Check if user can submit this entry"""
-        # If entry is approved, cannot submit again
-        if self.status == 'approved':
-            return False
-        
-        # If entry is locked, cannot submit
-        if self.is_locked:
-            return False
-        
-        # Check permissions based on user role
-        if user.is_superuser:
-            return True
-        if user.role and user.role.name == 'admin':
-            return True
-        if user.role and user.role.name == 'ncpd_me':
-            return True
-        if user.role and user.role.name == 'county_me' and user.county == self.county:
-            return self.status in ['draft', 'rejected']
-        
-        return False
-
+    # ============================================================
+    # PERMISSION METHODS - Using users.permissions
+    # ============================================================
+    
     def can_edit(self, user):
         """Check if user can edit this entry"""
-        # Approved and Submitted entries cannot be edited
-        if self.status in ['approved', 'submitted']:
-            return False
-        if self.is_locked:
-            return False
-        
-        if user.is_superuser:
-            return True
-        if user.role and user.role.name == 'admin':
-            return True
-        if user.role and user.role.name == 'ncpd_me':
-            return True
-        if user.role and user.role.name == 'county_me' and user.county == self.county:
-            return self.status in ['draft', 'rejected']
-        
-        return False
+        return user.can_edit_data_entry(self)
+    
+    def can_submit(self, user):
+        """Check if user can submit this entry"""
+        return user.can_submit_data_entry(self)
+    
+    def can_approve(self, user):
+        """Check if user can approve this entry"""
+        return user.can_approve_data_entry(self)
+    
+    def can_delete(self, user):
+        """Check if user can delete this entry"""
+        return user.can_delete_data_entry(self)
+    
+    def can_view(self, user):
+        """Check if user can view this entry"""
+        return user.can_view_data_entry(self)

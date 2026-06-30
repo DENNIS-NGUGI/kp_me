@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Approve Entry - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 text-success">
+                        <i class="bi bi-check-circle-fill me-2"></i>Approve Entry
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-2">
+                        <div class="display-1 text-success mb-3">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <h4 class="mb-3">Confirm Approval</h4>
+                        <p class="text-muted mb-2">
+                            Are you sure you want to approve this entry?
+                        </p>
+                        
+                        <div class="card bg-light mt-3 text-start">
+                            <div class="card-body">
+                                <h6 class="text-muted mb-3">Entry Details</h6>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4 text-muted">Indicator</div>
+                                    <div class="col-sm-8">
+                                        <span class="badge bg-primary me-1">{{ entry.indicator.code }}</span>
+                                        {{ entry.indicator.name }}
+                                    </div>
+                                </div>
+                                <hr class="my-2">
+                                <div class="row mb-2">
+                                    <div class="col-sm-4 text-muted">County</div>
+                                    <div class="col-sm-8">{{ entry.county.name }}</div>
+                                </div>
+                                <hr class="my-2">
+                                <div class="row mb-2">
+                                    <div class="col-sm-4 text-muted">Value</div>
+                                    <div class="col-sm-8"><strong>{{ entry.value }}</strong></div>
+                                </div>
+                                <hr class="my-2">
+                                <div class="row mb-2">
+                                    <div class="col-sm-4 text-muted">Submitted By</div>
+                                    <div class="col-sm-8">
+                                        {{ entry.submitted_by.get_full_name|default:entry.submitted_by.username }}
+                                    </div>
+                                </div>
+                                <hr class="my-2">
+                                <div class="row mb-0">
+                                    <div class="col-sm-4 text-muted">Submitted At</div>
+                                    <div class="col-sm-8">{{ entry.submitted_at|date:"F d, Y H:i" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-success mt-3">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Approving this entry will lock it and make it available in reports.
+                        </div>
+                        
+                        <div class="mt-4 d-flex justify-content-center gap-3">
+                            <form method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle me-2"></i>Yes, Approve
+                                </button>
+                            </form>
+                            <a href="{% url 'data_entry:pending' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

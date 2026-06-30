@@ -3,245 +3,222 @@
 
 {% block title %}User Management - KP M&E System{% endblock %}
 
-{% block extra_css %}
-<style>
-    .stat-card {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        border-left: 4px solid #1a5632;
-    }
-    .stat-card .stat-number {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1a5632;
-    }
-    .stat-card .stat-label {
-        color: #6c757d;
-        font-size: 0.85rem;
-        font-weight: 500;
-    }
-    .stat-card .stat-icon {
-        font-size: 2rem;
-        opacity: 0.15;
-        color: #1a5632;
-    }
-    .table thead th {
-        border-bottom: 2px solid #1a5632;
-        color: #1a1a1a;
-        font-weight: 600;
-        font-size: 0.85rem;
-    }
-    .table-hover tbody tr:hover {
-        background-color: #e8f5e9;
-    }
-    .role-badge {
-        font-size: 0.7rem;
-        padding: 4px 10px;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="page-title">
-        <i class="bi bi-people me-2"></i>User Management
-        <span class="badge bg-secondary ms-2">{{ users|length }} Users</span>
-    </h3>
-    <div>
-        <a href="{% url 'users:register' %}" class="btn btn-primary">
-            <i class="bi bi-person-plus me-1"></i>Add User
-        </a>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="page-title mb-0">
+                <i class="bi bi-people me-2"></i>User Management
+            </h4>
+            <p class="text-muted small mt-1">Manage system users and their roles</p>
+        </div>
+        <div>
+            <a href="{% url 'users:register' %}" class="btn btn-primary">
+                <i class="bi bi-person-plus me-2"></i>Add User
+            </a>
+        </div>
     </div>
-</div>
 
-<!-- Stats -->
-<div class="row g-4 mb-4">
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="stat-label">Total Users</div>
-                    <div class="stat-number">{{ users|length }}</div>
+    <!-- ===== FILTERS ===== -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="roleFilter" class="form-label">Role</label>
+                    <select name="role" id="roleFilter" class="form-select">
+                        <option value="">All Roles</option>
+                        {% for role in roles %}
+                        <option value="{{ role.id }}" {% if selected_role == role.id|stringformat:"s" %}selected{% endif %}>
+                            {{ role.get_display_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
                 </div>
-                <div class="stat-icon"><i class="bi bi-people"></i></div>
-            </div>
+                <div class="col-md-4">
+                    <label for="countyFilter" class="form-label">County</label>
+                    <select name="county" id="countyFilter" class="form-select">
+                        <option value="">All Counties</option>
+                        {% for county in counties %}
+                        <option value="{{ county.id }}" {% if selected_county == county.id|stringformat:"s" %}selected{% endif %}>
+                            {{ county.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="d-flex gap-2 w-100">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="bi bi-funnel me-2"></i>Filter
+                        </button>
+                        <a href="{% url 'users:user_management' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="stat-label">Active Users</div>
-                    <div class="stat-number">{{ users|length }}</div>
-                </div>
-                <div class="stat-icon"><i class="bi bi-check-circle text-success"></i></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="stat-label">Verified</div>
-                    <div class="stat-number">{{ users|length }}</div>
-                </div>
-                <div class="stat-icon"><i class="bi bi-shield-check text-info"></i></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="stat-label">Roles</div>
-                    <div class="stat-number">{{ roles|length }}</div>
-                </div>
-                <div class="stat-icon"><i class="bi bi-shield-lock text-warning"></i></div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Filters -->
-<div class="card mb-4">
-    <div class="card-body">
-        <form method="get" class="row g-2">
-            <div class="col-md-3">
-                <label class="form-label fw-semibold small">Role</label>
-                <select name="role" class="form-select form-select-sm">
-                    <option value="">All Roles</option>
-                    {% for role in roles %}
-                    <option value="{{ role.id }}" {% if selected_role == role.id|stringformat:"s" %}selected{% endif %}>
-                        {{ role.name }}
-                    </option>
-                    {% endfor %}
-                </select>
+    <!-- ===== USERS TABLE ===== -->
+    <div class="card">
+        <div class="card-body">
+            {% if users %}
+            <div class="table-responsive">
+                <table class="table table-hover" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>County</th>
+                            <th>Organization</th>
+                            <th>Status</th>
+                            <th>Verified</th>
+                            <th style="width: 120px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user_obj in users %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="avatar-sm bg-{% if user_obj.is_active %}success{% else %}secondary{% endif %} text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                         style="width: 32px; height: 32px; font-weight: 600; font-size: 0.8rem;">
+                                        {{ user_obj.username|first|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">{{ user_obj.get_full_name|default:user_obj.username }}</div>
+                                        <div class="text-muted small">@{{ user_obj.username }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="mailto:{{ user_obj.email }}" class="text-decoration-none">
+                                    {{ user_obj.email }}
+                                </a>
+                            </td>
+                            <td>
+                                {% if user_obj.role %}
+                                <span class="badge bg-{{ user_obj.role.color|default:'secondary' }}">
+                                    <i class="bi {{ user_obj.role.icon|default:'bi-person' }} me-1"></i>
+                                    {{ user_obj.role.get_display_name }}
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-person me-1"></i>No Role
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user_obj.county %}
+                                <span class="badge bg-info">
+                                    <i class="bi bi-geo-alt me-1"></i>
+                                    {{ user_obj.county.name }}
+                                </span>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="text-muted small">{{ user_obj.organization|default:'—'|truncatechars:20 }}</span>
+                            </td>
+                            <td>
+                                {% if user_obj.is_active %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>Active
+                                </span>
+                                {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle me-1"></i>Inactive
+                                </span>
+                                {% endif %}
+                                {% if user_obj.is_superuser %}
+                                <span class="badge bg-warning text-dark ms-1">
+                                    <i class="bi bi-star-fill me-1"></i>Admin
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user_obj.is_verified and user_obj.is_email_verified %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>Verified
+                                </span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-clock me-1"></i>Pending
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'users:user_edit' user_obj.id %}" 
+                                       class="btn btn-outline-primary" 
+                                       title="Edit user">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'users:user_toggle_status' user_obj.id %}" 
+                                       class="btn btn-outline-{% if user_obj.is_active %}warning{% else %}success{% endif %}" 
+                                       title="{% if user_obj.is_active %}Deactivate{% else %}Activate{% endif %} user"
+                                       onclick="return confirmToggleStatus('{{ user_obj.username }}', '{% if user_obj.is_active %}deactivate{% else %}activate{% endif %}')">
+                                        <i class="bi bi-{% if user_obj.is_active %}pause-circle{% else %}play-circle{% endif %}"></i>
+                                    </a>
+                                    {% if not user_obj.is_superuser %}
+                                    <a href="{% url 'users:user_delete' user_obj.id %}" 
+                                       class="btn btn-outline-danger" 
+                                       title="Delete user">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            <div class="col-md-3">
-                <label class="form-label fw-semibold small">County</label>
-                <select name="county" class="form-select form-select-sm">
-                    <option value="">All Counties</option>
-                    {% for county in counties %}
-                    <option value="{{ county.id }}" {% if selected_county == county.id|stringformat:"s" %}selected{% endif %}>
-                        {{ county.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary btn-sm w-100">
-                    <i class="bi bi-funnel me-1"></i>Filter
-                </button>
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <a href="{% url 'users:user_management' %}" class="btn btn-outline-secondary btn-sm w-100">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i>Clear
+            {% else %}
+            <div class="text-center py-5">
+                <div class="display-1 text-muted mb-3">
+                    <i class="bi bi-people"></i>
+                </div>
+                <h5>No Users Found</h5>
+                <p class="text-muted">
+                    {% if request.GET.role or request.GET.county %}
+                    Try adjusting your filters.
+                    {% else %}
+                    Start adding users to the system.
+                    {% endif %}
+                </p>
+                <a href="{% url 'users:register' %}" class="btn btn-primary mt-2">
+                    <i class="bi bi-person-plus me-2"></i>Add User
                 </a>
             </div>
-        </form>
-    </div>
-</div>
-
-<!-- Users Table -->
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover" id="userTable">
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Full Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>County</th>
-                        <th>Status</th>
-                        <th>Joined</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user_obj in users %}
-                    <tr>
-                        <td>
-                            <strong>{{ user_obj.username }}</strong>
-                            {% if user_obj.is_superuser %}
-                            <span class="badge bg-danger ms-1">Super</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ user_obj.get_full_name|default:"—" }}</td>
-                        <td>{{ user_obj.email|default:"—" }}</td>
-                        <td>
-                            {% if user_obj.role %}
-                            <span class="badge bg-{% if user_obj.role.name == 'admin' %}danger{% elif user_obj.role.name == 'ncpd_me' %}warning{% elif user_obj.role.name == 'county_me' %}success{% elif user_obj.role.name == 'partner' %}info{% else %}secondary{% endif %} role-badge">
-                                {{ user_obj.role.name }}
-                            </span>
-                            {% else %}
-                            <span class="badge bg-secondary role-badge">No Role</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ user_obj.county.name|default:"—" }}</td>
-                        <td>
-                            <span class="badge {% if user_obj.is_active %}bg-success{% else %}bg-secondary{% endif %}">
-                                {% if user_obj.is_active %}Active{% else %}Inactive{% endif %}
-                            </span>
-                            {% if user_obj.is_verified %}
-                            <span class="badge bg-info ms-1">Verified</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ user_obj.date_joined|date:"M d, Y" }}</td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <a href="{% url 'users:user_edit' user_obj.id %}" class="btn btn-outline-primary" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <a href="{% url 'users:user_toggle' user_obj.id %}" 
-                                   class="btn {% if user_obj.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}"
-                                   onclick="return confirm('Toggle user status?')" title="Toggle Status">
-                                    <i class="bi {% if user_obj.is_active %}bi-pause{% else %}bi-play{% endif %}"></i>
-                                </a>
-                                {% if not user_obj.is_superuser %}
-                                <a href="{% url 'users:user_delete' user_obj.id %}" 
-                                   class="btn btn-outline-danger"
-                                   onclick="return confirm('Delete user {{ user_obj.username }}?')" title="Delete">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                                {% endif %}
-                            </div>
-                        </td>
-
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="8" class="text-center text-muted py-4">
-                            <i class="bi bi-people fs-2 d-block mb-2"></i>
-                            No users found
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            {% endif %}
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-    $(document).ready(function() {
-        $('#userTable').DataTable({
-            pageLength: 25,
-            order: [[0, 'asc']],
-            language: {
-                search: "Search:",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ users",
-                infoEmpty: "No users found",
-                infoFiltered: "(filtered from _MAX_ total users)"
-            },
-            columnDefs: [
-                { orderable: false, targets: [7] }  // Disable sorting on actions column
-            ]
-        });
+$(document).ready(function() {
+    $('#usersTable').DataTable({
+        order: [[0, 'asc']],
+        pageLength: 25,
+        language: {
+            search: "Search users:",
+            lengthMenu: "Show _MENU_ users per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ users",
+        },
+        columnDefs: [
+            { orderable: false, targets: [7] }
+        ]
     });
+});
+
+function confirmToggleStatus(username, action) {
+    const message = `Are you sure you want to ${action} user "${username}"?`;
+    return confirm(message);
+}
 </script>
 {% endblock %}

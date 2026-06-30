@@ -4,149 +4,123 @@
     <meta charset="UTF-8">
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7f5;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
             margin: 0;
             padding: 0;
         }
         .container {
             max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #ffffff;
+            margin: 20px auto;
+            background: white;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
         .header {
-            background: linear-gradient(135deg, #1a5632, #2d8a4e);
-            padding: 20px;
-            border-radius: 8px 8px 0 0;
+            background: linear-gradient(135deg, #1a5632 0%, #2d8a4e 100%);
             color: white;
-            text-align: center;
+            padding: 20px 30px;
         }
         .header h1 {
             margin: 0;
             font-size: 24px;
         }
-        .header p {
-            margin: 5px 0 0;
-            opacity: 0.8;
-        }
-        .content {
-            padding: 20px;
-        }
-        .content h2 {
-            color: #1a5632;
-            margin-top: 0;
-        }
-        .content p {
+        .body {
+            padding: 30px;
             color: #333;
             line-height: 1.6;
         }
+        .body .message {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 6px;
+            border-left: 4px solid #1a5632;
+            margin: 15px 0;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            text-align: center;
+            color: #888;
+            font-size: 12px;
+            border-top: 1px solid #e9ecef;
+        }
         .btn {
             display: inline-block;
-            padding: 12px 30px;
-            background-color: #1a5632;
+            padding: 10px 25px;
+            background: #1a5632;
             color: white !important;
             text-decoration: none;
             border-radius: 6px;
-            margin-top: 15px;
-            font-weight: 600;
+            margin: 10px 0;
         }
         .btn:hover {
-            background-color: #2d8a4e;
+            background: #2d8a4e;
         }
-        .btn-container {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .footer {
-            text-align: center;
-            padding: 20px;
-            border-top: 1px solid #e9ecef;
-            color: #6c757d;
-            font-size: 12px;
-        }
-        .footer a {
-            color: #1a5632;
-            text-decoration: none;
-        }
-        .status-badge {
+        .badge {
             display: inline-block;
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
         }
-        .status-badge.approved { background: #d4edda; color: #155724; }
-        .status-badge.rejected { background: #f8d7da; color: #721c24; }
-        .status-badge.submitted { background: #cce5ff; color: #004085; }
-        .status-badge.info { background: #e9ecef; color: #495057; }
-        .divider {
-            height: 1px;
-            background: #e9ecef;
-            margin: 20px 0;
-        }
-        .link-text {
-            color: #1a5632;
-            word-break: break-all;
-        }
+        .badge-info { background: #e3f2fd; color: #0d47a1; }
+        .badge-success { background: #e8f5e9; color: #1b5e20; }
+        .badge-warning { background: #fff3e0; color: #e65100; }
+        .badge-danger { background: #ffebee; color: #b71c1c; }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Header -->
         <div class="header">
-            <h1>{{ site_name }}</h1>
-            <p>Kenya Population Programme</p>
+            <h1>{{ site_name|default:"KP M&E System" }}</h1>
+            <p style="margin: 5px 0 0; opacity: 0.9;">Notification</p>
         </div>
         
-        <div class="content">
-            <h2>{{ subject }}</h2>
+        <!-- Body -->
+        <div class="body">
+            <h2>Dear {{ user.get_full_name|default:user.username }},</h2>
             
-            {% if notification_type == 'approval' %}
-                <p><span class="status-badge approved">Approved</span></p>
-            {% elif notification_type == 'rejection' %}
-                <p><span class="status-badge rejected">Rejected</span></p>
-            {% elif notification_type == 'submission' %}
-                <p><span class="status-badge submitted">Submitted</span></p>
-            {% else %}
-                <p><span class="status-badge info">Information</span></p>
-            {% endif %}
-            
-            <p>Dear {{ user.get_full_name|default:user.username }},</p>
-            <p>{{ message }}</p>
+            <div class="message">
+                <div style="margin-bottom: 8px;">
+                    <span class="badge 
+                        {% if notification_type == 'info' %}badge-info
+                        {% elif notification_type == 'success' %}badge-success
+                        {% elif notification_type == 'warning' %}badge-warning
+                        {% elif notification_type == 'error' %}badge-danger
+                        {% elif notification_type == 'approval' %}badge-success
+                        {% elif notification_type == 'rejection' %}badge-danger
+                        {% elif notification_type == 'submission' %}badge-info
+                        {% elif notification_type == 'deadline' %}badge-warning
+                        {% else %}badge-info{% endif %}">
+                        {{ notification_type|title }}
+                    </span>
+                </div>
+                <div style="font-weight: 500; font-size: 18px; margin-bottom: 10px;">{{ subject }}</div>
+                <div>{{ message|safe }}</div>
+            </div>
             
             {% if action_url %}
-            <div class="btn-container">
+            <div style="text-align: center; margin: 20px 0;">
                 <a href="{{ site_url }}{{ action_url }}" class="btn">
                     {{ action_text|default:"View Details" }}
                 </a>
             </div>
-            <p style="color: #6c757d; font-size: 12px; text-align: center;">
-                Or copy and paste this link into your browser:<br>
-                <span class="link-text">{{ site_url }}{{ action_url }}</span>
-            </p>
-            {% else %}
-            <div class="btn-container">
-                <a href="{{ site_url }}" class="btn">Go to System</a>
-            </div>
             {% endif %}
             
-            <div class="divider"></div>
-            
-            <p style="color: #6c757d; font-size: 13px;">
-                This is an automated notification from the KP M&E System.
-                Please do not reply to this email.
+            <p style="color: #666; font-size: 14px; margin-top: 20px;">
+                If you have any questions, please contact your system administrator.
             </p>
         </div>
         
+        <!-- Footer -->
         <div class="footer">
             <p>
-                <a href="{{ site_url }}">{{ site_name }}</a> &bull;
-                National Council for Population and Development
-            </p>
-            <p style="margin-top: 5px;">
-                &copy; {% now "Y" %} {{ site_name }}. All rights reserved.
+                <strong>{{ site_name|default:"KP M&E System" }}</strong><br>
+                Kenya Population Programme<br>
+                <small>This is an automated notification. Please do not reply to this email.</small>
             </p>
         </div>
     </div>

@@ -1,110 +1,312 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Edit User - KP M&E System{% endblock %}
+{% block title %}Edit User - {{ edit_user.username }} - KP M&E System{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="page-title">
-                <i class="bi bi-pencil-square me-2"></i>
-                Edit User: {{ edit_user.username }}
-            </h3>
-            <a href="{% url 'users:user_management' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i>Back
-            </a>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-person me-2"></i>User Details
-            </div>
-            <div class="card-body p-4">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="first_name" class="form-label fw-semibold">First Name</label>
-                            <input type="text" name="first_name" id="first_name" class="form-control" 
-                                   value="{{ edit_user.first_name|default:'' }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="last_name" class="form-label fw-semibold">Last Name</label>
-                            <input type="text" name="last_name" id="last_name" class="form-control" 
-                                   value="{{ edit_user.last_name|default:'' }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="email" class="form-label fw-semibold">Email</label>
-                            <input type="email" name="email" id="email" class="form-control" 
-                                   value="{{ edit_user.email|default:'' }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="phone_number" class="form-label fw-semibold">Phone Number</label>
-                            <input type="tel" name="phone_number" id="phone_number" class="form-control" 
-                                   value="{{ edit_user.phone_number|default:'' }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="organization" class="form-label fw-semibold">Organization</label>
-                            <input type="text" name="organization" id="organization" class="form-control" 
-                                   value="{{ edit_user.organization|default:'' }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="role" class="form-label fw-semibold">Role</label>
-                            <select name="role" id="role" class="form-select">
-                                <option value="">No Role</option>
-                                {% for role in roles %}
-                                <option value="{{ role.id }}" {% if edit_user.role.id == role.id %}selected{% endif %}>
-                                    {{ role.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-12">
-                            <label for="county" class="form-label fw-semibold">County</label>
-                            <select name="county" id="county" class="form-select">
-                                <option value="">No County</option>
-                                {% for county in counties %}
-                                <option value="{{ county.id }}" {% if edit_user.county.id == county.id %}selected{% endif %}>
-                                    {{ county.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="is_active" id="is_active" 
-                                       {% if edit_user.is_active %}checked{% endif %}>
-                                <label class="form-check-label" for="is_active">Active</label>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person me-2"></i>
+                        Edit User: <span class="text-primary">{{ edit_user.get_full_name|default:edit_user.username }}</span>
+                    </h5>
+                    <a href="{% url 'users:user_management' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Back to Users
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- ===== USER INFORMATION ===== -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">
+                                    <i class="bi bi-info-circle me-2"></i>User Information
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="username_display" class="form-label fw-bold">
+                                    Username
+                                </label>
+                                <input type="text" 
+                                       class="form-control bg-light" 
+                                       value="{{ edit_user.username }}" 
+                                       disabled>
+                                <small class="text-muted">Username cannot be changed</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label fw-bold">
+                                    Email <span class="text-danger">*</span>
+                                </label>
+                                <input type="email" 
+                                       name="email" 
+                                       id="email" 
+                                       class="form-control" 
+                                       value="{{ edit_user.email }}" 
+                                       required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label fw-bold">
+                                    First Name
+                                </label>
+                                <input type="text" 
+                                       name="first_name" 
+                                       id="first_name" 
+                                       class="form-control" 
+                                       value="{{ edit_user.first_name }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label fw-bold">
+                                    Last Name
+                                </label>
+                                <input type="text" 
+                                       name="last_name" 
+                                       id="last_name" 
+                                       class="form-control" 
+                                       value="{{ edit_user.last_name }}">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="phone_number" class="form-label fw-bold">
+                                    Phone Number
+                                </label>
+                                <input type="text" 
+                                       name="phone_number" 
+                                       id="phone_number" 
+                                       class="form-control" 
+                                       value="{{ edit_user.phone_number }}"
+                                       placeholder="e.g., +254-712-345-678">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="organization" class="form-label fw-bold">
+                                    Organization
+                                </label>
+                                <input type="text" 
+                                       name="organization" 
+                                       id="organization" 
+                                       class="form-control" 
+                                       value="{{ edit_user.organization }}">
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="is_verified" id="is_verified" 
-                                       {% if edit_user.is_verified %}checked{% endif %}>
-                                <label class="form-check-label" for="is_verified">Verified</label>
+
+                        <!-- ===== ROLE & COUNTY ===== -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">
+                                    <i class="bi bi-shield-lock me-2"></i>Role & Assignment
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="role" class="form-label fw-bold">
+                                    Role
+                                </label>
+                                <select name="role" id="role" class="form-select">
+                                    <option value="">No Role</option>
+                                    {% for role in roles %}
+                                    <option value="{{ role.id }}" 
+                                            {% if edit_user.role and edit_user.role.id == role.id %}selected{% endif %}
+                                            {% if role.is_system %}data-system="true"{% endif %}>
+                                        {{ role.get_display_name }}
+                                        {% if role.is_system %}(System){% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="county" class="form-label fw-bold">
+                                    County
+                                </label>
+                                <select name="county" id="county" class="form-select">
+                                    <option value="">No County</option>
+                                    {% for county in counties %}
+                                    <option value="{{ county.id }}" 
+                                            {% if edit_user.county and edit_user.county.id == county.id %}selected{% endif %}>
+                                        {{ county.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
                             </div>
                         </div>
-                    </div>
 
-                    <hr>
+                        <!-- ===== STATUS ===== -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">
+                                    <i class="bi bi-toggle-on me-2"></i>Status
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="is_active" 
+                                           id="is_active" 
+                                           {% if edit_user.is_active %}checked{% endif %}>
+                                    <label class="form-check-label fw-bold" for="is_active">
+                                        Active Account
+                                    </label>
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Inactive users cannot log in
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="is_verified" 
+                                           id="is_verified" 
+                                           {% if edit_user.is_verified %}checked{% endif %}>
+                                    <label class="form-check-label fw-bold" for="is_verified">
+                                        Account Verified
+                                    </label>
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Verified users have full access
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="is_superuser" 
+                                           id="is_superuser" 
+                                           {% if edit_user.is_superuser %}checked{% endif %}
+                                           {% if edit_user.is_superuser %}disabled{% endif %}>
+                                    <label class="form-check-label fw-bold" for="is_superuser">
+                                        Superuser
+                                    </label>
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        {% if edit_user.is_superuser %}
+                                        Superuser status cannot be changed
+                                        {% else %}
+                                        Grants full system access
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save me-2"></i>Update User
-                        </button>
-                        <a href="{% url 'users:user_management' %}" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-circle me-2"></i>Cancel
-                        </a>
-                    </div>
-                </form>
+                        <!-- ===== USER DETAILS CARD ===== -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="text-muted mb-3">
+                                            <i class="bi bi-clock-history me-2"></i>Account Details
+                                        </h6>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <small class="text-muted">Joined</small>
+                                                <div class="fw-semibold">{{ edit_user.date_joined|date:"M d, Y H:i" }}</div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small class="text-muted">Last Login</small>
+                                                <div class="fw-semibold">
+                                                    {% if edit_user.last_login %}
+                                                    {{ edit_user.last_login|date:"M d, Y H:i" }}
+                                                    {% else %}
+                                                    <span class="text-muted">Never</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small class="text-muted">Email Verified</small>
+                                                <div class="fw-semibold">
+                                                    {% if edit_user.is_email_verified %}
+                                                    <span class="text-success">
+                                                        <i class="bi bi-check-circle"></i> Yes
+                                                    </span>
+                                                    {% else %}
+                                                    <span class="text-warning">
+                                                        <i class="bi bi-clock"></i> No
+                                                    </span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small class="text-muted">Login Attempts</small>
+                                                <div class="fw-semibold">
+                                                    {{ edit_user.login_attempts }}
+                                                    {% if edit_user.locked_until %}
+                                                    <span class="badge bg-danger ms-1">Locked</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ===== SUBMIT ===== -->
+                        <div class="row">
+                            <div class="col-12">
+                                <hr>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle me-2"></i>Update User
+                                    </button>
+                                    <a href="{% url 'users:user_management' %}" class="btn btn-secondary">
+                                        <i class="bi bi-x-circle me-2"></i>Cancel
+                                    </a>
+                                    {% if not edit_user.is_superuser %}
+                                    <a href="{% url 'users:user_delete' edit_user.id %}" class="btn btn-outline-danger ms-auto">
+                                        <i class="bi bi-trash me-2"></i>Delete User
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // ===== FORM VALIDATION =====
+    $('#editUserForm').submit(function(e) {
+        const email = $('#email').val().trim();
+        if (!email) {
+            e.preventDefault();
+            $('#email').addClass('is-invalid');
+            alert('Email is required.');
+            return false;
+        }
+        
+        // Basic email validation
+        if (!email.includes('@') || !email.includes('.')) {
+            e.preventDefault();
+            $('#email').addClass('is-invalid');
+            alert('Please enter a valid email address.');
+            return false;
+        }
+        
+        return true;
+    });
+
+    // ===== REMOVE INVALID CLASS ON INPUT =====
+    $('#email').on('input', function() {
+        $(this).removeClass('is-invalid');
+    });
+});
+</script>
 {% endblock %}

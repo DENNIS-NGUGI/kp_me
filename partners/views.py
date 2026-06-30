@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Sum, Q
 from django.utils import timezone
@@ -7,36 +7,21 @@ from .models import Partner, Project, ProjectMilestone, ProjectReport
 from indicators.models import Indicator
 from core.models import County
 from users.models import Role
+from users.permissions import get_partner_queryset_filter, get_project_queryset_filter
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
-
-# ===== PERMISSION HELPER FUNCTIONS =====
-def is_admin_or_superuser(user):
-    """Check if user is admin or superuser"""
-    return user.is_superuser or (user.role and user.role.name == 'admin')
-
-def is_ncpd_or_admin(user):
-    """Check if user is NCPD, admin, or superuser"""
-    return user.is_superuser or (user.role and user.role.name in ['admin', 'ncpd_me'])
-
-def is_partner_user(user):
-    """Check if user is a partner"""
-    return user.role and user.role.name == 'partner'
 
 
 # ===== PARTNER VIEWS =====
 
 @login_required
 def partner_list(request):
-    """List all partners"""
+    """List all partners - Uses centralized permissions"""
     user = request.user
     
-    # RBAC: Partner users only see their partner
-    if is_partner_user(user):
-        partners = user.partners.all()
-    else:
-        partners = Partner.objects.all()
+    # Use centralized filter
+    partners = Partner.objects.filter(get_partner_queryset_filter(user))
     
     # Filters
     partner_type = request.GET.get('type')
@@ -53,6 +38,8 @@ def partner_list(request):
         'status_choices': Partner.STATUS_CHOICES,
         'selected_type': partner_type,
         'selected_status': status,
+        'can_manage': user.can_manage_partners(),
+        'can_view': user.can_view_partners(),
     }
     return render(request, 'partners/list.html', context)
 
@@ -63,8 +50,13 @@ def partner_detail(request, pk):
     partner = get_object_or_404(Partner, pk=pk)
     user = request.user
     
-    # RBAC: Partner users only see their partner
-    if is_partner_user(user) and partner not in user.partners.all():
+    # Check if user can view this partner
+    if not user.can_view_partners():
+        messages.error(request, 'You do not have permission to view partners.')
+        return redirect('partners:list')
+    
+    # Partner users can only see their partner
+    if user.is_partner_user and partner not in user.partners.all():
         messages.error(request, 'You do not have permission to view this partner.')
         return redirect('partners:list')
     
@@ -86,14 +78,20 @@ def partner_detail(request, pk):
         'budget_utilization': round((total_expenditure / total_budget * 100) if total_budget > 0 else 0),
         'project_count': projects.count(),
         'active_count': active_projects.count(),
+        'can_manage': user.can_manage_partners(),
     }
     return render(request, 'partners/detail.html', context)
 
 
 @login_required
-@user_passes_test(is_ncpd_or_admin)
 def partner_add(request):
-    """Add a new partner"""
+    """Add a new partner - Uses centralized permissions"""
+    user = request.user
+    
+    if not user.can_manage_partners():
+        messages.error(request, 'You do not have permission to add partners.')
+        return redirect('partners:list')
+    
     if request.method == 'POST':
         try:
             partner = Partner(
@@ -116,7 +114,7 @@ def partner_add(request):
             if county_ids:
                 partner.counties.set(county_ids)
             
-            # Add users - filter by partner role using new Role system
+            # Add users
             user_ids = request.POST.getlist('users')
             if user_ids:
                 partner_users = User.objects.filter(id__in=user_ids, role__name='partner')
@@ -141,9 +139,14 @@ def partner_add(request):
 
 
 @login_required
-@user_passes_test(is_ncpd_or_admin)
 def partner_edit(request, pk):
-    """Edit partner"""
+    """Edit partner - Uses centralized permissions"""
+    user = request.user
+    
+    if not user.can_manage_partners():
+        messages.error(request, 'You do not have permission to edit partners.')
+        return redirect('partners:list')
+    
     partner = get_object_or_404(Partner, pk=pk)
     
     if request.method == 'POST':
@@ -189,19 +192,41 @@ def partner_edit(request, pk):
     return render(request, 'partners/form.html', context)
 
 
+@login_required
+def partner_delete(request, pk):
+    """Delete partner - Uses centralized permissions"""
+    user = request.user
+    
+    if not user.can_manage_partners():
+        messages.error(request, 'You do not have permission to delete partners.')
+        return redirect('partners:list')
+    
+    partner = get_object_or_404(Partner, pk=pk)
+    
+    # Check if partner has projects
+    if partner.projects.exists():
+        messages.error(request, f'Cannot delete "{partner.name}" - it has associated projects.')
+        return redirect('partners:detail', pk=partner.pk)
+    
+    if request.method == 'POST':
+        partner_name = partner.name
+        partner.delete()
+        messages.success(request, f'Partner "{partner_name}" deleted successfully!')
+        return redirect('partners:list')
+    
+    context = {'partner': partner}
+    return render(request, 'partners/delete.html', context)
+
+
 # ===== PROJECT VIEWS =====
 
 @login_required
 def project_list(request):
-    """List all projects"""
+    """List all projects - Uses centralized permissions"""
     user = request.user
     
-    # RBAC
-    if is_partner_user(user):
-        partner_ids = user.partners.values_list('id', flat=True)
-        projects = Project.objects.filter(partner__in=partner_ids)
-    else:
-        projects = Project.objects.all()
+    # Use centralized filter
+    projects = Project.objects.filter(get_project_queryset_filter(user))
     
     # Filters
     status = request.GET.get('status')
@@ -216,6 +241,7 @@ def project_list(request):
         'projects': projects,
         'status_choices': Project.STATUS_CHOICES,
         'partners': Partner.objects.filter(status='active'),
+        'can_manage': user.can_manage_projects(),
     }
     return render(request, 'partners/project_list.html', context)
 
@@ -226,8 +252,13 @@ def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
     user = request.user
     
-    # RBAC
-    if is_partner_user(user) and project.partner not in user.partners.all():
+    # Check if user can view this project
+    if not user.can_view_projects():
+        messages.error(request, 'You do not have permission to view projects.')
+        return redirect('partners:project_list')
+    
+    # Partner users can only see their partner's projects
+    if user.is_partner_user and project.partner not in user.partners.all():
         messages.error(request, 'You do not have permission to view this project.')
         return redirect('partners:project_list')
     
@@ -245,14 +276,20 @@ def project_detail(request, pk):
         'days_remaining': project.get_days_remaining(),
         'budget_utilization': project.get_budget_utilization(),
         'indicators': indicators,
+        'can_manage': user.can_manage_projects(),
     }
     return render(request, 'partners/project_detail.html', context)
 
 
 @login_required
-@user_passes_test(is_ncpd_or_admin)
 def project_add(request):
-    """Add a new project"""
+    """Add a new project - Uses centralized permissions"""
+    user = request.user
+    
+    if not user.can_manage_projects():
+        messages.error(request, 'You do not have permission to add projects.')
+        return redirect('partners:project_list')
+    
     if request.method == 'POST':
         try:
             project = Project(
@@ -300,9 +337,14 @@ def project_add(request):
 
 
 @login_required
-@user_passes_test(is_ncpd_or_admin)
 def project_edit(request, pk):
-    """Edit project"""
+    """Edit project - Uses centralized permissions"""
+    user = request.user
+    
+    if not user.can_manage_projects():
+        messages.error(request, 'You do not have permission to edit projects.')
+        return redirect('partners:project_list')
+    
     project = get_object_or_404(Project, pk=pk)
     
     if request.method == 'POST':
@@ -348,13 +390,43 @@ def project_edit(request, pk):
 
 
 @login_required
+def project_delete(request, pk):
+    """Delete project - Uses centralized permissions"""
+    user = request.user
+    
+    if not user.can_manage_projects():
+        messages.error(request, 'You do not have permission to delete projects.')
+        return redirect('partners:project_list')
+    
+    project = get_object_or_404(Project, pk=pk)
+    
+    # Check if project has reports or milestones
+    if project.reports.exists():
+        messages.error(request, f'Cannot delete "{project.name}" - it has associated reports.')
+        return redirect('partners:project_detail', pk=project.pk)
+    
+    if request.method == 'POST':
+        project_name = project.name
+        project.delete()
+        messages.success(request, f'Project "{project_name}" deleted successfully!')
+        return redirect('partners:project_list')
+    
+    context = {'project': project}
+    return render(request, 'partners/project_delete.html', context)
+
+
+@login_required
 def project_milestone_add(request, project_pk):
-    """Add a milestone to a project"""
+    """Add a milestone to a project - Uses centralized permissions"""
     project = get_object_or_404(Project, pk=project_pk)
     user = request.user
     
-    # Check permission
-    if is_partner_user(user) and project.partner not in user.partners.all():
+    if not user.can_manage_projects():
+        messages.error(request, 'You do not have permission to add milestones.')
+        return redirect('partners:project_detail', pk=project_pk)
+    
+    # Partner users can only add milestones to their partner's projects
+    if user.is_partner_user and project.partner not in user.partners.all():
         messages.error(request, 'You do not have permission to modify this project.')
         return redirect('partners:project_detail', pk=project_pk)
     
@@ -378,13 +450,17 @@ def project_milestone_add(request, project_pk):
 
 @login_required
 def project_milestone_complete(request, pk):
-    """Mark milestone as complete"""
+    """Mark milestone as complete - Uses centralized permissions"""
     milestone = get_object_or_404(ProjectMilestone, pk=pk)
     user = request.user
-    
-    # Check permission
     project = milestone.project
-    if is_partner_user(user) and project.partner not in user.partners.all():
+    
+    if not user.can_manage_projects():
+        messages.error(request, 'You do not have permission to complete milestones.')
+        return redirect('partners:project_detail', pk=project.pk)
+    
+    # Partner users can only complete milestones for their partner's projects
+    if user.is_partner_user and project.partner not in user.partners.all():
         messages.error(request, 'You do not have permission to modify this milestone.')
         return redirect('partners:project_detail', pk=project.pk)
     
@@ -398,17 +474,12 @@ def project_milestone_complete(request, pk):
 
 @login_required
 def project_dashboard(request):
-    """Partner/Project Dashboard"""
+    """Partner/Project Dashboard - Uses centralized permissions"""
     user = request.user
     
-    # RBAC
-    if is_partner_user(user):
-        partner_ids = user.partners.values_list('id', flat=True)
-        projects = Project.objects.filter(partner__in=partner_ids)
-        partners = Partner.objects.filter(id__in=partner_ids)
-    else:
-        projects = Project.objects.all()
-        partners = Partner.objects.filter(status='active')
+    # Use centralized filters
+    partners = Partner.objects.filter(get_partner_queryset_filter(user))
+    projects = Project.objects.filter(get_project_queryset_filter(user))
     
     # Statistics
     total_projects = projects.count()
@@ -425,5 +496,7 @@ def project_dashboard(request):
         'recent_projects': recent_projects,
         'partners': partners,
         'user_role': user.role.name if user.role else 'None',
+        'can_manage_partners': user.can_manage_partners(),
+        'can_manage_projects': user.can_manage_projects(),
     }
     return render(request, 'partners/dashboard.html', context)

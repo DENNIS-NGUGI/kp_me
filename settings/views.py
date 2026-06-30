@@ -2,12 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
+from django.db.models import Q
 from .models import SystemSetting
 from core.models import Quarter, County
 from django.utils import timezone
 from datetime import datetime
 from users.models import AuditLog
-from users.decorators import admin_required, ncpd_or_admin_required, role_required
+from users.decorators import permission_required, module_permission_required
 import csv
 import io
 
@@ -15,7 +16,7 @@ import io
 # ===== SYSTEM SETTINGS VIEWS =====
 
 @login_required
-@ncpd_or_admin_required
+@permission_required('can_manage_system_settings')
 def settings_index(request):
     """System settings dashboard"""
     settings = SystemSetting.objects.filter(is_editable=True)
@@ -31,12 +32,13 @@ def settings_index(request):
     
     context = {
         'categories': categories,
+        'can_manage': request.user.has_permission('can_manage_system_settings'),
     }
     return render(request, 'settings/index.html', context)
 
 
 @login_required
-@ncpd_or_admin_required
+@permission_required('can_manage_system_settings')
 def settings_edit(request, key):
     """Edit a system setting"""
     setting = get_object_or_404(SystemSetting, key=key)
@@ -47,18 +49,20 @@ def settings_edit(request, key):
         if setting.setting_type == 'boolean':
             value = request.POST.get('value', 'false')
         
+        old_value = setting.value
         setting.value = value
         setting.updated_by = request.user
         setting.save()
         
-        AuditLog.objects.create(
+        # Use centralized audit log
+        AuditLog.log(
             user=request.user,
-            action='UPDATE',
-            model_name='SystemSetting',
-            object_id=str(setting.id),
-            object_repr=setting.key,
-            ip_address=request.META.get('REMOTE_ADDR'),
-            user_agent=request.META.get('HTTP_USER_AGENT', '')[:500]
+            action=AuditLog.Action.UPDATE,
+            model_instance=setting,
+            request=request,
+            changes={
+                'value': {'old': old_value, 'new': value}
+            }
         )
         
         messages.success(request, f'Setting "{setting.key}" updated successfully!')
@@ -69,7 +73,7 @@ def settings_edit(request, key):
 
 
 @login_required
-@admin_required
+@permission_required('can_manage_system_settings')
 def settings_add(request):
     """Add a new system setting"""
     if request.method == 'POST':
@@ -94,6 +98,13 @@ def settings_add(request):
             updated_by=request.user
         )
         
+        AuditLog.log(
+            user=request.user,
+            action=AuditLog.Action.CREATE,
+            model_instance=setting,
+            request=request
+        )
+        
         messages.success(request, f'Setting "{key}" created successfully!')
         return redirect('settings:index')
     
@@ -104,13 +115,21 @@ def settings_add(request):
 
 
 @login_required
-@admin_required
+@permission_required('can_manage_system_settings')
 def settings_delete(request, key):
     """Delete a system setting"""
     setting = get_object_or_404(SystemSetting, key=key)
     
     if request.method == 'POST':
         setting.delete()
+        
+        AuditLog.log(
+            user=request.user,
+            action=AuditLog.Action.DELETE,
+            model_instance=setting,
+            request=request
+        )
+        
         messages.success(request, f'Setting "{key}" deleted successfully!')
         return redirect('settings:index')
     
@@ -121,14 +140,17 @@ def settings_delete(request, key):
 # ===== AUDIT LOG VIEW =====
 
 @login_required
-@ncpd_or_admin_required
+@permission_required('view_auditlog')
 def audit_log(request):
     """View audit log"""
     logs = AuditLog.objects.select_related('user').all()
     
+    # Apply filters
     action = request.GET.get('action')
     model = request.GET.get('model')
     user_id = request.GET.get('user')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
     
     if action:
         logs = logs.filter(action=action.upper())
@@ -136,13 +158,12 @@ def audit_log(request):
         logs = logs.filter(model_name=model)
     if user_id:
         logs = logs.filter(user_id=user_id)
+    if date_from:
+        logs = logs.filter(timestamp__date__gte=date_from)
+    if date_to:
+        logs = logs.filter(timestamp__date__lte=date_to)
     
-    for log in logs:
-        if not hasattr(log, 'object_repr'):
-            log.object_repr = ''
-        if not hasattr(log, 'user_agent'):
-            log.user_agent = ''
-    
+    # Get filter options
     actions = AuditLog.objects.values_list('action', flat=True).distinct()
     models = AuditLog.objects.values_list('model_name', flat=True).distinct()
     users = AuditLog.objects.select_related('user').values_list('user__username', flat=True).distinct()
@@ -156,6 +177,7 @@ def audit_log(request):
         'selected_model': model,
         'selected_user': user_id,
         'total': logs.count(),
+        'can_manage': request.user.has_permission('can_manage_system_settings'),
     }
     return render(request, 'settings/audit_log.html', context)
 
@@ -163,24 +185,25 @@ def audit_log(request):
 # ===== QUARTER MANAGEMENT VIEWS =====
 
 @login_required
-@ncpd_or_admin_required
+@permission_required('can_manage_system_settings')
 def quarter_management(request):
     """Manage reporting quarters"""
     quarters = Quarter.objects.all().order_by('-start_date')
     
     context = {
         'quarters': quarters,
+        'can_manage': request.user.has_permission('can_manage_system_settings'),
     }
     return render(request, 'settings/quarters.html', context)
 
 
 @login_required
-@ncpd_or_admin_required
+@permission_required('can_manage_system_settings')
 def quarter_add(request):
     """Add a new quarter"""
     if request.method == 'POST':
         try:
-            Quarter.objects.create(
+            quarter = Quarter.objects.create(
                 name=request.POST.get('name'),
                 fiscal_year=request.POST.get('fiscal_year'),
                 quarter_number=request.POST.get('quarter_number'),
@@ -190,6 +213,14 @@ def quarter_add(request):
                 is_active=request.POST.get('is_active') == 'on',
                 is_closed=request.POST.get('is_closed') == 'on',
             )
+            
+            AuditLog.log(
+                user=request.user,
+                action=AuditLog.Action.CREATE,
+                model_instance=quarter,
+                request=request
+            )
+            
             messages.success(request, 'Quarter added successfully!')
             return redirect('settings:quarters')
         except Exception as e:
@@ -199,13 +230,19 @@ def quarter_add(request):
 
 
 @login_required
-@ncpd_or_admin_required
+@permission_required('can_manage_system_settings')
 def quarter_edit(request, pk):
     """Edit a quarter"""
     quarter = get_object_or_404(Quarter, pk=pk)
     
     if request.method == 'POST':
         try:
+            old_data = {
+                'name': quarter.name,
+                'is_active': quarter.is_active,
+                'is_closed': quarter.is_closed,
+            }
+            
             quarter.name = request.POST.get('name')
             quarter.fiscal_year = request.POST.get('fiscal_year')
             quarter.quarter_number = request.POST.get('quarter_number')
@@ -215,6 +252,15 @@ def quarter_edit(request, pk):
             quarter.is_active = request.POST.get('is_active') == 'on'
             quarter.is_closed = request.POST.get('is_closed') == 'on'
             quarter.save()
+            
+            AuditLog.log(
+                user=request.user,
+                action=AuditLog.Action.UPDATE,
+                model_instance=quarter,
+                request=request,
+                changes=old_data
+            )
+            
             messages.success(request, 'Quarter updated successfully!')
             return redirect('settings:quarters')
         except Exception as e:
@@ -225,7 +271,7 @@ def quarter_edit(request, pk):
 
 
 @login_required
-@ncpd_or_admin_required
+@permission_required('can_manage_system_settings')
 def quarter_toggle(request, pk):
     """Toggle quarter active status"""
     quarter = get_object_or_404(Quarter, pk=pk)
@@ -238,13 +284,27 @@ def quarter_toggle(request, pk):
 
 
 @login_required
-@ncpd_or_admin_required
+@permission_required('can_manage_system_settings')
 def quarter_delete(request, pk):
     """Delete a quarter"""
     quarter = get_object_or_404(Quarter, pk=pk)
     
+    # Check if quarter has data entries
+    from data_entry.models import DataEntry
+    if DataEntry.objects.filter(quarter=quarter).exists():
+        messages.error(request, f'Cannot delete "{quarter.name}" - it has associated data entries.')
+        return redirect('settings:quarters')
+    
     if request.method == 'POST':
         quarter.delete()
+        
+        AuditLog.log(
+            user=request.user,
+            action=AuditLog.Action.DELETE,
+            model_instance=quarter,
+            request=request
+        )
+        
         messages.success(request, 'Quarter deleted successfully!')
         return redirect('settings:quarters')
     
@@ -255,7 +315,7 @@ def quarter_delete(request, pk):
 # ===== COUNTY MANAGEMENT VIEWS =====
 
 @login_required
-@admin_required
+@permission_required('can_manage_system_settings')
 def county_management(request):
     """Manage counties"""
     counties = County.objects.all().order_by('code')
@@ -271,17 +331,18 @@ def county_management(request):
         'counties': counties,
         'region_stats': region_stats,
         'total_counties': counties.count(),
+        'can_manage': request.user.has_permission('can_manage_system_settings'),
     }
     return render(request, 'settings/counties.html', context)
 
 
 @login_required
-@admin_required
+@permission_required('can_manage_system_settings')
 def county_add(request):
     """Add a new county"""
     if request.method == 'POST':
         try:
-            County.objects.create(
+            county = County.objects.create(
                 code=request.POST.get('code'),
                 name=request.POST.get('name'),
                 headquarters=request.POST.get('headquarters'),
@@ -290,6 +351,14 @@ def county_add(request):
                 area_sq_km=request.POST.get('area_sq_km') or None,
                 is_active=request.POST.get('is_active') == 'on',
             )
+            
+            AuditLog.log(
+                user=request.user,
+                action=AuditLog.Action.CREATE,
+                model_instance=county,
+                request=request
+            )
+            
             messages.success(request, 'County added successfully!')
             return redirect('settings:counties')
         except Exception as e:
@@ -301,13 +370,19 @@ def county_add(request):
 
 
 @login_required
-@admin_required
+@permission_required('can_manage_system_settings')
 def county_edit(request, pk):
     """Edit a county"""
     county = get_object_or_404(County, pk=pk)
     
     if request.method == 'POST':
         try:
+            old_data = {
+                'name': county.name,
+                'code': county.code,
+                'is_active': county.is_active,
+            }
+            
             county.code = request.POST.get('code')
             county.name = request.POST.get('name')
             county.headquarters = request.POST.get('headquarters')
@@ -316,6 +391,15 @@ def county_edit(request, pk):
             county.area_sq_km = request.POST.get('area_sq_km') or None
             county.is_active = request.POST.get('is_active') == 'on'
             county.save()
+            
+            AuditLog.log(
+                user=request.user,
+                action=AuditLog.Action.UPDATE,
+                model_instance=county,
+                request=request,
+                changes=old_data
+            )
+            
             messages.success(request, f'County "{county.name}" updated successfully!')
             return redirect('settings:counties')
         except Exception as e:
@@ -327,7 +411,7 @@ def county_edit(request, pk):
 
 
 @login_required
-@admin_required
+@permission_required('can_manage_system_settings')
 def county_toggle(request, pk):
     """Toggle county active status"""
     county = get_object_or_404(County, pk=pk)
@@ -340,14 +424,28 @@ def county_toggle(request, pk):
 
 
 @login_required
-@admin_required
+@permission_required('can_manage_system_settings')
 def county_delete(request, pk):
     """Delete a county"""
     county = get_object_or_404(County, pk=pk)
     
+    # Check if county has data entries
+    from data_entry.models import DataEntry
+    if DataEntry.objects.filter(county=county).exists():
+        messages.error(request, f'Cannot delete "{county.name}" - it has associated data entries.')
+        return redirect('settings:counties')
+    
     if request.method == 'POST':
         county_name = county.name
         county.delete()
+        
+        AuditLog.log(
+            user=request.user,
+            action=AuditLog.Action.DELETE,
+            model_instance=county,
+            request=request
+        )
+        
         messages.success(request, f'County "{county_name}" deleted successfully!')
         return redirect('settings:counties')
     
@@ -356,7 +454,7 @@ def county_delete(request, pk):
 
 
 @login_required
-@admin_required
+@permission_required('can_manage_system_settings')
 def county_export(request):
     """Export counties to CSV"""
     response = HttpResponse(content_type='text/csv')
@@ -380,7 +478,7 @@ def county_export(request):
 
 
 @login_required
-@admin_required
+@permission_required('can_manage_system_settings')
 def county_import(request):
     """Import counties from CSV"""
     if request.method != 'POST':
@@ -397,6 +495,7 @@ def county_import(request):
         reader = csv.DictReader(io.StringIO(decoded))
         
         imported = 0
+        updated = 0
         errors = 0
         error_messages = []
         
@@ -438,6 +537,7 @@ def county_import(request):
                     county.area_sq_km = area if area else None
                     county.is_active = active
                     county.save()
+                    updated += 1
                 else:
                     County.objects.create(
                         code=code,
@@ -448,12 +548,12 @@ def county_import(request):
                         area_sq_km=area if area else None,
                         is_active=active
                     )
-                imported += 1
+                    imported += 1
             except Exception as e:
                 errors += 1
                 error_messages.append(str(e))
         
-        messages.success(request, f'Imported {imported} counties. Errors: {errors}')
+        messages.success(request, f'Imported {imported} new counties, Updated {updated} counties. Errors: {errors}')
         if error_messages:
             for msg in error_messages[:3]:
                 messages.warning(request, msg)

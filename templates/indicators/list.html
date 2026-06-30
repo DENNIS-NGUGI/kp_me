@@ -1,29 +1,133 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Indicators - KP M&E System{% endblock %}
 
+{% block extra_css %}
+<style>
+    .indicator-code {
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        color: #1a5632;
+        background: #e8f5e9;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+    }
+    .indicator-name {
+        font-weight: 500;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    .indicator-name:hover {
+        color: #1a5632;
+    }
+    .stat-badge {
+        font-size: 0.7rem;
+        padding: 3px 8px;
+    }
+    .action-btn {
+        padding: 2px 8px;
+        font-size: 0.8rem;
+    }
+    .table-row-hover {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .table-row-hover:hover {
+        background-color: #f8f9fa !important;
+    }
+    .detail-modal .modal-body {
+        padding: 1.5rem;
+    }
+    .detail-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px 15px;
+        margin-bottom: 10px;
+    }
+    .detail-section .label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    .detail-section .value {
+        font-size: 0.95rem;
+        font-weight: 500;
+        margin-top: 2px;
+    }
+    .empty-state {
+        padding: 60px 20px;
+    }
+    .empty-state .icon {
+        font-size: 4rem;
+        color: #dee2e6;
+    }
+    .quick-stats {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    .quick-stat {
+        background: #f8f9fa;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+    .quick-stat strong {
+        color: #1a5632;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="page-title"><i class="bi bi-list-ul me-2"></i>Indicators</h3>
+<div class="d-flex justify-content-between align-items-start mb-4">
     <div>
-        {% if user.role == 'admin' or user.role == 'ncpd_me' or user.is_superuser %}
+        <h3 class="page-title"><i class="bi bi-list-ul me-2"></i>Indicators</h3>
+        <div class="quick-stats mt-2">
+            <span class="quick-stat">
+                <i class="bi bi-files me-1"></i>
+                <strong>{{ total_count }}</strong> indicators
+            </span>
+            <span class="quick-stat">
+                <i class="bi bi-tags me-1"></i>
+                <strong>{{ areas.count }}</strong> thematic areas
+            </span>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        {% if can_add %}
         <a href="{% url 'indicators:add' %}" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i>Add Indicator
         </a>
         {% endif %}
         <button class="btn btn-outline-secondary" onclick="window.print()">
-            <i class="bi bi-printer me-1"></i>Print
+            <i class="bi bi-printer"></i>
         </button>
     </div>
 </div>
 
-<!-- Filters -->
+<!-- ===== FILTERS ===== -->
 <div class="card mb-4">
     <div class="card-body">
-        <form method="get" class="row g-3">
+        <form method="get" class="row g-3" id="filterForm">
             <div class="col-md-3">
-                <select name="thematic_area" class="form-select">
-                    <option value="">All Thematic Areas</option>
+                <div class="input-group">
+                    <span class="input-group-text bg-white">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" 
+                           name="search" 
+                           class="form-control" 
+                           placeholder="Search indicators..." 
+                           value="{{ request.GET.search|default:'' }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="thematic_area" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Areas</option>
                     {% for area in areas %}
                     <option value="{{ area.id }}" {% if request.GET.thematic_area == area.id|stringformat:"s" %}selected{% endif %}>
                         {{ area.name }}
@@ -31,8 +135,8 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-3">
-                <select name="indicator_type" class="form-select">
+            <div class="col-md-2">
+                <select name="indicator_type" class="form-select" onchange="this.form.submit()">
                     <option value="">All Types</option>
                     <option value="impact" {% if request.GET.indicator_type == 'impact' %}selected{% endif %}>Impact</option>
                     <option value="outcome" {% if request.GET.indicator_type == 'outcome' %}selected{% endif %}>Outcome</option>
@@ -40,8 +144,8 @@
                     <option value="action" {% if request.GET.indicator_type == 'action' %}selected{% endif %}>Action</option>
                 </select>
             </div>
-            <div class="col-md-3">
-                <select name="frequency" class="form-select">
+            <div class="col-md-2">
+                <select name="frequency" class="form-select" onchange="this.form.submit()">
                     <option value="">All Frequencies</option>
                     <option value="annual" {% if request.GET.frequency == 'annual' %}selected{% endif %}>Annual</option>
                     <option value="quarterly" {% if request.GET.frequency == 'quarterly' %}selected{% endif %}>Quarterly</option>
@@ -50,79 +154,121 @@
                     <option value="10_years" {% if request.GET.frequency == '10_years' %}selected{% endif %}>10 Years</option>
                 </select>
             </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-funnel me-1"></i>Filter
-                </button>
+            <div class="col-md-2">
+                <a href="{% url 'indicators:list' %}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </a>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Indicators Table -->
+<!-- ===== INDICATORS TABLE ===== -->
 <div class="card">
-    <div class="card-body">
+    <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover" id="indicatorTable">
-                <thead>
+            <table class="table table-hover mb-0" id="indicatorTable">
+                <thead class="bg-light">
                     <tr>
-                        <th>Code</th>
+                        <th style="width: 100px;">Code</th>
                         <th>Indicator</th>
-                        <th>Thematic Area</th>
-                        <th>Type</th>
-                        <th>Target</th>
-                        <th>Unit</th>
-                        <th>Valid Range</th>
-                        <th>Frequency</th>
-                        <th>Actions</th>
+                        <th style="width: 120px;">Thematic Area</th>
+                        <th style="width: 80px;">Type</th>
+                        <th style="width: 80px;">Target</th>
+                        <th style="width: 80px;">Unit</th>
+                        <th style="width: 100px;">Frequency</th>
+                        <th style="width: 120px;" class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for indicator in indicators %}
-                    <tr>
-                        <td><code>{{ indicator.code }}</code></td>
-                        <td>{{ indicator.name }}</td>
-                        <td>{{ indicator.thematic_area.name }}</td>
-                        <td><span class="badge bg-info">{{ indicator.get_indicator_type_display }}</span></td>
-                        <td>{{ indicator.target_value|default:"—" }}</td>
-                        <td>{{ indicator.unit }}</td>
+                    <tr class="table-row-hover">
                         <td>
-                            {% if indicator.min_value is not None or indicator.max_value is not None %}
-                                <span class="badge bg-secondary">
-                                    {% if indicator.min_value is not None and indicator.max_value is not None %}
-                                        {{ indicator.min_value }} - {{ indicator.max_value }}
-                                    {% elif indicator.min_value is not None %}
-                                        ≥ {{ indicator.min_value }}
-                                    {% elif indicator.max_value is not None %}
-                                        ≤ {{ indicator.max_value }}
-                                    {% endif %}
-                                </span>
-                            {% else %}
-                                <span class="text-muted">—</span>
+                            <span class="indicator-code">{{ indicator.code }}</span>
+                        </td>
+                        <td>
+                            <div class="indicator-name" 
+                                 onclick="viewIndicator('{{ indicator.code }}')"
+                                 title="Click to view details">
+                                {{ indicator.name|truncatechars:60 }}
+                            </div>
+                            {% if indicator.description %}
+                            <small class="text-muted d-block" style="font-size: 0.75rem;">
+                                {{ indicator.description|truncatechars:80 }}
+                            </small>
                             {% endif %}
                         </td>
-                        <td>{{ indicator.get_frequency_display }}</td>
                         <td>
-                            {% if user.role == 'admin' or user.role == 'ncpd_me' %}
-                            <a href="{% url 'indicators:edit' indicator.code %}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <a href="{% url 'indicators:delete' indicator.code %}" class="btn btn-sm btn-outline-danger"
-                               onclick="return confirm('Deactivate indicator {{ indicator.code }}?')">
-                                <i class="bi bi-trash"></i>
-                            </a>
+                            <span class="badge bg-info stat-badge">
+                                {{ indicator.thematic_area.name|truncatechars:15 }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge stat-badge 
+                                {% if indicator.indicator_type == 'impact' %}bg-danger
+                                {% elif indicator.indicator_type == 'outcome' %}bg-warning text-dark
+                                {% elif indicator.indicator_type == 'output' %}bg-success
+                                {% else %}bg-secondary{% endif %}">
+                                {{ indicator.get_indicator_type_display|slice:":6" }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if indicator.target_value is not None %}
+                            <strong>{{ indicator.target_value }}</strong>
                             {% else %}
-                            <button class="btn btn-sm btn-outline-secondary" disabled>
-                                <i class="bi bi-eye"></i>
-                            </button>
+                            <span class="text-muted">—</span>
                             {% endif %}
+                        </td>
+                        <td>{{ indicator.unit|default:"—" }}</td>
+                        <td>
+                            <span class="badge bg-secondary stat-badge">
+                                {{ indicator.get_frequency_display|slice:":8" }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-center gap-1">
+                                <button class="btn btn-sm btn-outline-info action-btn" 
+                                        onclick="viewIndicator('{{ indicator.code }}')"
+                                        title="View details">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                {% if can_edit %}
+                                <a href="{% url 'indicators:edit' indicator.code %}" 
+                                   class="btn btn-sm btn-outline-primary action-btn" 
+                                   title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% endif %}
+                                {% if can_delete %}
+                                <a href="{% url 'indicators:delete' indicator.code %}" 
+                                   class="btn btn-sm btn-outline-danger action-btn" 
+                                   title="Deactivate"
+                                   onclick="return confirm('Deactivate {{ indicator.code }}?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="9" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                            No indicators found
+                        <td colspan="8">
+                            <div class="text-center empty-state">
+                                <i class="bi bi-inbox icon"></i>
+                                <h5 class="mt-3">No indicators found</h5>
+                                <p class="text-muted">
+                                    {% if request.GET %}
+                                    Try adjusting your filters
+                                    {% else %}
+                                    Start by adding your first indicator
+                                    {% endif %}
+                                </p>
+                                {% if can_add %}
+                                <a href="{% url 'indicators:add' %}" class="btn btn-primary mt-2">
+                                    <i class="bi bi-plus-circle me-1"></i>Add Indicator
+                                </a>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -132,17 +278,210 @@
     </div>
 </div>
 
+<!-- ===== DETAIL MODAL ===== -->
+<div class="modal fade detail-modal" id="indicatorDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-info-circle me-2 text-primary"></i>
+                    <span id="detailCode"></span> - <span id="detailName"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailContent">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="detailEditBtn" class="btn btn-primary">
+                    <i class="bi bi-pencil me-1"></i>Edit
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    $(document).ready(function() {
-        $('#indicatorTable').DataTable({
-            pageLength: 25,
-            order: [[0, 'asc']],
-            language: {
-                search: "Search:",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ indicators"
-            }
+$(document).ready(function() {
+    // Simple table sorting without DataTables to reduce complexity
+    $('#indicatorTable').on('click', 'thead th', function() {
+        const table = $(this).closest('table');
+        const index = $(this).index();
+        const rows = table.find('tbody tr').get();
+        const isAsc = $(this).hasClass('sort-asc');
+        
+        // Remove all sorting classes
+        table.find('thead th').removeClass('sort-asc sort-desc');
+        
+        // Sort rows
+        rows.sort(function(a, b) {
+            const aVal = $(a).find('td').eq(index).text().trim();
+            const bVal = $(b).find('td').eq(index).text().trim();
+            return isAsc ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
         });
+        
+        // Append sorted rows
+        $.each(rows, function(i, row) {
+            table.find('tbody').append(row);
+        });
+        
+        // Toggle sort class
+        $(this).addClass(isAsc ? 'sort-desc' : 'sort-asc');
     });
+    
+    // Add sort indicator to headers
+    $('#indicatorTable thead th').css('cursor', 'pointer');
+});
+
+// ===== VIEW INDICATOR DETAILS =====
+function viewIndicator(code) {
+    // Show modal with loading
+    $('#indicatorDetailModal').modal('show');
+    $('#detailContent').html(`
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    `);
+    
+    // Fetch indicator details - FIXED URL
+    $.ajax({
+        url: `/indicators/api/${code}/detail/`,  
+        method: 'GET',
+        dataType: 'json',
+        timeout: 10000,
+        success: function(data) {
+            // Update modal content
+            $('#detailCode').text(data.code);
+            $('#detailName').text(data.name);
+            $('#detailEditBtn').attr('href', `/indicators/${data.code}/edit/`);
+            
+            let html = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-section">
+                            <div class="label">Thematic Area</div>
+                            <div class="value">
+                                <span class="badge bg-info">${data.thematic_area}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-section">
+                            <div class="label">Indicator Type</div>
+                            <div class="value">
+                                <span class="badge ${
+                                    data.indicator_type === 'Impact' ? 'bg-danger' :
+                                    data.indicator_type === 'Outcome' ? 'bg-warning text-dark' :
+                                    data.indicator_type === 'Output' ? 'bg-success' : 'bg-secondary'
+                                }">${data.indicator_type}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="detail-section">
+                            <div class="label">Data Type</div>
+                            <div class="value">${data.data_type}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="detail-section">
+                            <div class="label">Unit</div>
+                            <div class="value">${data.unit || '—'}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="detail-section">
+                            <div class="label">Frequency</div>
+                            <div class="value">${data.frequency}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="detail-section">
+                            <div class="label">Target Value</div>
+                            <div class="value">${data.target_value || 'Not set'}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="detail-section">
+                            <div class="label">Min Value</div>
+                            <div class="value">${data.min_value || 'Not set'}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="detail-section">
+                            <div class="label">Max Value</div>
+                            <div class="value">${data.max_value || 'Not set'}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-section">
+                            <div class="label">Source System</div>
+                            <div class="value">${data.source_system || 'Not specified'}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-section">
+                            <div class="label">Status</div>
+                            <div class="value">
+                                <span class="badge ${data.is_active ? 'bg-success' : 'bg-danger'}">
+                                    ${data.is_active ? 'Active' : 'Inactive'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="detail-section">
+                            <div class="label">Description</div>
+                            <div class="value">${data.description || 'No description provided'}</div>
+                        </div>
+                    </div>
+                    ${data.created_at ? `
+                    <div class="col-12">
+                        <div class="detail-section">
+                            <div class="label">Created At</div>
+                            <div class="value">${data.created_at}</div>
+                        </div>
+                    </div>` : ''}
+                </div>
+            `;
+            
+            $('#detailContent').html(html);
+        },
+        error: function(xhr, status, error) {
+            let errorMsg = 'Error loading indicator details';
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.message) {
+                    errorMsg = response.message;
+                }
+            } catch(e) {}
+            
+            $('#detailContent').html(`
+                <div class="text-center py-4 text-danger">
+                    <i class="bi bi-exclamation-triangle display-4 d-block mb-3"></i>
+                    <h5>${errorMsg}</h5>
+                    <p class="text-muted">Status: ${status} (${xhr.status})</p>
+                    <button class="btn btn-sm btn-outline-secondary mt-2" onclick="viewIndicator('${code}')">
+                        <i class="bi bi-arrow-repeat me-1"></i>Retry
+                    </button>
+                </div>
+            `);
+        }
+    });
+}
+
+// Keyboard shortcut: ESC to close modal
+$(document).keydown(function(e) {
+    if (e.key === 'Escape') {
+        $('#indicatorDetailModal').modal('hide');
+    }
+});
 </script>
 {% endblock %}

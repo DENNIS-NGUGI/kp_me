@@ -1,8 +1,10 @@
+from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
 from django.template.loader import render_to_string
+from django.db.models import Q
 from .models import Notification, NotificationPreference
 
 User = get_user_model()
@@ -12,7 +14,6 @@ def create_notification(user, title, message, notification_type='info',
     """
     Create an in-app notification for a user
     """
-    # If no user provided, create a system notification
     if not user:
         return Notification.objects.create(
             user=None,
@@ -45,8 +46,7 @@ def create_notification(user, title, message, notification_type='info',
         object_id=object_id
     )
     
-    # Also send email if user has email and preferences allow
-    # Pass the action_url to the email
+    # Send email notification
     send_email_notification(
         user, 
         title, 
@@ -104,27 +104,36 @@ def notify_submission(entry, user):
     if not user:
         return
     
+    detail_url = reverse('data_entry:detail', kwargs={'pk': entry.id})
+    pending_url = reverse('data_entry:pending')
+    
     # Notification for the submitter
     create_notification(
         user=user,
         title='Data Submitted Successfully',
         message=f'Your data for {entry.indicator.code} - {entry.quarter.name} has been submitted for approval.',
         notification_type='submission',
-        action_url=f'/data/entry/{entry.id}/',
+        action_url=detail_url,
         action_text='View Entry',
         content_type='DataEntry',
         object_id=str(entry.id)
     )
     
-    # Notify NCPD officers (approvers)
-    approvers = User.objects.filter(role__name__in=['admin', 'ncpd_me'])
+    approvers = User.objects.filter(
+        Q(is_superuser=True) | 
+        Q(role__permissions__codename='can_approve_data')
+    ).distinct()
+    
     for approver in approvers:
+        if approver.id == user.id:
+            continue
+            
         create_notification(
             user=approver,
             title='New Data Submission',
             message=f'{user.username} submitted data for {entry.county.name} - {entry.quarter.name}',
             notification_type='submission',
-            action_url=f'/data/entry/{entry.id}/',
+            action_url=pending_url,
             action_text='Review',
             content_type='DataEntry',
             object_id=str(entry.id)
@@ -132,13 +141,15 @@ def notify_submission(entry, user):
 
 def notify_approval(entry, approver):
     """Notify when data is approved"""
+    detail_url = reverse('data_entry:detail', kwargs={'pk': entry.id})
+    
     if not entry.submitted_by:
         create_notification(
             user=None,
             title='Data Approved',
             message=f'Data for {entry.indicator.code} - {entry.quarter.name} was approved by {approver.username}.',
             notification_type='approval',
-            action_url=f'/data/entry/{entry.id}/',
+            action_url=detail_url,
             action_text='View Entry',
             content_type='DataEntry',
             object_id=str(entry.id)
@@ -150,7 +161,7 @@ def notify_approval(entry, approver):
         title='Data Approved',
         message=f'Your data for {entry.indicator.code} - {entry.quarter.name} has been approved by {approver.username}.',
         notification_type='approval',
-        action_url=f'/data/entry/{entry.id}/',
+        action_url=detail_url,
         action_text='View Entry',
         content_type='DataEntry',
         object_id=str(entry.id)
@@ -158,13 +169,15 @@ def notify_approval(entry, approver):
 
 def notify_rejection(entry, approver, reason):
     """Notify when data is rejected"""
+    edit_url = reverse('data_entry:edit', kwargs={'pk': entry.id})
+    
     if not entry.submitted_by:
         create_notification(
             user=None,
             title='Data Rejected',
             message=f'Data for {entry.indicator.code} - {entry.quarter.name} was rejected. Reason: {reason}',
             notification_type='rejection',
-            action_url=f'/data/entry/{entry.id}/edit/',
+            action_url=edit_url,
             action_text='Edit & Resubmit',
             content_type='DataEntry',
             object_id=str(entry.id)
@@ -176,38 +189,33 @@ def notify_rejection(entry, approver, reason):
         title='Data Rejected',
         message=f'Your data for {entry.indicator.code} - {entry.quarter.name} was rejected. Reason: {reason}',
         notification_type='rejection',
-        action_url=f'/data/entry/{entry.id}/edit/',
+        action_url=edit_url,
         action_text='Edit & Resubmit',
         content_type='DataEntry',
         object_id=str(entry.id)
     )
 
 def notify_deadline_reminder(user, quarter, days_left):
-    """
-    Notify about upcoming deadlines
-    """
+    """Notify about upcoming deadlines"""
     create_notification(
         user=user,
         title='Submission Deadline Approaching',
         message=f'The deadline for {quarter.name} is in {days_left} days. Please submit your data.',
         notification_type='deadline',
-        action_url='/data/entry/',
+        action_url=reverse('data_entry:list'),
         action_text='Submit Data',
         content_type='Quarter',
         object_id=str(quarter.id)
     )
 
-
 def notify_missing_submission(user, quarter):
-    """
-    Notify about missing submissions
-    """
+    """Notify about missing submissions"""
     create_notification(
         user=user,
         title='Missing Data Submission',
         message=f'You have not submitted data for {quarter.name}. Please submit as soon as possible.',
         notification_type='warning',
-        action_url='/data/entry/',
+        action_url=reverse('data_entry:list'),
         action_text='Submit Now',
         content_type='Quarter',
         object_id=str(quarter.id)

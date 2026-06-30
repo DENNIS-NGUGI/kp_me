@@ -1,147 +1,348 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{% if role %}Edit{% else %}Add{% endif %} Role - KP M&E System{% endblock %}
-
-{% block extra_css %}
-<style>
-    .permission-module {
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 12px;
-        background: #f8f9fa;
-    }
-    .permission-module h6 {
-        color: #1a5632;
-        border-bottom: 2px solid #e8f5e9;
-        padding-bottom: 8px;
-        margin-bottom: 10px;
-    }
-    .perm-checkbox-lg {
-        width: 18px;
-        height: 18px;
-        accent-color: #1a5632;
-    }
-    .perm-label-lg {
-        font-size: 0.9rem;
-        margin-left: 8px;
-    }
-</style>
-{% endblock %}
+{% block title %}{% if role %}Edit Role{% else %}Create New Role{% endif %} - KP M&E System{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-9">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="page-title">
-                <i class="bi bi-{% if role %}pencil-square{% else %}plus-circle{% endif %} me-2"></i>
-                {% if role %}Edit{% else %}Add{% endif %} Role
-            </h3>
-            <a href="{% url 'users:role_list' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i>Back to Roles
-            </a>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-shield-lock me-2"></i>Role Details
-                {% if role and role.is_system %}
-                <span class="badge bg-secondary ms-2">System Role</span>
-                {% endif %}
-            </div>
-            <div class="card-body p-4">
-                <form method="post" id="roleForm">
-                    {% csrf_token %}
-                    
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="name" class="form-label fw-semibold">Role Name <span class="text-danger">*</span></label>
-                            <input type="text" name="name" id="name" class="form-control" 
-                                   value="{{ role.name|default:'' }}" 
-                                   placeholder="e.g., Data Entry Officer" required>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-shield-lock me-2"></i>
+                        {% if role %}Edit Role{% else %}Create New Role{% endif %}
+                    </h5>
+                    <a href="{% url 'users:role_list' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Back to Roles
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="roleForm">
+                        {% csrf_token %}
+                        
+                        <!-- ===== BASIC INFORMATION ===== -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">
+                                    <i class="bi bi-info-circle me-2"></i>Basic Information
+                                </h6>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label fw-bold">
+                                    Role Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       name="name" 
+                                       id="name" 
+                                       class="form-control {% if form.errors.name %}is-invalid{% endif %}" 
+                                       value="{{ role.name|default:'' }}" 
+                                       required
+                                       placeholder="e.g., supervisor, regional_manager">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Unique identifier (no spaces, use underscores or hyphens)
+                                </small>
+                                {% if form.errors.name %}
+                                <div class="invalid-feedback">{{ form.errors.name }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="display_name" class="form-label fw-bold">
+                                    Display Name
+                                </label>
+                                <input type="text" 
+                                       name="display_name" 
+                                       id="display_name" 
+                                       class="form-control" 
+                                       value="{{ role.display_name|default:'' }}"
+                                       placeholder="e.g., Regional Manager">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Friendly name shown to users (leave blank to auto-generate)
+                                </small>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="description" class="form-label fw-bold">
+                                    Description
+                                </label>
+                                <textarea name="description" 
+                                          id="description" 
+                                          class="form-control" 
+                                          rows="2"
+                                          placeholder="Brief description of this role's purpose">{{ role.description|default:'' }}</textarea>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label for="description" class="form-label fw-semibold">Description</label>
-                            <input type="text" name="description" id="description" class="form-control" 
-                                   value="{{ role.description|default:'' }}" 
-                                   placeholder="Brief description of this role">
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3 mt-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="is_active" id="is_active" 
-                                   {% if role and role.is_active or not role %}checked{% endif %}>
-                            <label class="form-check-label" for="is_active">Active</label>
-                        </div>
-                    </div>
 
-                    <hr>
-
-                    <h5 class="mb-3"><i class="bi bi-key me-2"></i>Permissions</h5>
-                    <p class="text-muted small">Select the permissions this role should have.</p>
-
-                    {% for module, data in modules.items %}
-                    <div class="permission-module">
-                        <h6>
-                            {{ data.name }}
-                            <button type="button" class="btn btn-sm btn-outline-secondary toggle-all" data-module="{{ module }}">
-                                <i class="bi bi-check-all"></i> Toggle All
-                            </button>
-                        </h6>
-                        <div class="row">
-                            {% for perm in data.permissions %}
-                            <div class="col-md-3 col-sm-6">
-                                <div class="form-check">
-                                    <input class="form-check-input perm-checkbox-lg" 
-                                           type="checkbox" 
-                                           name="permissions" 
-                                           value="{{ perm.id }}"
-                                           id="perm_{{ perm.id }}"
-                                           data-module="{{ module }}"
-                                           {% if perm.checked %}checked{% endif %}>
-                                    <label class="form-check-label perm-label-lg" for="perm_{{ perm.id }}">
-                                        {{ perm.name }}
-                                    </label>
+                        <!-- ===== VISUAL SETTINGS ===== -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">
+                                    <i class="bi bi-palette me-2"></i>Visual Settings
+                                </h6>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="icon" class="form-label fw-bold">
+                                    Icon
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text" id="iconPreview">
+                                        <i class="bi {{ role.icon|default:'bi-person' }}"></i>
+                                    </span>
+                                    <select name="icon" id="icon" class="form-select">
+                                        <option value="bi-person" {% if role.icon == 'bi-person' %}selected{% endif %}>
+                                            <i class="bi bi-person"></i> Person
+                                        </option>
+                                        <option value="bi-people" {% if role.icon == 'bi-people' %}selected{% endif %}>
+                                            <i class="bi bi-people"></i> People
+                                        </option>
+                                        <option value="bi-person-badge" {% if role.icon == 'bi-person-badge' %}selected{% endif %}>
+                                            <i class="bi bi-person-badge"></i> Person Badge
+                                        </option>
+                                        <option value="bi-shield-lock" {% if role.icon == 'bi-shield-lock' %}selected{% endif %}>
+                                            <i class="bi bi-shield-lock"></i> Shield Lock
+                                        </option>
+                                        <option value="bi-building" {% if role.icon == 'bi-building' %}selected{% endif %}>
+                                            <i class="bi bi-building"></i> Building
+                                        </option>
+                                        <option value="bi-geo-alt" {% if role.icon == 'bi-geo-alt' %}selected{% endif %}>
+                                            <i class="bi bi-geo-alt"></i> Geo Alt
+                                        </option>
+                                        <option value="bi-star" {% if role.icon == 'bi-star' %}selected{% endif %}>
+                                            <i class="bi bi-star"></i> Star
+                                        </option>
+                                        <option value="bi-trophy" {% if role.icon == 'bi-trophy' %}selected{% endif %}>
+                                            <i class="bi bi-trophy"></i> Trophy
+                                        </option>
+                                        <option value="bi-award" {% if role.icon == 'bi-award' %}selected{% endif %}>
+                                            <i class="bi bi-award"></i> Award
+                                        </option>
+                                        <option value="bi-flag" {% if role.icon == 'bi-flag' %}selected{% endif %}>
+                                            <i class="bi bi-flag"></i> Flag
+                                        </option>
+                                        <option value="bi-briefcase" {% if role.icon == 'bi-briefcase' %}selected{% endif %}>
+                                            <i class="bi bi-briefcase"></i> Briefcase
+                                        </option>
+                                        <option value="bi-folder" {% if role.icon == 'bi-folder' %}selected{% endif %}>
+                                            <i class="bi bi-folder"></i> Folder
+                                        </option>
+                                        <option value="bi-file-earmark" {% if role.icon == 'bi-file-earmark' %}selected{% endif %}>
+                                            <i class="bi bi-file-earmark"></i> File
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
-                            {% endfor %}
+                            <div class="col-md-6 mb-3">
+                                <label for="color" class="form-label fw-bold">
+                                    Color
+                                </label>
+                                <select name="color" id="color" class="form-select">
+                                    <option value="primary" {% if role.color == 'primary' %}selected{% endif %}>
+                                        <span class="badge bg-primary">Primary (Blue)</span>
+                                    </option>
+                                    <option value="success" {% if role.color == 'success' %}selected{% endif %}>
+                                        <span class="badge bg-success">Success (Green)</span>
+                                    </option>
+                                    <option value="danger" {% if role.color == 'danger' %}selected{% endif %}>
+                                        <span class="badge bg-danger">Danger (Red)</span>
+                                    </option>
+                                    <option value="warning" {% if role.color == 'warning' %}selected{% endif %}>
+                                        <span class="badge bg-warning text-dark">Warning (Yellow)</span>
+                                    </option>
+                                    <option value="info" {% if role.color == 'info' %}selected{% endif %}>
+                                        <span class="badge bg-info">Info (Cyan)</span>
+                                    </option>
+                                    <option value="secondary" {% if role.color == 'secondary' %}selected{% endif %}>
+                                        <span class="badge bg-secondary">Secondary (Gray)</span>
+                                    </option>
+                                    <option value="dark" {% if role.color == 'dark' %}selected{% endif %}>
+                                        <span class="badge bg-dark">Dark</span>
+                                    </option>
+                                </select>
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Color used for badges and visual indicators
+                                </small>
+                            </div>
                         </div>
-                    </div>
-                    {% empty %}
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i>
-                        No permissions available. Run <code>python manage.py seed_permissions</code> to create them.
-                    </div>
-                    {% endfor %}
 
-                    <hr>
+                        <!-- ===== STATUS ===== -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">
+                                    <i class="bi bi-toggle-on me-2"></i>Status
+                                </h6>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="is_active" 
+                                           id="is_active" 
+                                           {% if role.is_active or not role %}checked{% endif %}>
+                                    <label class="form-check-label fw-bold" for="is_active">
+                                        Active
+                                    </label>
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Inactive roles won't be available for assignment to users
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save me-2"></i>{% if role %}Update{% else %}Add{% endif %} Role
-                        </button>
-                        <a href="{% url 'users:role_list' %}" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-circle me-2"></i>Cancel
-                        </a>
-                    </div>
-                </form>
+                        <!-- ===== PERMISSIONS ===== -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">
+                                    <i class="bi bi-key me-2"></i>Permissions
+                                    <span class="badge bg-secondary ms-2" id="permCount">0 selected</span>
+                                </h6>
+                                <p class="small text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Select the permissions this role should have. 
+                                    <span class="fw-bold">Note:</span> Changes take effect immediately.
+                                </p>
+                            </div>
+                            
+                            <div class="col-12">
+                                <div class="row">
+                                    {% for module_key, module_data in modules.items %}
+                                    <div class="col-md-6 col-lg-4 mb-3">
+                                        <div class="card h-100 border">
+                                            <div class="card-header bg-light">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <strong>
+                                                        <i class="bi bi-grid me-1"></i>
+                                                        {{ module_data.name }}
+                                                    </strong>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input module-select-all" 
+                                                               type="checkbox" 
+                                                               data-module="{{ module_key }}"
+                                                               id="selectAll_{{ module_key }}">
+                                                        <label class="form-check-label small" for="selectAll_{{ module_key }}">
+                                                            Select All
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                {% for perm in module_data.permissions %}
+                                                <div class="form-check">
+                                                    <input class="form-check-input permission-checkbox" 
+                                                           type="checkbox" 
+                                                           name="permissions" 
+                                                           value="{{ perm.id }}"
+                                                           id="perm_{{ perm.id }}"
+                                                           data-module="{{ module_key }}"
+                                                           {% if role and perm.checked %}checked{% endif %}>
+                                                    <label class="form-check-label small" for="perm_{{ perm.id }}">
+                                                        <span class="badge bg-{% if perm.action == 'view' %}info{% elif perm.action == 'add' %}success{% elif perm.action == 'change' %}warning{% elif perm.action == 'delete' %}danger{% else %}secondary{% endif %} me-1">
+                                                            {{ perm.action }}
+                                                        </span>
+                                                        {{ perm.name }}
+                                                    </label>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <div class="col-12">
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            No permissions available. Please run <code>python manage.py setup_permissions</code> to create permissions.
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ===== SUBMIT ===== -->
+                        <div class="row">
+                            <div class="col-12">
+                                <hr>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle me-2"></i>
+                                        {% if role %}Update{% else %}Create{% endif %} Role
+                                    </button>
+                                    <a href="{% url 'users:role_list' %}" class="btn btn-secondary">
+                                        <i class="bi bi-x-circle me-2"></i>Cancel
+                                    </a>
+                                    {% if role and not role.is_system %}
+                                    <a href="{% url 'users:role_delete' role.id %}" class="btn btn-outline-danger ms-auto">
+                                        <i class="bi bi-trash me-2"></i>Delete Role
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-    // Toggle all permissions in a module
-    document.querySelectorAll('.toggle-all').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const module = this.dataset.module;
-            const checkboxes = document.querySelectorAll(`input[data-module="${module}"]`);
-            if (checkboxes.length === 0) return;
-            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-            checkboxes.forEach(cb => cb.checked = !allChecked);
-        });
+$(document).ready(function() {
+    // ===== ICON PREVIEW =====
+    $('#icon').change(function() {
+        const iconClass = $(this).val();
+        $('#iconPreview i').attr('class', 'bi ' + iconClass);
     });
+
+    // ===== PERMISSION COUNTER =====
+    function updatePermissionCount() {
+        const count = $('.permission-checkbox:checked').length;
+        $('#permCount').text(count + ' selected');
+    }
+    
+    // Update count on load
+    updatePermissionCount();
+    
+    // Update count on change
+    $('.permission-checkbox').change(function() {
+        updatePermissionCount();
+    });
+
+    // ===== SELECT ALL / DESELECT ALL =====
+    $('.module-select-all').change(function() {
+        const module = $(this).data('module');
+        const isChecked = $(this).is(':checked');
+        $(`.permission-checkbox[data-module="${module}"]`).prop('checked', isChecked);
+        updatePermissionCount();
+    });
+
+    // ===== FORM VALIDATION =====
+    $('#roleForm').submit(function(e) {
+        const name = $('#name').val().trim();
+        if (!name) {
+            e.preventDefault();
+            $('#name').addClass('is-invalid');
+            alert('Role name is required.');
+            return false;
+        }
+        
+        // Check if name has spaces
+        if (name.includes(' ')) {
+            e.preventDefault();
+            alert('Role name cannot contain spaces. Use underscores or hyphens instead.');
+            return false;
+        }
+        
+        return true;
+    });
+
+    // ===== REMOVE INVALID CLASS ON INPUT =====
+    $('#name').on('input', function() {
+        $(this).removeClass('is-invalid');
+    });
+});
 </script>
 {% endblock %}

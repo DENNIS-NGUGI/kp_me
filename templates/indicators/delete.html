@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Deactivate Indicator - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 text-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Deactivate Indicator
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-2">
+                        <div class="display-1 text-warning mb-3">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <h4 class="mb-3">Confirm Deactivation</h4>
+                        <p class="text-muted mb-2">
+                            Are you sure you want to deactivate indicator
+                            "<strong>{{ indicator.code }} - {{ indicator.name }}</strong>"?
+                        </p>
+                        
+                        <div class="card bg-light mt-3 text-start">
+                            <div class="card-body">
+                                <h6 class="text-muted mb-3">Indicator Details</h6>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4 text-muted">Code</div>
+                                    <div class="col-sm-8 fw-semibold">{{ indicator.code }}</div>
+                                </div>
+                                <hr class="my-2">
+                                <div class="row mb-2">
+                                    <div class="col-sm-4 text-muted">Name</div>
+                                    <div class="col-sm-8">{{ indicator.name }}</div>
+                                </div>
+                                <hr class="my-2">
+                                <div class="row mb-2">
+                                    <div class="col-sm-4 text-muted">Thematic Area</div>
+                                    <div class="col-sm-8">{{ indicator.thematic_area.name }}</div>
+                                </div>
+                                <hr class="my-2">
+                                <div class="row mb-2">
+                                    <div class="col-sm-4 text-muted">Type</div>
+                                    <div class="col-sm-8">{{ indicator.get_indicator_type_display }}</div>
+                                </div>
+                                <hr class="my-2">
+                                <div class="row mb-0">
+                                    <div class="col-sm-4 text-muted">Target</div>
+                                    <div class="col-sm-8">{{ indicator.target_value|default:"Not set" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning mt-3">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Note:</strong> This indicator will be hidden from the system but data will be preserved.
+                            You can reactivate it later if needed.
+                        </div>
+                        
+                        <div class="mt-4 d-flex justify-content-center gap-3">
+                            <form method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="bi bi-check-circle me-2"></i>Yes, Deactivate
+                                </button>
+                            </form>
+                            <a href="{% url 'indicators:list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

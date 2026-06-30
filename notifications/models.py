@@ -71,6 +71,25 @@ class Notification(models.Model):
             self.read_at = None
             self.save()
 
+    def get_type_display(self):
+        """Get the display name for notification type"""
+        return dict(self.NOTIFICATION_TYPES).get(self.notification_type, self.notification_type)
+    
+    def get_type_badge_class(self):
+        """Get Bootstrap badge class for notification type"""
+        badges = {
+            'info': 'bg-info',
+            'success': 'bg-success',
+            'warning': 'bg-warning text-dark',
+            'error': 'bg-danger',
+            'approval': 'bg-success',
+            'rejection': 'bg-danger',
+            'submission': 'bg-primary',
+            'deadline': 'bg-warning text-dark',
+        }
+        return badges.get(self.notification_type, 'bg-secondary')
+
+
 class NotificationPreference(models.Model):
     """User preferences for notifications"""
     

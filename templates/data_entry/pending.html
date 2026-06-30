@@ -1,73 +1,110 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Pending Approvals - KP M&E System{% endblock %}
 
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="page-title"><i class="bi bi-clock-history me-2"></i>Pending Approvals</h3>
-    <span class="badge bg-warning-custom fs-6">{{ pending|length }}</span>
-</div>
+{% block extra_css %}
+<style>
+    .pending-card {
+        border-left: 4px solid #f39c12;
+        transition: all 0.2s;
+    }
+    .pending-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .pending-card .entry-code {
+        font-family: 'Courier New', monospace;
+        font-size: 0.8rem;
+        background: #f8f9fa;
+        padding: 2px 8px;
+        border-radius: 3px;
+    }
+</style>
+{% endblock %}
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover" id="pendingTable">
-                <thead>
-                    <tr>
-                        <th>County</th>
-                        <th>Quarter</th>
-                        <th>Indicator</th>
-                        <th>Value</th>
-                        <th>Submitted By</th>
-                        <th>Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for entry in pending %}
-                    <tr>
-                        <td>{{ entry.county.name }}</td>
-                        <td>{{ entry.quarter.name }}</td>
-                        <td><code>{{ entry.indicator.code }}</code></td>
-                        <td>{{ entry.get_value_display }}</td>
-                        <td>{{ entry.submitted_by.username|default:"—" }}</td>
-                        <td>{{ entry.submitted_at|date:"M d, Y H:i" }}</td>
-                        <td>
-                            <a href="{% url 'data_entry:approve' entry.id %}" class="btn btn-sm btn-success"
-                               onclick="return confirm('Approve this entry?')">
-                                <i class="bi bi-check-lg me-1"></i>Approve
-                            </a>
-                            <a href="{% url 'data_entry:reject' entry.id %}" class="btn btn-sm btn-danger"
-                               onclick="return confirm('Reject this entry?')">
-                                <i class="bi bi-x-lg me-1"></i>Reject
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center text-muted py-4">
-                            <i class="bi bi-check-circle fs-2 d-block mb-2 text-success"></i>
-                            No pending approvals!
-                            <p class="mt-2">All submissions have been reviewed.</p>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="page-title">
+                <i class="bi bi-clock-history me-2"></i>Pending Approvals
+            </h4>
+            <p class="text-muted small">
+                <span class="badge bg-warning text-dark">{{ total_pending }}</span> entries waiting for review
+            </p>
+        </div>
+        <a href="{% url 'data_entry:list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+
+    {% if pending %}
+    <div class="row g-3">
+        {% for entry in pending %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card pending-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="entry-code">#{{ entry.id }}</span>
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-clock me-1"></i>Pending
+                        </span>
+                    </div>
+                    
+                    <h6 class="mb-1">
+                        <span class="badge bg-primary me-1">{{ entry.indicator.code }}</span>
+                        {{ entry.indicator.name|truncatechars:30 }}
+                    </h6>
+                    
+                    <div class="text-muted small mb-2">
+                        <div><i class="bi bi-geo-alt me-1"></i>{{ entry.county.name }}</div>
+                        <div><i class="bi bi-calendar3 me-1"></i>{{ entry.quarter.name }}</div>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <span class="fw-bold">Value:</span>
+                        <span class="text-success">{{ entry.value }}</span>
+                        <span class="text-muted">{{ entry.indicator.unit }}</span>
+                    </div>
+                    
+                    <div class="text-muted small">
+                        <i class="bi bi-person me-1"></i>
+                        {{ entry.submitted_by.get_full_name|default:entry.submitted_by.username }}
+                        <span class="ms-2">
+                            <i class="bi bi-clock me-1"></i>
+                            {{ entry.submitted_at|date:"M d, Y H:i" }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer bg-white d-flex gap-2">
+                    <a href="{% url 'data_entry:detail' entry.id %}" class="btn btn-sm btn-outline-info">
+                        <i class="bi bi-eye me-1"></i>View
+                    </a>
+                    <a href="{% url 'data_entry:approve' entry.id %}" class="btn btn-sm btn-success">
+                        <i class="bi bi-check-circle me-1"></i>Approve
+                    </a>
+                    <a href="{% url 'data_entry:reject' entry.id %}" class="btn btn-sm btn-danger">
+                        <i class="bi bi-x-circle me-1"></i>Reject
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <div class="display-1 text-muted mb-3">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <h5>No Pending Approvals</h5>
+            <p class="text-muted">All entries have been reviewed and approved.</p>
+            <a href="{% url 'data_entry:list' %}" class="btn btn-primary mt-2">
+                <i class="bi bi-arrow-left me-2"></i>Back to Entries
+            </a>
         </div>
     </div>
+    {% endif %}
 </div>
-
-<script>
-    $(document).ready(function() {
-        $('#pendingTable').DataTable({
-            pageLength: 25,
-            order: [[5, 'asc']],
-            language: {
-                search: "Search:",
-                lengthMenu: "Show _MENU_ entries"
-            }
-        });
-    });
-</script>
 {% endblock %}

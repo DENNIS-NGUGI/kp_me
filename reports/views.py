@@ -15,281 +15,61 @@ from django.contrib import messages
 from data_entry.models import DataEntry
 from indicators.models import Indicator, ThematicArea
 from core.models import County, Quarter
-from users.decorators import view_reports_required, admin_required, ncpd_or_admin_required
+from users.decorators import (
+    permission_required, 
+    module_permission_required,
+    view_reports_required, 
+    admin_required, 
+    ncpd_or_admin_required
+)
 
-# @login_required
-# @view_reports_required
-# def dashboard(request):
-#     """Main dashboard with RBAC and user-specific data"""
-#     user = request.user
-    
-#     # ===== RBAC: DETERMINE USER'S DATA SCOPE =====
-#     if user.role and user.role.name == 'county_me' and user.county:
-#         # County users only see their county
-#         county = user.county
-#         entries = DataEntry.objects.filter(county=county, status='approved')
-#         all_entries = DataEntry.objects.filter(county=county)  # All statuses for this county
-#         counties = County.objects.filter(id=county.id)
-#         user_scope = f"County: {county.name}"
-#         is_county_user = True
-#         county_name = county.name
-#     elif user.is_superuser or (user.role and user.role.name in ['admin', 'ncpd_me', 'policy_maker']):
-#         # Admin/NCPD/Policy Maker see all data
-#         entries = DataEntry.objects.filter(status='approved')
-#         all_entries = DataEntry.objects.all()  # All statuses
-#         counties = County.objects.filter(is_active=True)
-#         user_scope = "All Counties"
-#         is_county_user = False
-#         county_name = None
-#         county = None
-#     else:
-#         # Fallback
-#         entries = DataEntry.objects.none()
-#         all_entries = DataEntry.objects.none()
-#         counties = County.objects.none()
-#         user_scope = "No Access"
-#         is_county_user = False
-#         county_name = None
-#         county = None
-    
-#     # ===== STATISTICS - ALL COUNTY-SPECIFIC =====
-#     total_indicators = Indicator.objects.filter(is_active=True).count()
-    
-#     # For county users, only count indicators that have data for their county
-#     if is_county_user and county:
-#         county_indicator_ids = entries.values_list('indicator_id', flat=True).distinct()
-#         total_indicators_with_data = Indicator.objects.filter(
-#             is_active=True, 
-#             id__in=county_indicator_ids
-#         ).count()
-#         total_indicators = total_indicators_with_data if total_indicators_with_data > 0 else Indicator.objects.filter(is_active=True).count()
-    
-#     total_counties = counties.count()
-#     total_entries = entries.count()  # Only approved for this scope
-#     approved_entries = entries.filter(status='approved').count()
-    
-#     # Pending approvals - for county users, only their county's pending
-#     if is_county_user and county:
-#         pending_approvals = DataEntry.objects.filter(county=county, status='submitted').count()
-#     else:
-#         pending_approvals = DataEntry.objects.filter(status='submitted').count()
-    
-#     # ===== SUBMISSION RATE - County specific =====
-#     current_quarter = Quarter.objects.filter(is_active=True, is_closed=False).first()
-#     submission_rate = 0
-#     total_counties_for_quarter = 0
-#     submitted_counties = 0
-    
-#     if current_quarter:
-#         if is_county_user and county:
-#             # For county users: check if they've submitted for current quarter
-#             has_submitted = DataEntry.objects.filter(
-#                 county=county,
-#                 quarter=current_quarter,
-#                 status__in=['submitted', 'approved']
-#             ).exists()
-#             submission_rate = 100 if has_submitted else 0
-#         else:
-#             # For admin: all counties
-#             total_counties_for_quarter = County.objects.filter(is_active=True).count()
-#             submitted_counties = DataEntry.objects.filter(
-#                 quarter=current_quarter,
-#                 status__in=['submitted', 'approved']
-#             ).values('county').distinct().count()
-#             submission_rate = round((submitted_counties / total_counties_for_quarter * 100) if total_counties_for_quarter > 0 else 0)
-    
-#     # ===== OVERALL PERFORMANCE =====
-#     if total_entries > 0:
-#         # Calculate how many entries met their target
-#         met_target = 0
-#         for entry in entries:
-#             if entry.is_met() is True:
-#                 met_target += 1
-#         overall_performance = round((met_target / total_entries * 100))
-#     else:
-#         overall_performance = 0
-    
-#     # ===== COUNTIES WITH NO DATA =====
-#     if is_county_user and county:
-#         # For county users: check if they have any data
-#         has_data = entries.exists()
-#         counties_with_no_data = 0 if has_data else 1
-#     else:
-#         # For admin: count counties with no approved data
-#         all_counties = County.objects.filter(is_active=True)
-#         counties_with_data = DataEntry.objects.filter(
-#             status='approved'
-#         ).values('county').distinct()
-#         counties_with_data_ids = [c['county'] for c in counties_with_data]
-#         counties_with_no_data = all_counties.exclude(id__in=counties_with_data_ids).count()
-    
-#     # ===== THEMATIC PERFORMANCE =====
-#     thematic_performance = []
-#     thematic_colors = {
-#         'Fertility': '#1a5632',
-#         'Morbidity & Mortality': '#b71c1c',
-#         'Migration & Urbanization': '#f39c12',
-#         'PHED': '#2d8a4e'
-#     }
-    
-#     for area in ThematicArea.objects.all():
-#         area_indicators = Indicator.objects.filter(thematic_area=area, is_active=True)
-#         area_entries = entries.filter(indicator__in=area_indicators)
-#         total = area_entries.count()
-#         met = 0
-#         not_met = 0
-#         for e in area_entries:
-#             if e.is_met() is True:
-#                 met += 1
-#             elif e.is_met() is False:
-#                 not_met += 1
-        
-#         # For county users, only show thematic areas with data
-#         if is_county_user and total == 0:
-#             continue
-        
-#         thematic_performance.append({
-#             'name': area.name,
-#             'code': area.code,
-#             'total_indicators': area_indicators.count(),
-#             'total_entries': total,
-#             'met': met,
-#             'not_met': not_met if total > 0 else 0,
-#             'no_data': area_indicators.count() - total if area_indicators.count() > total else 0,
-#             'percentage': round((met / total * 100) if total > 0 else 0),
-#             'color': thematic_colors.get(area.name, '#6c757d')
-#         })
-    
-#     # ===== CHART DATA =====
-#     quarters = Quarter.objects.filter(is_active=True).order_by('-start_date')[:6]
-#     chart_labels = []
-#     chart_data = []
-#     chart_target = []
-    
-#     for q in reversed(quarters):
-#         chart_labels.append(q.name)
-#         q_entries = entries.filter(quarter=q)
-#         q_total = q_entries.count()
-#         q_met = 0
-#         for e in q_entries:
-#             if e.is_met() is True:
-#                 q_met += 1
-#         chart_data.append(round((q_met / q_total * 100) if q_total > 0 else 0))
-#         chart_target.append(65)
-    
-#     if not chart_labels:
-#         chart_labels = ['No Data']
-#         chart_data = [0]
-#         chart_target = [65]
-    
-#     # ===== STATUS DISTRIBUTION =====
-#     if is_county_user and county:
-#         # County users only see their county's status distribution
-#         status_data = {
-#             'approved': DataEntry.objects.filter(county=county, status='approved').count(),
-#             'submitted': DataEntry.objects.filter(county=county, status='submitted').count(),
-#             'rejected': DataEntry.objects.filter(county=county, status='rejected').count(),
-#             'draft': DataEntry.objects.filter(county=county, status='draft').count(),
-#         }
-#     else:
-#         status_data = {
-#             'approved': DataEntry.objects.filter(status='approved').count(),
-#             'submitted': DataEntry.objects.filter(status='submitted').count(),
-#             'rejected': DataEntry.objects.filter(status='rejected').count(),
-#             'draft': DataEntry.objects.filter(status='draft').count(),
-#         }
-    
-#     # ===== COUNTY PERFORMANCE =====
-#     county_performance = []
-#     for c in counties:
-#         county_entries = entries.filter(county=c)
-#         total = county_entries.count()
-#         if total > 0:
-#             met = 0
-#             for e in county_entries:
-#                 if e.is_met() is True:
-#                     met += 1
-#             county_performance.append({
-#                 'name': c.name,
-#                 'total': total,
-#                 'met': met,
-#                 'percentage': round((met / total * 100) if total > 0 else 0)
-#             })
-    
-#     county_performance.sort(key=lambda x: x['percentage'], reverse=True)
-#     county_performance = county_performance[:10]
-    
-#     # ===== RECENT ACTIVITY =====
-#     recent_entries = entries.select_related('county', 'quarter', 'indicator', 'indicator__thematic_area').order_by('-created_at')[:10]
-    
-#     context = {
-#         # Stats
-#         'total_indicators': total_indicators,
-#         'total_counties': total_counties,
-#         'total_entries': total_entries,
-#         'approved_entries': approved_entries,
-#         'pending_approvals': pending_approvals,
-#         'submission_rate': submission_rate,
-#         'current_quarter': current_quarter,
-#         'overall_performance': overall_performance,
-#         'counties_with_no_data': counties_with_no_data,
-#         'user_scope': user_scope,
-        
-#         # Thematic performance
-#         'thematic_performance': thematic_performance,
-        
-#         # Chart data (as JSON)
-#         'chart_labels': json.dumps(chart_labels),
-#         'chart_data': json.dumps(chart_data),
-#         'chart_target': json.dumps(chart_target),
-        
-#         # Status data
-#         'status_data': status_data,
-        
-#         # County performance
-#         'county_performance': county_performance,
-        
-#         # Recent entries
-#         'recent_entries': recent_entries,
-        
-#         # User info
-#         'user_role': user.role.name if user.role else 'No Role',
-#         'is_superuser': user.is_superuser,
-#         'is_county_user': is_county_user,
-#         'county_name': county_name,
-#     }
-    
-#     return render(request, 'reports/dashboard.html', context)
-
+# ============================================
+# DASHBOARD - Uses database permissions
+# ============================================
 @login_required
-@view_reports_required
 def dashboard(request):
-    """Main dashboard with RBAC and user-specific data"""
+    # Check if user has either view_reports or view_dashboard permission
+    if not (request.user.has_permission('view_reports') or 
+            request.user.has_module_permission('dashboard', 'view')):
+        messages.error(request, "You don't have permission to view the dashboard.")
+        return redirect('users:permission_denied')
+
     user = request.user
     
-    # ===== RBAC: DETERMINE USER'S DATA SCOPE =====
-    if user.role and user.role.name == 'county_me' and user.county:
+    # ===== RBAC: DETERMINE USER'S DATA SCOPE USING DATABASE PERMISSIONS =====
+    
+    # Use the property from the model
+    is_county_user = user.is_county_user
+    
+    # Check if user can view all data (admin/ncpd/policy_maker)
+    can_view_all = user.is_superuser or user.has_any_permission(
+        'can_approve_data', 
+        'can_manage_indicators',
+        'view_county_data'
+    )
+    
+    if is_county_user:
+        # County users only see their county
         county = user.county
         entries = DataEntry.objects.filter(county=county, status='approved')
         all_entries = DataEntry.objects.filter(county=county)
         counties = County.objects.filter(id=county.id)
         user_scope = f"County: {county.name}"
-        is_county_user = True
         county_name = county.name
-    elif user.is_superuser or (user.role and user.role.name in ['admin', 'ncpd_me', 'policy_maker']):
+    elif can_view_all:
+        # Admin/NCPD/Policy Maker see all data
         entries = DataEntry.objects.filter(status='approved')
         all_entries = DataEntry.objects.all()
         counties = County.objects.filter(is_active=True)
         user_scope = "All Counties"
-        is_county_user = False
         county_name = None
         county = None
     else:
+        # Fallback - limited access
         entries = DataEntry.objects.none()
         all_entries = DataEntry.objects.none()
         counties = County.objects.none()
-        user_scope = "No Access"
-        is_county_user = False
+        user_scope = "Limited Access"
         county_name = None
         county = None
     
@@ -308,10 +88,14 @@ def dashboard(request):
     total_entries = entries.count()
     approved_entries = entries.filter(status='approved').count()
     
-    if is_county_user and county:
-        pending_approvals = DataEntry.objects.filter(county=county, status='submitted').count()
+    # Pending approvals - only for users with approval permission
+    if user.has_permission('can_approve_data'):
+        if is_county_user and county:
+            pending_approvals = DataEntry.objects.filter(county=county, status='submitted').count()
+        else:
+            pending_approvals = DataEntry.objects.filter(status='submitted').count()
     else:
-        pending_approvals = DataEntry.objects.filter(status='submitted').count()
+        pending_approvals = 0
     
     # ===== SUBMISSION RATE =====
     current_quarter = Quarter.objects.filter(is_active=True, is_closed=False).first()
@@ -324,7 +108,7 @@ def dashboard(request):
                 status__in=['submitted', 'approved']
             ).exists()
             submission_rate = 100 if has_submitted else 0
-        else:
+        elif can_view_all:
             total_counties_for_quarter = County.objects.filter(is_active=True).count()
             submitted_counties = DataEntry.objects.filter(
                 quarter=current_quarter,
@@ -346,13 +130,15 @@ def dashboard(request):
     if is_county_user and county:
         has_data = entries.exists()
         counties_with_no_data = 0 if has_data else 1
-    else:
+    elif can_view_all:
         all_counties = County.objects.filter(is_active=True)
         counties_with_data = DataEntry.objects.filter(
             status='approved'
         ).values('county').distinct()
         counties_with_data_ids = [c['county'] for c in counties_with_data]
         counties_with_no_data = all_counties.exclude(id__in=counties_with_data_ids).count()
+    else:
+        counties_with_no_data = 0
     
     # ===== THEMATIC PERFORMANCE =====
     thematic_performance = []
@@ -428,12 +214,19 @@ def dashboard(request):
             'rejected': DataEntry.objects.filter(county=county, status='rejected').count(),
             'draft': DataEntry.objects.filter(county=county, status='draft').count(),
         }
-    else:
+    elif can_view_all:
         status_data = {
             'approved': DataEntry.objects.filter(status='approved').count(),
             'submitted': DataEntry.objects.filter(status='submitted').count(),
             'rejected': DataEntry.objects.filter(status='rejected').count(),
             'draft': DataEntry.objects.filter(status='draft').count(),
+        }
+    else:
+        status_data = {
+            'approved': 0,
+            'submitted': 0,
+            'rejected': 0,
+            'draft': 0,
         }
     
     # ===== COUNTY PERFORMANCE =====
@@ -461,9 +254,12 @@ def dashboard(request):
     
     # ===== ADDITIONAL ANALYTICS =====
     # Most active counties (with most submissions)
-    most_active_counties = DataEntry.objects.filter(status='approved').values('county__name').annotate(
-        total=Count('id')
-    ).order_by('-total')[:5]
+    if can_view_all:
+        most_active_counties = DataEntry.objects.filter(status='approved').values('county__name').annotate(
+            total=Count('id')
+        ).order_by('-total')[:5]
+    else:
+        most_active_counties = []
     
     # Indicator completion rate
     indicator_completion = {}
@@ -513,7 +309,7 @@ def dashboard(request):
         'indicator_completion': indicator_completion,
         
         # User info
-        'user_role': user.role.name if user.role else 'No Role',
+        'user_role': user.role.get_display_name() if user.role else 'No Role',
         'is_superuser': user.is_superuser,
         'is_county_user': is_county_user,
         'county_name': county_name,
@@ -521,10 +317,14 @@ def dashboard(request):
     
     return render(request, 'reports/dashboard.html', context)
 
+# ============================================
+# REPORT LIST - Uses database permissions
+# ============================================
+
 @login_required
 @view_reports_required
 def report_list(request):
-    """List all available reports - RBAC enforced"""
+    """List all available reports - FULLY DATABASE DRIVEN"""
     user = request.user
     
     # Base querysets
@@ -532,8 +332,15 @@ def report_list(request):
     indicators = Indicator.objects.filter(is_active=True)
     quarters = Quarter.objects.filter(is_active=True)
     
-    # ===== RBAC: COUNTY USERS ONLY SEE THEIR COUNTY =====
-    if user.role and user.role.name == 'county_me' and user.county:
+    # ===== RBAC: DETERMINE USER'S DATA SCOPE USING DATABASE PERMISSIONS =====
+    is_county_user = user.has_permission('manage_county_data') and user.county
+    can_view_all = user.is_superuser or user.has_any_permission(
+        'can_approve_data', 
+        'can_manage_indicators',
+        'view_county_data'
+    )
+    
+    if is_county_user:
         # County users only see their county
         counties = County.objects.filter(id=user.county.id)
         # Get data entries for their county only
@@ -550,13 +357,15 @@ def report_list(request):
         quarters = quarters.filter(
             id__in=county_entries.values_list('quarter_id', flat=True).distinct()
         )
-    else:
+    elif can_view_all:
         # Admin/NCPD/Policy Maker see all counties
         counties = County.objects.filter(is_active=True)
+    else:
+        counties = County.objects.none()
     
-    # Get pending approvals count for admin/ncpd (only if user has permission)
+    # Get pending approvals count - only for users with approval permission
     pending_count = 0
-    if user.is_superuser or (user.role and user.role.name in ['admin', 'ncpd_me']):
+    if user.has_permission('can_approve_data'):
         pending_count = DataEntry.objects.filter(status='submitted').count()
     
     context = {
@@ -565,16 +374,24 @@ def report_list(request):
         'quarters': quarters,
         'indicators': indicators,
         'pending_count': pending_count,
-        'user_role': user.role.name if user.role else 'No Role',
-        'is_county_user': user.role and user.role.name == 'county_me',
+        'user_role': user.role.get_display_name() if user.role else 'No Role',
+        'is_county_user': is_county_user,
         'county_name': user.county.name if user.county else None,
     }
     return render(request, 'reports/list.html', context)
 
+
+# ============================================
+# GENERATE REPORT - Uses database permissions
+# ============================================
+
 @login_required
 @view_reports_required
 def generate_report(request):
-    """Generate custom report based on filters - APPROVED ONLY"""
+    """Generate custom report based on filters - FULLY DATABASE DRIVEN"""
+    user = request.user
+    is_county_user = user.has_permission('manage_county_data') and user.county
+    
     if request.method == 'POST':
         report_type = request.POST.get('report_type')
         county_id = request.POST.get('county')
@@ -596,8 +413,8 @@ def generate_report(request):
             query &= Q(indicator_id=indicator_id)
         
         # RBAC: County users only see their county
-        if request.user.role == 'county_me' and request.user.county:
-            query &= Q(county=request.user.county)
+        if is_county_user:
+            query &= Q(county=user.county)
         
         entries = DataEntry.objects.filter(query).order_by('-created_at')
         
@@ -615,8 +432,8 @@ def generate_report(request):
     indicators = Indicator.objects.filter(is_active=True)
     
     # RBAC: County users only see their county
-    if request.user.role == 'county_me' and request.user.county:
-        counties = County.objects.filter(id=request.user.county.id)
+    if is_county_user:
+        counties = County.objects.filter(id=user.county.id)
     
     context = {
         'counties': counties,
@@ -626,11 +443,22 @@ def generate_report(request):
     }
     return render(request, 'reports/generate.html', context)
 
+
+# ============================================
+# QUARTERLY REPORT - Uses database permissions
+# ============================================
+
 @login_required
 @view_reports_required
 def quarterly_report(request):
-    """Generate quarterly report - APPROVED ONLY"""
+    """Generate quarterly report - FULLY DATABASE DRIVEN"""
     user = request.user
+    is_county_user = user.has_permission('manage_county_data') and user.county
+    can_view_all = user.is_superuser or user.has_any_permission(
+        'can_approve_data', 
+        'can_manage_indicators',
+        'view_county_data'
+    )
     
     quarter_id = request.GET.get('quarter')
     county_id = request.GET.get('county')
@@ -643,15 +471,22 @@ def quarterly_report(request):
     # Build query - APPROVED ONLY
     query = Q(quarter=quarter, status='approved')
     
-    # ===== RBAC: COUNTY USERS ONLY SEE THEIR COUNTY =====
+    # ===== RBAC USING DATABASE PERMISSIONS =====
     if county_id:
+        # Check if user has permission to view this county's data
+        if is_county_user and int(county_id) != user.county.id:
+            messages.error(request, 'You do not have permission to view data for this county.')
+            return redirect('reports:quarterly_report')
         query &= Q(county_id=county_id)
         county = get_object_or_404(County, id=county_id)
-    elif user.role and user.role.name == 'county_me' and user.county:
+    elif is_county_user:
         query &= Q(county=user.county)
         county = user.county
-    else:
+    elif can_view_all:
         county = None
+    else:
+        messages.error(request, 'You do not have permission to view reports.')
+        return redirect('reports:report_list')
     
     entries = DataEntry.objects.filter(query).select_related('county', 'indicator', 'indicator__thematic_area')
     
@@ -709,15 +544,27 @@ def quarterly_report(request):
         'total_met': total_met,
         'total_not_met': total_not_met,
         'total_no_data': total_no_data,
-        'user_role': user.role,
+        'user_role': user.role.get_display_name() if user.role else 'No Role',
     }
     return render(request, 'reports/quarterly.html', context)
+
+
+# ============================================
+# ANNUAL REPORT - Uses database permissions
+# ============================================
 
 @login_required
 @view_reports_required
 def annual_report(request):
-    """Generate annual report - APPROVED ONLY"""
+    """Generate annual report - FULLY DATABASE DRIVEN"""
     user = request.user
+    is_county_user = user.has_permission('manage_county_data') and user.county
+    can_view_all = user.is_superuser or user.has_any_permission(
+        'can_approve_data', 
+        'can_manage_indicators',
+        'view_county_data'
+    )
+    
     year = request.GET.get('year', timezone.now().year)
     county_id = request.GET.get('county')
     
@@ -734,15 +581,21 @@ def annual_report(request):
     # Build query - APPROVED ONLY
     query = Q(quarter__in=quarters, status='approved')
     
-    # ===== RBAC: COUNTY USERS ONLY SEE THEIR COUNTY =====
+    # ===== RBAC USING DATABASE PERMISSIONS =====
     if county_id:
+        if is_county_user and int(county_id) != user.county.id:
+            messages.error(request, 'You do not have permission to view data for this county.')
+            return redirect('reports:annual_report')
         query &= Q(county_id=county_id)
         county = get_object_or_404(County, id=county_id)
-    elif user.role and user.role.name == 'county_me' and user.county:
+    elif is_county_user:
         query &= Q(county=user.county)
         county = user.county
-    else:
+    elif can_view_all:
         county = None
+    else:
+        messages.error(request, 'You do not have permission to view annual reports.')
+        return redirect('reports:report_list')
     
     entries = DataEntry.objects.filter(query).select_related('county', 'indicator', 'quarter')
     
@@ -786,15 +639,22 @@ def annual_report(request):
         'total_not_met': total_not_met,
         'total_no_data': total_no_data,
         'overall_percentage': round((total_met / total_entries * 100) if total_entries > 0 else 0),
-        'user_role': user.role,
+        'user_role': user.role.get_display_name() if user.role else 'No Role',
     }
     return render(request, 'reports/annual.html', context)
+
+
+# ============================================
+# THEMATIC REPORT - Uses database permissions
+# ============================================
 
 @login_required
 @view_reports_required
 def thematic_report(request, code):
-    """Generate report for a specific thematic area - APPROVED ONLY"""
+    """Generate report for a specific thematic area - FULLY DATABASE DRIVEN"""
     user = request.user
+    is_county_user = user.has_permission('manage_county_data') and user.county
+    
     area = get_object_or_404(ThematicArea, code=code)
     indicators = Indicator.objects.filter(thematic_area=area, is_active=True)
     
@@ -806,8 +666,11 @@ def thematic_report(request, code):
     if quarter_id:
         query &= Q(quarter_id=quarter_id)
     if county_id:
+        if is_county_user and int(county_id) != user.county.id:
+            messages.error(request, 'You do not have permission to view data for this county.')
+            return redirect('reports:thematic_report', code=code)
         query &= Q(county_id=county_id)
-    elif user.role and user.role.name == 'county_me' and user.county:
+    elif is_county_user:
         query &= Q(county=user.county)
     
     entries = DataEntry.objects.filter(query).select_related('county', 'quarter', 'indicator')
@@ -837,7 +700,7 @@ def thematic_report(request, code):
     # Get available filters
     quarters = Quarter.objects.filter(is_active=True)
     counties = County.objects.filter(is_active=True)
-    if user.role == 'county_me' and user.county:
+    if is_county_user:
         counties = County.objects.filter(id=user.county.id)
     
     context = {
@@ -852,17 +715,23 @@ def thematic_report(request, code):
         'counties': counties,
         'selected_quarter': quarter_id,
         'selected_county': county_id,
-        'user_role': user.role,
+        'user_role': user.role.get_display_name() if user.role else 'No Role',
     }
     return render(request, 'reports/thematic.html', context)
+
+
+# ============================================
+# SDG REPORT - Uses database permissions
+# ============================================
 
 @login_required
 @view_reports_required
 def sdg_report(request):
-    """SDG Indicators Report - APPROVED ONLY"""
+    """SDG Indicators Report - FULLY DATABASE DRIVEN"""
     user = request.user
+    is_county_user = user.has_permission('manage_county_data') and user.county
     
-    # SDG-related indicators (based on your M&E framework)
+    # SDG-related indicators
     sdg_indicators = Indicator.objects.filter(
         Q(code__startswith='FERT-') | 
         Q(code__startswith='MM-') |
@@ -878,13 +747,16 @@ def sdg_report(request):
     if quarter_id:
         query &= Q(quarter_id=quarter_id)
     if county_id:
+        if is_county_user and int(county_id) != user.county.id:
+            messages.error(request, 'You do not have permission to view data for this county.')
+            return redirect('reports:sdg_report')
         query &= Q(county_id=county_id)
-    elif user.role and user.role.name == 'county_me' and user.county:
+    elif is_county_user:
         query &= Q(county=user.county)
     
     entries = DataEntry.objects.filter(query).select_related('county', 'quarter', 'indicator')
     
-    # Group by SDG goal (simplified mapping)
+    # Group by SDG goal
     sdg_mapping = {
         'FERT': {'goal': 'SDG 3 & 5', 'description': 'Good Health & Gender Equality'},
         'MM': {'goal': 'SDG 3', 'description': 'Good Health and Well-being'},
@@ -900,7 +772,6 @@ def sdg_report(request):
         not_met = sum(1 for e in area_entries if e.is_met() is False)
         no_data = sum(1 for e in area_entries if e.is_met() is None)
         
-        # Handle division by zero
         percentage = round((met_count / total * 100) if total > 0 else 0)
         not_met_percentage = round((not_met / total * 100) if total > 0 else 0)
         
@@ -922,7 +793,7 @@ def sdg_report(request):
     # Get available filters
     quarters = Quarter.objects.filter(is_active=True)
     counties = County.objects.filter(is_active=True)
-    if user.role and user.role.name == 'county_me' and user.county:
+    if is_county_user:
         counties = County.objects.filter(id=user.county.id)
     
     context = {
@@ -934,21 +805,26 @@ def sdg_report(request):
         'counties': counties,
         'selected_quarter': quarter_id,
         'selected_county': county_id,
-        'user_role': user.role.name if user.role else 'No Role',
+        'user_role': user.role.get_display_name() if user.role else 'No Role',
     }
     return render(request, 'reports/sdg_report.html', context)
 
+
+# ============================================
+# PENDING REPORTS - Uses database permissions
+# ============================================
+
 @login_required
-@ncpd_or_admin_required
+@permission_required('can_approve_data')
 def pending_reports(request):
-    """View pending approvals summary - For NCPD/Admin only"""
+    """View pending approvals summary - For users with approval permission only"""
     user = request.user
     
-    # Check if user is authorized for pending approvals
-    if not user.is_superuser and (not user.role or user.role.name not in ['admin', 'ncpd_me']):
-        return render(request, 'errors/403.html', status=403)
-    
     pending_entries = DataEntry.objects.filter(status='submitted').select_related('county', 'quarter', 'indicator')
+    
+    # If county user, only show their county
+    if user.has_permission('manage_county_data') and user.county:
+        pending_entries = pending_entries.filter(county=user.county)
     
     # Group by county
     county_pending = {}
@@ -982,11 +858,17 @@ def pending_reports(request):
     }
     return render(request, 'reports/pending.html', context)
 
+
+# ============================================
+# EXPORT FUNCTIONS - Uses database permissions
+# ============================================
+
 @login_required
 @view_reports_required
 def export_report(request, format):
-    """Export report in specified format - APPROVED ONLY"""
+    """Export report in specified format - FULLY DATABASE DRIVEN"""
     user = request.user
+    is_county_user = user.has_permission('manage_county_data') and user.county
     
     county_id = request.GET.get('county')
     quarter_id = request.GET.get('quarter')
@@ -994,6 +876,9 @@ def export_report(request, format):
     
     query = Q(status='approved')
     if county_id:
+        if is_county_user and int(county_id) != user.county.id:
+            messages.error(request, 'You do not have permission to export data for this county.')
+            return redirect('reports:export_data')
         query &= Q(county_id=county_id)
     if quarter_id:
         query &= Q(quarter_id=quarter_id)
@@ -1002,7 +887,7 @@ def export_report(request, format):
         query &= Q(indicator__in=indicators)
     
     # RBAC: County users only see their county
-    if user.role == 'county_me' and user.county:
+    if is_county_user:
         query &= Q(county=user.county)
     
     entries = DataEntry.objects.filter(query).select_related('county', 'quarter', 'indicator')
@@ -1013,6 +898,7 @@ def export_report(request, format):
         return export_json(entries)
     else:
         return HttpResponse("Unsupported format", status=400)
+
 
 def export_csv(entries):
     """Export entries as CSV"""
@@ -1037,6 +923,7 @@ def export_csv(entries):
     
     return response
 
+
 def export_json(entries):
     """Export entries as JSON"""
     data = []
@@ -1056,11 +943,22 @@ def export_json(entries):
     
     return JsonResponse(data, safe=False)
 
+
+# ============================================
+# EXPORT DATA PAGE - Uses database permissions
+# ============================================
+
 @login_required
 @view_reports_required
 def export_data(request):
-    """Main export page with options"""
+    """Main export page with options - FULLY DATABASE DRIVEN"""
     user = request.user
+    is_county_user = user.has_permission('manage_county_data') and user.county
+    can_view_all = user.is_superuser or user.has_any_permission(
+        'can_approve_data', 
+        'can_manage_indicators',
+        'view_county_data'
+    )
     
     # Get data for filters
     counties = County.objects.filter(is_active=True)
@@ -1068,8 +966,8 @@ def export_data(request):
     thematic_areas = ThematicArea.objects.all()
     indicators = Indicator.objects.filter(is_active=True)
     
-    # ===== RBAC: COUNTY USERS ONLY SEE THEIR COUNTY =====
-    if user.role and user.role.name == 'county_me' and user.county:
+    # ===== RBAC USING DATABASE PERMISSIONS =====
+    if is_county_user:
         counties = County.objects.filter(id=user.county.id)
         # Only show indicators that have data for this county
         county_entries = DataEntry.objects.filter(county=user.county, status='approved')
@@ -1079,19 +977,31 @@ def export_data(request):
         thematic_areas = thematic_areas.filter(
             id__in=indicators.values_list('thematic_area_id', flat=True).distinct()
         )
+    elif not can_view_all:
+        counties = County.objects.none()
+        indicators = Indicator.objects.none()
+        thematic_areas = ThematicArea.objects.none()
     
     context = {
         'counties': counties,
         'quarters': quarters,
         'thematic_areas': thematic_areas,
         'indicators': indicators,
+        'is_county_user': is_county_user,
     }
     return render(request, 'reports/export.html', context)
 
+
+# ============================================
+# EXPORT EXCEL - Uses database permissions
+# ============================================
+
 @login_required
+@view_reports_required
 def export_excel(request):
-    """Export data to Excel with formatting"""
+    """Export data to Excel with formatting - FULLY DATABASE DRIVEN"""
     user = request.user
+    is_county_user = user.has_permission('manage_county_data') and user.county
     
     # Get filters from request
     county_id = request.GET.get('county')
@@ -1103,6 +1013,9 @@ def export_excel(request):
     # Build query
     query = Q()
     if county_id:
+        if is_county_user and int(county_id) != user.county.id:
+            messages.error(request, 'You do not have permission to export data for this county.')
+            return redirect('reports:export_data')
         query &= Q(county_id=county_id)
     if quarter_id:
         query &= Q(quarter_id=quarter_id)
@@ -1113,7 +1026,7 @@ def export_excel(request):
         query &= Q(indicator_id=indicator_id)
     
     # RBAC
-    if user.role == 'county_me' and user.county:
+    if is_county_user:
         query &= Q(county=user.county)
     
     # Get entries
@@ -1182,9 +1095,22 @@ def export_excel(request):
     wb.save(response)
     return response
 
+
+# ============================================
+# EXPORT INDICATORS - Uses database permissions
+# ============================================
+
 @login_required
+@view_reports_required
 def export_indicators(request):
-    """Export indicators to Excel"""
+    """Export indicators to Excel - FULLY DATABASE DRIVEN"""
+    user = request.user
+    
+    # Check if user has permission to view indicators
+    if not user.has_module_permission('indicators', 'view'):
+        messages.error(request, 'You do not have permission to export indicators.')
+        return redirect('reports:export_data')
+    
     indicators = Indicator.objects.filter(is_active=True).select_related('thematic_area')
     
     wb = Workbook()
@@ -1221,10 +1147,15 @@ def export_indicators(request):
     wb.save(response)
     return response
 
+
+# ============================================
+# IMPORT INDICATORS - Uses database permissions
+# ============================================
+
 @login_required
-@admin_required
+@permission_required('can_manage_indicators')
 def import_indicators(request):
-    """Import indicators from Excel/CSV"""
+    """Import indicators from Excel/CSV - FULLY DATABASE DRIVEN"""
     if request.method != 'POST':
         messages.error(request, 'Invalid request method.')
         return redirect('reports:export_data')
@@ -1378,9 +1309,28 @@ def import_indicators(request):
     
     return redirect('reports:export_data')
 
+
+# ============================================
+# DOWNLOAD TEMPLATES - Uses database permissions
+# ============================================
+
 @login_required
 def download_template(request, template_type):
-    """Download import template for different data types"""
+    """Download import template for different data types - FULLY DATABASE DRIVEN"""
+    user = request.user
+    
+    # Check permissions based on template type
+    if template_type == 'indicators' and not user.has_permission('can_manage_indicators'):
+        messages.error(request, 'You do not have permission to download indicator templates.')
+        return redirect('reports:export_data')
+    
+    if template_type in ['partners', 'projects'] and not user.has_permission('manage_partners'):
+        messages.error(request, 'You do not have permission to download partner templates.')
+        return redirect('reports:export_data')
+    
+    if template_type == 'data_entries' and not user.has_module_permission('data_entry', 'add'):
+        messages.error(request, 'You do not have permission to download data entry templates.')
+        return redirect('reports:export_data')
     
     if template_type == 'indicators':
         return download_indicators_template()
@@ -1394,12 +1344,12 @@ def download_template(request, template_type):
         messages.error(request, 'Invalid template type.')
         return redirect('reports:export_data')
 
+
 def download_indicators_template():
     """Download template for importing indicators"""
     from openpyxl import Workbook
     from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
     from openpyxl.utils import get_column_letter
-    from openpyxl.comments import Comment
     from django.http import HttpResponse
     
     wb = Workbook()
@@ -1468,8 +1418,14 @@ def download_indicators_template():
     wb.save(response)
     return response
 
+
 def download_data_entries_template():
     """Download template for importing data entries"""
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, Alignment, PatternFill
+    from openpyxl.utils import get_column_letter
+    from django.http import HttpResponse
+    
     wb = Workbook()
     ws = wb.active
     ws.title = "Data Entries Template"
@@ -1507,8 +1463,14 @@ def download_data_entries_template():
     wb.save(response)
     return response
 
+
 def download_partners_template():
     """Download template for importing partners"""
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, Alignment, PatternFill
+    from openpyxl.utils import get_column_letter
+    from django.http import HttpResponse
+    
     wb = Workbook()
     ws = wb.active
     ws.title = "Partners Template"
@@ -1549,8 +1511,14 @@ def download_partners_template():
     wb.save(response)
     return response
 
+
 def download_projects_template():
     """Download template for importing projects"""
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, Alignment, PatternFill
+    from openpyxl.utils import get_column_letter
+    from django.http import HttpResponse
+    
     wb = Workbook()
     ws = wb.active
     ws.title = "Projects Template"

@@ -1,3 +1,5 @@
+<!-- templates/base.html -->
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -59,17 +61,10 @@
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         
-        .sidebar-brand .logo-icon {
-            font-size: 2.5rem;
-            color: var(--primary-green);
-            display: block;
-        }
-        
         .sidebar-brand .brand-text {
             color: white;
             font-size: 1.1rem;
             font-weight: 700;
-            margin-top: 5px;
             display: block;
         }
         
@@ -102,6 +97,10 @@
             border-radius: 8px;
             transition: all 0.2s;
             font-size: 0.9rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .sidebar-menu .nav-link:hover {
@@ -115,12 +114,12 @@
         }
         
         .sidebar-menu .nav-link i {
-            width: 24px;
             font-size: 1.1rem;
+            width: 20px;
         }
         
         .sidebar-menu .nav-link .badge {
-            float: right;
+            margin-left: auto;
             background: var(--primary-red);
             color: white;
             font-size: 0.65rem;
@@ -159,7 +158,7 @@
             background: none;
             border: none;
             font-size: 1.5rem;
-            color: var(--dark);
+            color: #1a1a1a;
             cursor: pointer;
         }
         
@@ -467,178 +466,158 @@
         </div>
         
         <nav class="sidebar-menu">
-            <!-- ===== MAIN MENU - Visible to ALL authenticated users ===== -->
+            <!-- ===== MAIN ===== -->
             <div class="menu-label">Main</div>
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %} {% if not user.is_verified %}disabled{% endif %}" 
-                    href="{% url 'reports:dashboard' %}">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                       href="{% url 'reports:dashboard' %}">
                         <i class="bi bi-speedometer2"></i> Dashboard
-                        {% if not user.is_verified %}
-                        <span class="badge bg-secondary" style="float: right;">Locked</span>
-                        {% endif %}
                     </a>
                 </li>
             </ul>
 
-            <!-- ===== DATA ENTRY - County, NCPD, Admin ===== -->
-            {% if user.is_verified %}
-                {% if user.role and user.role.name in 'county_me,ncpd_me' or user.is_superuser or user.role and user.role.name == 'admin' %}
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'data_entry' in request.resolver_match.app_name %}active{% endif %}" 
-                        href="{% url 'data_entry:list' %}">
-                            <i class="bi bi-pencil-square"></i> Data Entry
-                        </a>
-                    </li>
-                </ul>
-                {% endif %}
+            <!-- ===== DATA ENTRY ===== -->
+            {% if user.can_view_data_entry or user.can_add_data_entry %}
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if 'data_entry' in request.resolver_match.app_name %}active{% endif %}" 
+                       href="{% url 'data_entry:list' %}">
+                        <i class="bi bi-pencil-square"></i> Data Entry
+                    </a>
+                </li>
+            </ul>
             {% endif %}
 
-            <!-- ===== INDICATORS - NCPD, Admin only ===== -->
-            {% if user.is_verified %}
-                {% if user.role and user.role.name in 'ncpd_me' or user.is_superuser or user.role and user.role.name == 'admin' %}
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'indicators' in request.resolver_match.app_name %}active{% endif %}" 
-                        href="{% url 'indicators:list' %}">
-                            <i class="bi bi-list-ul"></i> Indicators
-                        </a>
-                    </li>
-                </ul>
-                {% endif %}
+            <!-- ===== INDICATORS ===== -->
+            {% if user.can_view_indicators %}
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if 'indicators' in request.resolver_match.app_name %}active{% endif %}" 
+                       href="{% url 'indicators:list' %}">
+                        <i class="bi bi-list-ul"></i> Indicators
+                    </a>
+                </li>
+            </ul>
             {% endif %}
 
-            <!-- ===== REPORTS - All verified users ===== -->
-            {% if user.is_verified %}
-                <div class="menu-label mt-3">Reports</div>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'reports' in request.resolver_match.app_name and request.resolver_match.url_name != 'dashboard' %}active{% endif %}" 
-                        href="{% url 'reports:report_list' %}">
-                            <i class="bi bi-file-earmark-text"></i> Reports
-                        </a>
-                    </li>
-                    
-                    {% if user.role and user.role.name in 'admin,ncpd_me' or user.is_superuser %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'reports:pending_reports' %}">
-                            <i class="bi bi-clock-history"></i> Pending
-                            {% if pending_count > 0 %}
-                            <span class="badge">{{ pending_count }}</span>
-                            {% endif %}
-                        </a>
-                    </li>
-                    {% endif %}
-                    
-                    <!-- Export/Import - NCPD, Admin only -->
-                    {% if user.role and user.role.name in 'admin,ncpd_me' or user.is_superuser %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'reports' in request.resolver_match.app_name and request.resolver_match.url_name == 'export_data' %}active{% endif %}" 
-                            href="{% url 'reports:export_data' %}">
-                            <i class="bi bi-arrow-up"></i><i class="bi bi-arrow-down"></i> Export/Import
-                        </a>
-                    </li>
-                    {% endif %}
-                </ul>
+            <!-- ===== REPORTS ===== -->
+            {% if user.can_view_reports %}
+            <div class="menu-label mt-3">Reports</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if 'reports' in request.resolver_match.app_name and request.resolver_match.url_name != 'dashboard' %}active{% endif %}" 
+                       href="{% url 'reports:report_list' %}">
+                        <i class="bi bi-file-earmark-text"></i> Reports
+                    </a>
+                </li>
+                
+                {% if user.can_approve_data %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'reports:pending_reports' %}">
+                        <i class="bi bi-clock-history"></i> Pending
+                        {% if pending_count > 0 %}
+                        <span class="badge">{{ pending_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% if user.can_export_reports %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'reports:export_data' %}">
+                        <i class="bi bi-arrow-up-down"></i> Export/Import
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
             {% endif %}
 
-            <!-- ===== PARTNERS - Partner, NCPD, Admin ===== -->
-            {% if user.is_verified %}
-                {% if user.role and user.role.name in 'partner,ncpd_me' or user.is_superuser or user.role and user.role.name == 'admin' %}
-                <div class="menu-label mt-3">Partners</div>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'partners' in request.resolver_match.app_name and request.resolver_match.url_name == 'list' %}active{% endif %}" 
-                        href="{% url 'partners:list' %}">
-                            <i class="bi bi-buildings"></i> Partners
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'partners' in request.resolver_match.app_name and request.resolver_match.url_name == 'project_list' %}active{% endif %}" 
-                        href="{% url 'partners:project_list' %}">
-                            <i class="bi bi-folder"></i> Projects
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'partners' in request.resolver_match.app_name and request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
-                        href="{% url 'partners:dashboard' %}">
-                            <i class="bi bi-speedometer2"></i> Partner Dashboard
-                        </a>
-                    </li>
-                </ul>
-                {% endif %}
+            <!-- ===== PARTNERS ===== -->
+            {% if user.can_view_partners %}
+            <div class="menu-label mt-3">Partners</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if 'partners' in request.resolver_match.app_name and request.resolver_match.url_name == 'list' %}active{% endif %}" 
+                       href="{% url 'partners:list' %}">
+                        <i class="bi bi-buildings"></i> Partners
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'partners' in request.resolver_match.app_name and request.resolver_match.url_name == 'project_list' %}active{% endif %}" 
+                       href="{% url 'partners:project_list' %}">
+                        <i class="bi bi-folder"></i> Projects
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'partners' in request.resolver_match.app_name and request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                       href="{% url 'partners:dashboard' %}">
+                        <i class="bi bi-speedometer2"></i> Partner Dashboard
+                    </a>
+                </li>
+            </ul>
             {% endif %}
 
-            <!-- ===== ADMIN - Admin only ===== -->
-            {% if user.is_verified %}
-                {% if user.role and user.role.name == 'admin' or user.is_superuser %}
-                <div class="menu-label mt-3">Admin</div>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'users' in request.resolver_match.app_name and request.resolver_match.url_name == 'role_list' %}active{% endif %}" 
-                        href="{% url 'users:role_list' %}">
-                            <i class="bi bi-shield-lock"></i> Roles
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'users' in request.resolver_match.app_name and request.resolver_match.url_name == 'user_management' %}active{% endif %}" 
-                        href="{% url 'users:user_management' %}">
-                            <i class="bi bi-people"></i> Users
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'settings' in request.resolver_match.app_name and request.resolver_match.url_name == 'counties' %}active{% endif %}" 
-                        href="{% url 'settings:counties' %}">
-                            <i class="bi bi-geo-alt"></i> Counties
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'settings' in request.resolver_match.app_name and request.resolver_match.url_name == 'quarters' %}active{% endif %}" 
-                        href="{% url 'settings:quarters' %}">
-                            <i class="bi bi-calendar3"></i> Quarters
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'settings' in request.resolver_match.app_name and request.resolver_match.url_name == 'index' %}active{% endif %}" 
-                        href="{% url 'settings:index' %}">
-                            <i class="bi bi-gear"></i> Settings
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'settings' in request.resolver_match.app_name and request.resolver_match.url_name == 'audit_log' %}active{% endif %}" 
-                        href="{% url 'settings:audit_log' %}">
-                            <i class="bi bi-clock-history"></i> Audit Log
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin/">
-                            <i class="bi bi-database-gear"></i> Django Admin
-                        </a>
-                    </li>
-                </ul>
+            <!-- ===== ADMIN ===== -->
+            {% if user.can_manage_roles or user.can_manage_users or user.can_manage_system_settings or user.can_view_audit_log %}
+            <div class="menu-label mt-3">Administration</div>
+            <ul class="nav flex-column">
+                {% if user.can_manage_roles %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'users' in request.resolver_match.app_name and request.resolver_match.url_name == 'role_list' %}active{% endif %}" 
+                    href="{% url 'users:role_list' %}">
+                        <i class="bi bi-shield-lock"></i> Roles
+                    </a>
+                </li>
                 {% endif %}
-            {% endif %}
-
-            <!-- ===== SYSTEM - NCPD, Admin only ===== -->
-            {% if user.is_verified %}
-                {% if user.role and user.role.name in 'ncpd_me' or user.is_superuser or user.role and user.role.name == 'admin' %}
-                <div class="menu-label mt-3">System</div>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'settings' in request.resolver_match.app_name and request.resolver_match.url_name == 'index' %}active{% endif %}" 
-                        href="{% url 'settings:index' %}">
-                            <i class="bi bi-gear"></i> Settings
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'settings' in request.resolver_match.app_name and request.resolver_match.url_name == 'audit_log' %}active{% endif %}" 
-                        href="{% url 'settings:audit_log' %}">
-                            <i class="bi bi-clock-history"></i> Audit Log
-                        </a>
-                    </li>
-                </ul>
+                
+                {% if user.can_manage_users %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'users' in request.resolver_match.app_name and request.resolver_match.url_name == 'user_management' %}active{% endif %}" 
+                    href="{% url 'users:user_management' %}">
+                        <i class="bi bi-people"></i> Users
+                    </a>
+                </li>
                 {% endif %}
+                
+                {% if user.can_manage_system_settings %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'settings' in request.resolver_match.app_name and request.resolver_match.url_name == 'counties' %}active{% endif %}" 
+                    href="{% url 'settings:counties' %}">
+                        <i class="bi bi-geo-alt"></i> Counties
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'settings' in request.resolver_match.app_name and request.resolver_match.url_name == 'quarters' %}active{% endif %}" 
+                    href="{% url 'settings:quarters' %}">
+                        <i class="bi bi-calendar3"></i> Quarters
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'settings' in request.resolver_match.app_name and request.resolver_match.url_name == 'index' %}active{% endif %}" 
+                    href="{% url 'settings:index' %}">
+                        <i class="bi bi-gear"></i> Settings
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% if user.can_view_audit_log %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'settings' in request.resolver_match.app_name and request.resolver_match.url_name == 'audit_log' %}active{% endif %}" 
+                    href="{% url 'settings:audit_log' %}">
+                        <i class="bi bi-clock-history"></i> Audit Log
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% if user.is_superuser %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/">
+                        <i class="bi bi-database-gear"></i> Django Admin
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
             {% endif %}
         </nav>
         
@@ -717,10 +696,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-    <!-- Custom Select2 Init -->
     <script>
-        // Initialize Select2 on all multi-select fields
-        document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Select2
+        $(document).ready(function() {
             $('select[multiple], select.select2').each(function() {
                 if (!$(this).data('select2')) {
                     $(this).select2({
@@ -734,24 +712,6 @@
             });
         });
 
-        // Re-initialize after modal opens
-        $(document).on('shown.bs.modal', function() {
-            $('select[multiple], select.select2').each(function() {
-                if (!$(this).data('select2')) {
-                    $(this).select2({
-                        theme: 'bootstrap-5',
-                        width: '100%',
-                        placeholder: 'Select options...',
-                        allowClear: true,
-                        closeOnSelect: false,
-                        dropdownParent: $(this).closest('.modal')
-                    });
-                }
-            });
-        });
-    </script>
-
-    <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -759,7 +719,6 @@
             overlay.classList.toggle('show');
         }
         
-        // Close sidebar on resize to desktop
         window.addEventListener('resize', function() {
             if (window.innerWidth > 768) {
                 document.getElementById('sidebar').classList.remove('open');
@@ -792,10 +751,7 @@
                 .catch(() => {});
         }
         
-        // Update on page load
         document.addEventListener('DOMContentLoaded', updateUnreadCount);
-        
-        // Update every 30 seconds
         setInterval(updateUnreadCount, 30000);
     </script>
 

@@ -18,7 +18,7 @@ urlpatterns = [
     path('', include('public.urls')),
     path('users/', include('users.urls')),
     path('indicators/', include('indicators.urls')),
-    path('data/', include('data_entry.urls')),
+    path('data-entry/', include('data_entry.urls')),
     path('reports/', include('reports.urls')),
     path('notifications/', include('notifications.urls')),
     path('partners/', include('partners.urls')),
