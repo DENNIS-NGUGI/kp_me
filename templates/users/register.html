@@ -29,28 +29,36 @@
             overflow: hidden;
             max-width: 560px;
             width: 100%;
+            max-height: 98vh;
+            display: flex;
+            flex-direction: column;
         }
         .register-header {
             background: linear-gradient(135deg, #1a5632, #2d8a4e);
-            padding: 25px 40px;
+            padding: 20px 35px;
             text-align: center;
             color: white;
+            flex-shrink: 0;
         }
         .register-header h2 {
             font-weight: 700;
             margin-bottom: 5px;
+            font-size: 1.5rem;
         }
         .register-header p {
             opacity: 0.8;
             margin-bottom: 0;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         .register-body {
-            padding: 25px 35px 35px;
+            padding: 20px 30px 25px;
+            overflow-y: auto;
+            flex: 1;
         }
         .register-body .form-control, .register-body .form-select {
             border-radius: 8px;
-            padding: 10px 14px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
         }
         .register-body .form-control:focus, .register-body .form-select:focus {
             border-color: var(--primary-green);
@@ -59,9 +67,10 @@
         .register-body .btn-primary {
             background: var(--primary-green);
             border-color: var(--primary-green);
-            padding: 12px;
+            padding: 10px;
             border-radius: 8px;
             font-weight: 600;
+            font-size: 0.95rem;
         }
         .register-body .btn-primary:hover {
             background: var(--secondary-green);
@@ -69,9 +78,10 @@
         }
         .register-footer {
             text-align: center;
-            padding-top: 20px;
+            padding-top: 15px;
             border-top: 1px solid #e9ecef;
-            margin-top: 20px;
+            margin-top: 15px;
+            flex-shrink: 0;
         }
         .register-footer a {
             color: var(--primary-green);
@@ -82,26 +92,12 @@
         }
         .alert {
             border-radius: 8px;
+            font-size: 0.85rem;
+            padding: 10px 15px;
         }
-        .role-option {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .role-option .role-name {
-            font-weight: 500;
-        }
-        .role-option .role-system {
-            font-size: 0.6rem;
-            padding: 1px 6px;
-            border-radius: 4px;
-            background: #6c757d;
-            color: white;
-        }
-        .role-option .role-desc {
-            font-size: 0.75rem;
-            color: #6c757d;
-            margin-left: 5px;
+        .form-label {
+            font-size: 0.85rem;
+            margin-bottom: 4px;
         }
         .form-text {
             font-size: 0.7rem;
@@ -109,22 +105,67 @@
         .captcha-container {
             text-align: center;
             background: #f8f9fa;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
             border: 1px solid #e9ecef;
         }
         .captcha-container img {
-            max-width: 200px;
+            max-width: 180px;
             height: auto;
             border-radius: 4px;
+        }
+        .password-requirements {
+            font-size: 0.7rem;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+        .password-requirements .valid {
+            color: #28a745;
+        }
+        .password-requirements .invalid {
+            color: #dc3545;
+        }
+        .terms-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .terms-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        .terms-checkbox label {
+            font-size: 0.85rem;
+        }
+        .terms-checkbox a {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .terms-checkbox a:hover {
+            text-decoration: underline;
+        }
+        .role-system {
+            font-size: 0.6rem;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background: #6c757d;
+            color: white;
+            margin-left: 4px;
+        }
+        .input-group-text {
+            font-size: 0.85rem;
+            padding: 8px 12px;
         }
     </style>
 </head>
 <body>
     <div class="register-card">
         <div class="register-header">
-            <div class="fs-1">
-                <img src="{% static 'images/coat.png' %}" alt="KP Logo" class="img-fluid mb-2" style="max-height: 50px;">
+            <div>
+                <img src="{% static 'images/coat.png' %}" alt="KP Logo" style="max-height: 40px;">
             </div>
             <h2>Create Account</h2>
             <p>Register for KP M&E System</p>
@@ -144,54 +185,54 @@
                 {% csrf_token %}
                 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-6 mb-2">
                         <label for="id_first_name" class="form-label fw-semibold">First Name</label>
-                        <input type="text" name="first_name" id="id_first_name" class="form-control" placeholder="First name">
+                        <input type="text" name="first_name" id="id_first_name" class="form-control" placeholder="First name" value="{{ form_data.first_name|default:'' }}">
                     </div>
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-6 mb-2">
                         <label for="id_last_name" class="form-label fw-semibold">Last Name</label>
-                        <input type="text" name="last_name" id="id_last_name" class="form-control" placeholder="Last name">
+                        <input type="text" name="last_name" id="id_last_name" class="form-control" placeholder="Last name" value="{{ form_data.last_name|default:'' }}">
                     </div>
                 </div>
                 
-                <div class="mb-3">
+                <div class="mb-2">
                     <label for="id_username" class="form-label fw-semibold">Username <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
-                        <input type="text" name="username" id="id_username" class="form-control" placeholder="Choose a username" required>
+                        <input type="text" name="username" id="id_username" class="form-control" placeholder="Choose a username" value="{{ form_data.username|default:'' }}" required>
                     </div>
                 </div>
                 
-                <div class="mb-3">
+                <div class="mb-2">
                     <label for="id_email" class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
-                        <input type="email" name="email" id="id_email" class="form-control" placeholder="Enter your email" required>
+                        <input type="email" name="email" id="id_email" class="form-control" placeholder="Enter your email" value="{{ form_data.email|default:'' }}" required>
                     </div>
                 </div>
                 
-                <div class="mb-3">
+                <div class="mb-2">
                     <label for="id_organization" class="form-label fw-semibold">Organization</label>
                     <div class="input-group">
                         <span class="input-group-text bg-light"><i class="bi bi-building"></i></span>
-                        <input type="text" name="organization" id="id_organization" class="form-control" placeholder="Your organization">
+                        <input type="text" name="organization" id="id_organization" class="form-control" placeholder="Your organization" value="{{ form_data.organization|default:'' }}">
                     </div>
                 </div>
                 
-                <div class="mb-3">
+                <div class="mb-2">
                     <label for="id_phone" class="form-label fw-semibold">Phone Number</label>
                     <div class="input-group">
                         <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
-                        <input type="tel" name="phone_number" id="id_phone" class="form-control" placeholder="e.g., 0712345678">
+                        <input type="tel" name="phone_number" id="id_phone" class="form-control" placeholder="e.g., 0712345678" value="{{ form_data.phone_number|default:'' }}">
                     </div>
                 </div>
                 
-                <div class="mb-3">
+                <div class="mb-2">
                     <label for="id_role" class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
                     <select name="role" id="id_role" class="form-select" required>
                         <option value="">Select your role</option>
                         {% for role in roles %}
-                        <option value="{{ role.id }}">
+                        <option value="{{ role.id }}" {% if form_data.role_id|stringformat:"s" == role.id|stringformat:"s" %}selected{% endif %}>
                             {{ role.get_display_name }}
                             {% if role.is_system %}
                             <span class="role-system">System</span>
@@ -205,25 +246,31 @@
                     </small>
                 </div>
                 
-                <div class="mb-3">
+                <div class="mb-2">
                     <label for="id_password1" class="form-label fw-semibold">Password <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
                         <input type="password" name="password1" id="id_password1" class="form-control" placeholder="Enter password" required>
                     </div>
-                    <small class="text-muted form-text">Password must be at least 8 characters long.</small>
+                    <div class="password-requirements" id="passwordRequirements">
+                        <span id="reqLength" class="invalid"><i class="bi bi-x-circle"></i> At least 8 characters</span>
+                        <span id="reqUpper" class="invalid"><i class="bi bi-x-circle"></i> At least one uppercase letter</span>
+                        <span id="reqLower" class="invalid"><i class="bi bi-x-circle"></i> At least one lowercase letter</span>
+                        <span id="reqNumber" class="invalid"><i class="bi bi-x-circle"></i> At least one number</span>
+                    </div>
                 </div>
                 
-                <div class="mb-3">
+                <div class="mb-2">
                     <label for="id_password2" class="form-label fw-semibold">Confirm Password <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text bg-light"><i class="bi bi-lock-fill"></i></span>
                         <input type="password" name="password2" id="id_password2" class="form-control" placeholder="Confirm password" required>
                     </div>
+                    <div id="passwordMatch" class="form-text text-muted"></div>
                 </div>
 
-                <!-- ===== CAPTCHA SECTION ===== -->
-                <div class="mb-3">
+                <!-- ===== CAPTCHA ===== -->
+                <div class="mb-2">
                     <label class="form-label fw-semibold">Verification <span class="text-danger">*</span></label>
                     <div class="captcha-container">
                         <img src="{{ captcha_image }}" alt="Captcha" id="captcha_image_register">
@@ -235,6 +282,18 @@
                     <input type="hidden" name="captcha_0" value="{{ captcha_key }}" id="captcha_key_register">
                     <input type="text" name="captcha_1" class="form-control mt-2" placeholder="Enter the code shown" required>
                     <small class="text-muted">Please enter the characters from the image above.</small>
+                </div>
+
+                <!-- ===== TERMS & CONDITIONS ===== -->
+                <div class="mb-3 terms-checkbox">
+                    <input type="checkbox" name="terms_accepted" id="id_terms" {% if form_data.terms_accepted %}checked{% endif %}>
+                    <label for="id_terms">
+                        I have read and agree to the 
+                        <a href="#" onclick="window.open('{% url 'users:terms' %}', '_blank', 'width=800,height=600'); return false;">
+                            Terms & Conditions
+                        </a>
+                        <span class="text-danger">*</span>
+                    </label>
                 </div>
                 
                 <button type="submit" class="btn btn-primary w-100">
@@ -254,6 +313,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // ===== CAPTCHA REFRESH =====
         function refreshCaptchaRegister() {
             fetch('/captcha/refresh/')
                 .then(response => {
@@ -268,10 +328,66 @@
                 })
                 .catch(error => {
                     console.error('Error refreshing captcha:', error);
-                    // Fallback: reload the page to get new captcha
                     window.location.reload();
                 });
         }
+
+        // ===== PASSWORD VALIDATION =====
+        document.getElementById('id_password1').addEventListener('input', function() {
+            const password = this.value;
+            
+            const checks = {
+                length: { el: document.getElementById('reqLength'), test: password.length >= 8, msg: 'At least 8 characters' },
+                upper: { el: document.getElementById('reqUpper'), test: /[A-Z]/.test(password), msg: 'At least one uppercase letter' },
+                lower: { el: document.getElementById('reqLower'), test: /[a-z]/.test(password), msg: 'At least one lowercase letter' },
+                number: { el: document.getElementById('reqNumber'), test: /[0-9]/.test(password), msg: 'At least one number' }
+            };
+            
+            for (const [key, check] of Object.entries(checks)) {
+                if (check.test) {
+                    check.el.className = 'valid';
+                    check.el.innerHTML = '<i class="bi bi-check-circle"></i> ' + check.msg;
+                } else {
+                    check.el.className = 'invalid';
+                    check.el.innerHTML = '<i class="bi bi-x-circle"></i> ' + check.msg;
+                }
+            }
+            
+            checkPasswordMatch();
+        });
+
+        document.getElementById('id_password2').addEventListener('input', checkPasswordMatch);
+
+        function checkPasswordMatch() {
+            const password1 = document.getElementById('id_password1').value;
+            const password2 = document.getElementById('id_password2').value;
+            const matchDiv = document.getElementById('passwordMatch');
+            
+            if (password2.length === 0) {
+                matchDiv.textContent = '';
+                matchDiv.className = 'form-text text-muted';
+                return;
+            }
+            
+            if (password1 === password2) {
+                matchDiv.innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> Passwords match</span>';
+                matchDiv.className = 'form-text';
+            } else {
+                matchDiv.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Passwords do not match</span>';
+                matchDiv.className = 'form-text';
+            }
+        }
+
+        // ===== TERMS CHECKBOX VALIDATION ON SUBMIT =====
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const termsChecked = document.getElementById('id_terms').checked;
+            if (!termsChecked) {
+                e.preventDefault();
+                alert('You must accept the Terms & Conditions to register.');
+                document.getElementById('id_terms').focus();
+                return false;
+            }
+        });
     </script>
 
 </body>

@@ -275,6 +275,10 @@ def register(request):
     })
     return render(request, 'users/register.html', context)
 
+def terms_conditions(request):
+    """Terms and Conditions page"""
+    return render(request, 'users/terms.html')
+
 @never_cache
 def verify_otp(request):
     """Verify OTP for registration or login"""

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Terms and Conditions - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-file-text me-2 text-primary"></i>
+                        Terms and Conditions
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>1. Introduction</h5>
+                        <p>Welcome to the KP M&E System. By using this system, you agree to comply with and be bound by the following terms and conditions.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>2. User Accounts</h5>
+                        <p>You are responsible for maintaining the confidentiality of your account credentials. Any activities that occur under your account are your responsibility.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>3. Data Integrity</h5>
+                        <p>All data entered into the system must be accurate and complete. Any false or misleading information is strictly prohibited.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>4. System Usage</h5>
+                        <ul>
+                            <li>The system is for official M&E purposes only</li>
+                            <li>Unauthorized access or use is prohibited</li>
+                            <li>You must not attempt to circumvent security measures</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>5. Data Privacy</h5>
+                        <p>Your personal information will be handled in accordance with our Privacy Policy and relevant data protection laws.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>6. Modifications</h5>
+                        <p>We reserve the right to modify these terms at any time. Continued use of the system constitutes acceptance of the updated terms.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>7. Contact</h5>
+                        <p>For any questions regarding these terms, please contact the system administrator.</p>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a href="{% url 'users:login' %}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left me-1"></i>Back to Login
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer text-center text-muted small">
+                    Last Updated: {% now "F d, Y" %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
