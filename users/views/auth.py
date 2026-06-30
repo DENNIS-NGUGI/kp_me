@@ -275,6 +275,7 @@ def register(request):
     })
     return render(request, 'users/register.html', context)
 
+@never_cache
 def terms_conditions(request):
     """Terms and Conditions page"""
     return render(request, 'users/terms.html')

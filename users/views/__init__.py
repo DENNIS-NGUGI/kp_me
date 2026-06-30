@@ -4,6 +4,7 @@ from .auth import (
     register,
     verify_otp,
     resend_otp,
+    terms_conditions,
     ajax_captcha_refresh,
 )
 from .profile import (
@@ -34,6 +35,7 @@ __all__ = [
     'register',
     'verify_otp',
     'resend_otp',
+    'terms_conditions'
     'ajax_captcha_refresh',
     
     # Profile views
