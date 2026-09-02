@@ -189,17 +189,17 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
-DEFAULT_FROM_NAME = 'KP M&E System'
+DEFAULT_FROM_NAME = 'KPPIMES'
 DEFAULT_FROM = f"{DEFAULT_FROM_NAME} <{DEFAULT_FROM_EMAIL}>"
 EMAIL_TIMEOUT = 30
 
 SITE_URL = os.getenv('SITE_URL')
-SITE_NAME = os.getenv('SITE_NAME', 'KP M&E System')
+SITE_NAME = os.getenv('SITE_NAME', 'KPPIMES')
 EMAIL_DEBUG = True
 
 # OTP Settings
 OTP_EMAIL_SENDER = os.getenv('OTP_EMAIL_SENDER', DEFAULT_FROM_EMAIL)
-OTP_EMAIL_SUBJECT = os.getenv('OTP_EMAIL_SUBJECT', 'Your KP M&E System Verification Code')
+OTP_EMAIL_SUBJECT = os.getenv('OTP_EMAIL_SUBJECT', 'Your KPPIMES Verification Code')
 OTP_EMAIL_BODY_TEMPLATE = 'Your verification code is: {otp}'
 
 # Captcha settings

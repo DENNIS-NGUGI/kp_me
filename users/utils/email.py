@@ -7,20 +7,20 @@ logger = logging.getLogger(__name__)
 
 def send_otp_email(user, otp):
     """Send OTP via email with improved deliverability"""
-    subject = 'KP M&E System - Your Verification Code'
+    subject = 'KPPIMES - Your Verification Code'
     
     # Plain text version
     text_message = f"""
     Dear {user.get_full_name() or user.username},
 
-    Your verification code for KP M&E System is: {otp}
+    Your verification code for KPPIMES is: {otp}
 
     This code will expire in 10 minutes.
 
     If you didn't request this code, please ignore this email.
 
     ---
-    KP M&E System
+    KPPIMES
     Kenya Population Programme
     """
     

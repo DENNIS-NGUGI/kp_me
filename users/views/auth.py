@@ -334,7 +334,7 @@ def verify_otp(request):
                 request.session.pop(key, None)
             
             if purpose == 'email_verification':
-                messages.success(request, 'Email verified successfully! Welcome to KP M&E System.')
+                messages.success(request, 'Email verified successfully! Welcome to KPPIMES.')
             else:
                 messages.success(request, f'Welcome back, {user.get_full_name() or user.username}!')
             

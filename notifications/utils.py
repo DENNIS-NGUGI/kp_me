@@ -80,7 +80,7 @@ def send_email_notification(user, subject, message, notification_type='info', ac
         'subject': subject,
         'message': message,
         'notification_type': notification_type,
-        'site_name': 'KP M&E System',
+        'site_name': 'KPPIMES',
         'site_url': settings.SITE_URL,
         'action_url': action_url,
         'action_text': action_text,

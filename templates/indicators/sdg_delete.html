@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Delete SDG - KP M&E System{% endblock %}
+{% block title %}Delete SDG - KPPIMES{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center"><div class="col-md-6"><div class="card"><div class="card-body p-4"><h4>Delete SDG {{ sdg.number }}</h4><p>Delete <strong>{{ sdg.title }}</strong>? It will be unlinked from its indicators.</p><form method="post">{% csrf_token %}<button class="btn btn-danger" type="submit"><i class="bi bi-trash me-1"></i>Delete</button><a class="btn btn-outline-secondary" href="{% url 'indicators:sdg_list' %}">Cancel</a></form></div></div></div></div>
