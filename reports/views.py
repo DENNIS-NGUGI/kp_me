@@ -102,7 +102,7 @@ def dashboard(request):
         total_indicators = total_indicators_with_data if total_indicators_with_data > 0 else Indicator.objects.filter(is_active=True).count()
     
     total_counties = counties.count()
-    total_entries = entries.count()
+    total_entries = all_entries.exclude(status='draft').count()
     approved_entries = entries.filter(status='approved').count()
     
     # Pending approvals - only for users with approval permission

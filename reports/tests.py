@@ -56,6 +56,22 @@ class ReportCatalogueTests(TestCase):
 		self.assertContains(response, 'Dashboard')
 		self.assertContains(response, 'Reports')
 
+	def test_dashboard_total_entries_excludes_drafts(self):
+		for status, code in (('approved', 'REPORT-101'), ('submitted', 'REPORT-102'), ('rejected', 'REPORT-103'), ('draft', 'REPORT-104')):
+			indicator = Indicator.objects.create(
+				code=code, name=f'{status.title()} indicator', thematic_area=self.indicator.thematic_area,
+				data_type='count', unit='people', frequency='quarterly', target_value=10,
+			)
+			DataEntry.objects.create(
+				county=self.county, quarter=self.quarter, indicator=indicator,
+				value='12', target_at_submission=10, status=status,
+			)
+
+		response = self.client.get('/dashboard/')
+
+		self.assertEqual(response.context['approved_entries'], 1)
+		self.assertEqual(response.context['total_entries'], 3)
+
 	@patch('reports.views.timezone.localdate', return_value=date(2026, 2, 15))
 	def test_dashboard_uses_the_quarter_containing_today(self, mocked_localdate):
 		Quarter.objects.create(
