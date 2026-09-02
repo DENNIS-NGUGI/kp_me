@@ -2,5 +2,5 @@ venv/
 .env
 staticfiles/
 scripts/
-kp_me_system/settings.py
+
 

@@ -1,0 +1,360 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ report.report_code }} - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center">
+                <h1 class="page-title mb-0"><i class="bi bi-file-earmark-text me-2"></i>{{ report.report_code }}</h1>
+                <span class="ms-3">
+                    {% if report.status == 'draft' %}
+                        <span class="badge bg-secondary fs-6">Draft</span>
+                    {% elif report.status == 'submitted' %}
+                        <span class="badge bg-warning text-dark fs-6">Submitted</span>
+                    {% elif report.status == 'reviewed' %}
+                        <span class="badge bg-info fs-6">Reviewed</span>
+                    {% elif report.status == 'approved' %}
+                        <span class="badge bg-success fs-6">Approved</span>
+                    {% elif report.status == 'archived' %}
+                        <span class="badge bg-dark fs-6">Archived</span>
+                    {% endif %}
+                </span>
+            </div>
+            <p class="text-muted mt-2">{{ report.organization_name }} | {{ report.county.name }}</p>
+        </div>
+        <div class="col-md-4 mt-3 mt-md-0">
+            <div class="d-flex justify-content-md-end flex-wrap gap-2">
+                {% if report.status in 'draft,submitted' and is_owner %}
+                <a href="{% url 'field_monitoring:field_visit_update' report.id %}" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil me-1"></i> Edit
+                </a>
+                {% endif %}
+                
+                {% if report.status == 'draft' and is_owner %}
+                <a href="{% url 'field_monitoring:field_visit_submit' report.id %}" class="btn btn-primary"
+                   onclick="return confirm('Submit this report for review?')">
+                    <i class="bi bi-send me-1"></i> Submit
+                </a>
+                {% endif %}
+                
+                {% if report.status in 'submitted,reviewed' and can_approve %}
+                <a href="{% url 'field_monitoring:field_visit_approve' report.id %}" class="btn btn-success"
+                   onclick="return confirm('Approve this report?')">
+                    <i class="bi bi-check-lg me-1"></i> Approve
+                </a>
+                <a href="{% url 'field_monitoring:field_visit_reject' report.id %}" class="btn btn-outline-danger">
+                    <i class="bi bi-arrow-return-left me-1"></i> Return for Revision
+                </a>
+                {% endif %}
+                
+                {% if report.status in 'approved' %}
+                <a href="{% url 'field_monitoring:field_visit_export_word' report.id %}" class="btn btn-success">
+                    <i class="bi bi-download me-1"></i> Export to Word
+                </a>
+                {% endif %}
+                
+                {% if report.status == 'draft' and is_owner %}
+                <a href="{% url 'field_monitoring:field_visit_delete' report.id %}" class="btn btn-danger"
+                   onclick="return confirm('Delete this report?')">
+                    <i class="bi bi-trash me-1"></i> Delete
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card text-center h-100">
+                <i class="bi bi-people stat-icon d-block mb-1"></i>
+                <div class="stat-number">{{ stats.total_team_members }}</div>
+                <div class="stat-label">Team Members</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center h-100">
+                <i class="bi bi-clipboard-check stat-icon d-block mb-1"></i>
+                <div class="stat-number">{{ stats.total_services }}</div>
+                <div class="stat-label">Services</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card danger text-center h-100">
+                <i class="bi bi-exclamation-octagon stat-icon d-block mb-1"></i>
+                <div class="stat-number">{{ stats.total_challenges }}</div>
+                <div class="stat-label">Challenges</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card warning text-center h-100">
+                <i class="bi bi-star stat-icon d-block mb-1"></i>
+                <div class="stat-number">{{ stats.total_practices }}</div>
+                <div class="stat-label">Best Practices</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Details -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Report Information</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-borderless mb-0">
+                        <tr>
+                            <td class="fw-bold" style="width: 200px;">Organization:</td>
+                            <td>{{ report.organization_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">County:</td>
+                            <td>{{ report.county.name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Location:</td>
+                            <td>{{ report.location_details|default:"N/A" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Visit Date:</td>
+                            <td>{{ report.visit_date|date:"F d, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Last Visit Date:</td>
+                            <td>{{ report.last_visit_date|default:"N/A" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Report Date:</td>
+                            <td>{{ report.report_date|date:"F d, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Compiled By:</td>
+                            <td>{{ report.report_compiled_by.get_full_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Data Collection Methods:</td>
+                            <td>{{ report.data_collection_methods|default:"Not specified" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Metadata</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Created:</strong> {{ report.created_at|date:"M d, Y H:i" }}</p>
+                    <p><strong>Last Updated:</strong> {{ report.updated_at|date:"M d, Y H:i" }}</p>
+                    {% if report.approved_by %}
+                    <p><strong>Approved By:</strong> {{ report.approved_by.get_full_name }}</p>
+                    <p><strong>Approved At:</strong> {{ report.approved_at|date:"M d, Y H:i" }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs for Content -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#team">Team ({{ stats.total_team_members }})</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#services">Services ({{ stats.total_services }})</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#challenges">Challenges ({{ stats.critical_challenges }})</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#practices">Best Practices ({{ stats.replicable_practices }})</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#partners">Partners ({{ stats.total_partners }})</a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- Team Tab -->
+        <div id="team" class="tab-pane fade show active">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Visiting Team Members</h5>
+                </div>
+                {% if team_members %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Title/Organization</th>
+                                <th>Telephone</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for member in team_members %}
+                            <tr>
+                                <td>{{ member.name }}</td>
+                                <td>{{ member.title_organization }}</td>
+                                <td>{{ member.telephone }}</td>
+                                <td>{{ member.email }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="card-body text-center text-muted">
+                    No team members recorded
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Services Tab -->
+        <div id="services" class="tab-pane fade">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Services Provided</h5>
+                </div>
+                {% if services %}
+                <div class="card-body">
+                    {% for service in services %}
+                    <div class="mb-4 pb-4 border-bottom">
+                        <h6>{{ service.service_name }}</h6>
+                        {% if service.indicator %}
+                        <p><strong>Indicator:</strong> <span class="badge bg-info">{{ service.indicator.code }}</span></p>
+                        {% endif %}
+                        <p><strong>Findings:</strong> {{ service.findings }}</p>
+                        <p><strong>Recommended Action:</strong> {{ service.recommended_action }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="card-body text-center text-muted">
+                    No services recorded
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Challenges Tab -->
+        <div id="challenges" class="tab-pane fade">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Challenges Identified</h5>
+                </div>
+                {% if challenges %}
+                <div class="card-body">
+                    {% for challenge in challenges %}
+                    <div class="mb-4 pb-4 border-bottom">
+                        <div class="d-flex align-items-center mb-2">
+                            <h6 class="mb-0">{{ challenge.challenge_description }}</h6>
+                            {% if challenge.priority == 'critical' %}
+                                <span class="badge bg-danger ms-2">CRITICAL</span>
+                            {% elif challenge.priority == 'high' %}
+                                <span class="badge bg-warning text-dark ms-2">HIGH</span>
+                            {% elif challenge.priority == 'medium' %}
+                                <span class="badge bg-info ms-2">MEDIUM</span>
+                            {% else %}
+                                <span class="badge bg-secondary ms-2">LOW</span>
+                            {% endif %}
+                        </div>
+                        <p class="mb-0"><strong>Recommendation:</strong> {{ challenge.recommendation }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="card-body text-center text-muted">
+                    No challenges recorded
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Practices Tab -->
+        <div id="practices" class="tab-pane fade">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Best Practices</h5>
+                </div>
+                {% if practices %}
+                <div class="card-body">
+                    {% for practice in practices %}
+                    <div class="mb-4 pb-4 border-bottom">
+                        <div class="d-flex align-items-center mb-2">
+                            <h6 class="mb-0">{{ practice.practice_description }}</h6>
+                            {% if practice.replicable %}
+                                <span class="badge bg-success ms-2"><i class="bi bi-check-lg me-1"></i>Replicable</span>
+                            {% else %}
+                                <span class="badge bg-secondary ms-2">Not Replicable</span>
+                            {% endif %}
+                        </div>
+                        <p class="mb-0"><strong>Lessons Learned:</strong> {{ practice.lessons_learned }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="card-body text-center text-muted">
+                    No best practices recorded
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Partners Tab -->
+        <div id="partners" class="tab-pane fade">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Collaborating Partners</h5>
+                </div>
+                {% if partners %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Partner Name</th>
+                                <th>Partnership Nature</th>
+                                <th>Contact Person</th>
+                                <th>Contact Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for partner in partners %}
+                            <tr>
+                                <td>{{ partner.partner_name }}</td>
+                                <td>{{ partner.partnership_nature }}</td>
+                                <td>{{ partner.contact_person }}</td>
+                                <td>{{ partner.contact_details }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="card-body text-center text-muted">
+                    No partners recorded
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-4">
+        <a href="{% url 'field_monitoring:field_visit_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+    </div>
+</div>
+{% endblock %}

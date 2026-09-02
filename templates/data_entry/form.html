@@ -1,514 +1,111 @@
 {% extends 'base.html' %}
-{% load static %}
 {% load data_entry_extras %}
 
 {% block title %}Data Entry - KP M&E System{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
-    .step-indicator {
-        display: flex;
-        justify-content: center;
-        gap: 80px;
-        margin: 30px 0 50px 0;
-    }
-    .step-wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    .step-dot {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: #dee2e6;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        color: #6c757d;
-        border: 3px solid transparent;
-    }
-    .step-dot.active {
-        background: #1a5632;
-        color: white;
-        border-color: #2d8a4e;
-    }
-    .step-dot.completed {
-        background: #2d8a4e;
-        color: white;
-    }
-    .step-label {
-        margin-top: 10px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        color: #6c757d;
-    }
-    .step-dot.active .step-label {
-        color: #1a5632;
-    }
-    .step-content {
-        display: none;
-        padding: 20px 0;
-    }
-    .step-content.active {
-        display: block;
-    }
-    .action-bar {
-        background: white;
-        padding: 15px 0;
-        border-top: 1px solid #e9ecef;
-        margin-top: 20px;
-        position: sticky;
-        bottom: 0;
-        z-index: 10;
-    }
-    .btn-next {
-        min-width: 120px;
-    }
-    .table-selection td, .table-data-entry td {
-        vertical-align: middle;
-    }
-    .table-selection .checkbox-cell {
-        width: 40px;
-        text-align: center;
-    }
-    .empty-state {
-        padding: 60px 20px;
-        text-align: center;
-    }
-    .empty-state .icon {
-        font-size: 4rem;
-        color: #dee2e6;
-    }
-    .validation-feedback {
-        font-size: 0.75rem;
-    }
-    .value-input {
-        min-width: 150px;
-    }
-    .selected-badge {
-        font-size: 0.8rem;
-        padding: 4px 12px;
-    }
-    .step-indicator-3 {
-        gap: 100px;
-    }
+    .entry-step { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.5rem; }
+    .entry-step__number { width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: #e8f5e9; color: #1a5632; }
+    .entry-step__number.active { background: #1a5632; color: #fff; }
+    .entry-summary { background: #f7faf7; border: 1px solid #dce8df; border-radius: 8px; }
+    .indicator-row td { vertical-align: middle; }
+    .sticky-actions { position: sticky; bottom: 0; z-index: 5; background: #fff; border-top: 1px solid #dee2e6; padding: 1rem; }
+    .validation-feedback { font-size: .75rem; }
 </style>
+{% endblock %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3><i class="bi bi-pencil-square me-2"></i>Data Entry</h3>
-    <a href="{% url 'data_entry:list' %}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i>Back
-    </a>
-</div>
-
-<div class="card">
-    <div class="card-body p-4">
-        <!-- ===== STEP INDICATOR (3 Steps) ===== -->
-        <div class="step-indicator step-indicator-3">
-            <div class="step-wrapper">
-                <div class="step-dot {% if step == '1' %}active{% elif step == '2' or step == '3' %}completed{% endif %}">1</div>
-                <div class="step-label">Select Quarter</div>
-            </div>
-            <div class="step-wrapper">
-                <div class="step-dot {% if step == '2' %}active{% elif step == '3' %}completed{% endif %}">2</div>
-                <div class="step-label">Select Indicators</div>
-            </div>
-            <div class="step-wrapper">
-                <div class="step-dot {% if step == '3' %}active{% endif %}">3</div>
-                <div class="step-label">Enter &amp; Submit</div>
-            </div>
-        </div>
-
-        <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="step" value="{{ step }}">
-            
-            <!-- ===== STEP 1: SELECT COUNTY & QUARTER ===== -->
-            <div class="step-content {% if step == '1' %}active{% endif %}" id="step1">
-                <div class="row justify-content-center">
-                    <div class="col-md-10">
-                        <div class="card bg-light">
-                            <div class="card-body p-4">
-                                <h5>Select County and Quarter</h5>
-                                
-                                {% if is_county_user and default_county %}
-                                <div class="alert alert-info">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    Submitting data for <strong>{{ default_county.name }}</strong>
-                                </div>
-                                {% endif %}
-                                
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-bold">County</label>
-                                        {% if is_county_user and default_county %}
-                                            <input type="hidden" name="county" value="{{ default_county.id }}">
-                                            <div class="form-control bg-white">{{ default_county.name }}</div>
-                                        {% else %}
-                                            <select name="county" class="form-select" id="countySelect">
-                                                <option value="">Select County</option>
-                                                {% for county in counties %}
-                                                <option value="{{ county.id }}" {% if county.id|stringformat:"s" == county_id %}selected{% endif %}>
-                                                    {{ county.name }}
-                                                </option>
-                                                {% endfor %}
-                                            </select>
-                                        {% endif %}
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-bold">Quarter</label>
-                                        <select name="quarter" class="form-select" id="quarterSelect">
-                                            <option value="">Select Quarter</option>
-                                            {% for quarter in quarters %}
-                                            <option value="{{ quarter.id }}" {% if quarter.id|stringformat:"s" == quarter_id %}selected{% endif %}>
-                                                {{ quarter.name }}
-                                            </option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                </div>
-                                
-                                <div class="mt-4 text-end">
-                                    <button type="button" class="btn btn-primary" onclick="goToStep2()">
-                                        Next <i class="bi bi-arrow-right"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ===== STEP 2: SELECT INDICATORS ===== -->
-            <div class="step-content {% if step == '2' %}active{% endif %}" id="step2">
-                {% if selected_county and selected_quarter %}
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5><i class="bi bi-list-check me-2"></i>Select Indicators</h5>
-                    <div>
-                        <span class="badge bg-secondary">{{ selected_county.name }}</span>
-                        <span class="badge bg-secondary">{{ selected_quarter.name }}</span>
-                    </div>
-                </div>
-
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle me-2"></i>
-                    Select indicators to work on. <span class="text-danger">*</span> Approved/Submitted cannot be selected.
-                </div>
-
-                <div class="mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="selectAll">
-                        <label class="form-check-label fw-bold" for="selectAll">Select All Available</label>
-                    </div>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-hover table-selection">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="checkbox-cell"><input type="checkbox" id="selectAllRows"></th>
-                                <th>Code</th>
-                                <th>Indicator</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for area in areas %}
-                                {% for indicator in area.indicator_list %}
-                                {% with status=existing_status|get_item:indicator.id %}
-                                {% with locked=status|in_list:'approved,submitted' %}
-                                <tr>
-                                    <td class="checkbox-cell">
-                                        <input type="checkbox" 
-                                               name="selected_indicators" 
-                                               value="{{ indicator.id }}"
-                                               class="indicator-checkbox"
-                                               {% if locked %}disabled{% endif %}>
-                                    </td>
-                                    <td><code>{{ indicator.code }}</code></td>
-                                    <td>{{ indicator.name }}</td>
-                                    <td>
-                                        {% if status == 'approved' %}
-                                        <span class="badge bg-success">Approved</span>
-                                        {% elif status == 'submitted' %}
-                                        <span class="badge bg-warning text-dark">Submitted</span>
-                                        {% elif status == 'rejected' %}
-                                        <span class="badge bg-danger">Rejected</span>
-                                        {% elif existing_data|get_item:indicator.id %}
-                                        <span class="badge bg-secondary">Draft</span>
-                                        {% else %}
-                                        <span class="badge bg-secondary">Empty</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endwith %}
-                                {% endwith %}
-                                {% endfor %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="action-bar">
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-outline-secondary" onclick="goToStep1()">
-                            <i class="bi bi-arrow-left"></i> Back
-                        </button>
-                        <button type="submit" name="go_to_data_entry" value="1" class="btn btn-primary btn-next">
-                            Next: Enter Data <i class="bi bi-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
-
-                {% else %}
-                <div class="empty-state">
-                    <i class="bi bi-arrow-up-circle icon"></i>
-                    <h5>Select County and Quarter First</h5>
-                    <button class="btn btn-primary mt-3" onclick="goToStep1()">
-                        <i class="bi bi-arrow-left"></i> Go to Step 1
-                    </button>
-                </div>
-                {% endif %}
-            </div>
-
-            <!-- ===== STEP 3: ENTER DATA & SUBMIT ===== -->
-            <div class="step-content {% if step == '3' %}active{% endif %}" id="step3">
-                {% if selected_county and selected_quarter and selected_indicators %}
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5><i class="bi bi-pencil me-2"></i>Enter Data</h5>
-                    <div>
-                        <span class="badge bg-secondary">{{ selected_county.name }}</span>
-                        <span class="badge bg-secondary">{{ selected_quarter.name }}</span>
-                        <span class="badge bg-primary selected-badge">{{ selected_indicators|length }} selected</span>
-                    </div>
-                </div>
-
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle me-2"></i>
-                    Enter values for <strong>{{ selected_indicators|length }}</strong> indicators.
-                    <span class="text-danger">*</span> All fields are required for submission.
-                </div>
-
-                <!-- Hidden inputs to preserve selected indicators -->
-                {% for indicator_id in selected_indicators %}
-                <input type="hidden" name="selected_indicators" value="{{ indicator_id }}">
-                {% endfor %}
-
-                <div class="table-responsive">
-                    <table class="table table-hover table-data-entry">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 100px;">Code</th>
-                                <th>Indicator</th>
-                                <th style="width: 100px;">Target</th>
-                                <th style="width: 100px;">Unit</th>
-                                <th style="width: 200px;">Value</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for indicator in indicators %}
-                                {% if indicator.id in selected_indicators %}
-                                <tr>
-                                    <td><code>{{ indicator.code }}</code></td>
-                                    <td>{{ indicator.name }}</td>
-                                    <td>{{ indicator.target_value|default:"—" }}</td>
-                                    <td>{{ indicator.unit|default:"—" }}</td>
-                                    <td>
-                                        <input type="text" 
-                                               name="indicator_{{ indicator.id }}" 
-                                               class="form-control value-input"
-                                               placeholder="Enter value"
-                                               data-indicator="{{ indicator.id }}"
-                                               data-min="{{ indicator.min_value|default:'' }}"
-                                               data-max="{{ indicator.max_value|default:'' }}"
-                                               data-type="{{ indicator.data_type }}">
-                                        <div class="validation-feedback text-danger" id="feedback_{{ indicator.id }}"></div>
-                                    </td>
-                                </tr>
-                                {% endif %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="action-bar">
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-outline-secondary" onclick="goToStep2()">
-                            <i class="bi bi-arrow-left"></i> Back
-                        </button>
-                        <button type="submit" name="action" value="draft" class="btn btn-secondary">
-                            <i class="bi bi-save"></i> Save Draft
-                        </button>
-                        <button type="submit" name="action" value="submit" class="btn btn-primary btn-next" id="submitBtn">
-                            <i class="bi bi-send"></i> Submit for Approval
-                        </button>
-                    </div>
-                    <small class="text-muted d-block mt-2">
-                        <i class="bi bi-info-circle me-1"></i>
-                        <span class="text-danger">Red border</span> = Invalid • 
-                        <span class="text-success">Green border</span> = Valid
-                    </small>
-                </div>
-
-                {% else %}
-                <div class="empty-state">
-                    <i class="bi bi-arrow-up-circle icon"></i>
-                    <h5>No Indicators Selected</h5>
-                    <button class="btn btn-primary mt-3" onclick="goToStep2()">
-                        <i class="bi bi-arrow-left"></i> Go to Step 2
-                    </button>
-                </div>
-                {% endif %}
-            </div>
-        </form>
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h3 class="page-title mb-1"><i class="bi bi-pencil-square me-2"></i>Data Entry</h3>
+        <p class="text-muted mb-0">Select a reporting period, then enter and review values in bulk.</p>
     </div>
+    <a href="{% url 'data_entry:list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Entries</a>
 </div>
 
+<div class="entry-step">
+    <span class="entry-step__number {% if step == 'select' %}active{% endif %}">1</span><span class="fw-semibold">Set up reporting batch</span>
+    <i class="bi bi-arrow-right text-muted"></i>
+    <span class="entry-step__number {% if step == 'enter' %}active{% endif %}">2</span><span class="fw-semibold">Enter and review values</span>
+</div>
+
+{% if step == 'select' %}
+<form method="post">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-body p-4">
+            <div class="row g-3 align-items-end mb-4">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">County</label>
+                    {% if is_county_user %}
+                    <input type="hidden" name="county" value="{{ default_county.pk }}">
+                    <div class="form-control bg-light">{{ default_county.name }}</div>
+                    {% else %}
+                    <select class="form-select" name="county" id="countySelect" required>
+                        <option value="">Select county</option>
+                        {% for county in counties %}<option value="{{ county.pk }}" {% if county_id == county.pk|stringformat:'s' %}selected{% endif %}>{{ county.name }}</option>{% endfor %}
+                    </select>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Quarter</label>
+                    <select class="form-select" name="quarter" id="quarterSelect" required>
+                        <option value="">Select quarter</option>
+                        {% for quarter in quarters %}<option value="{{ quarter.pk }}" {% if quarter_id == quarter.pk|stringformat:'s' %}selected{% endif %}>{{ quarter.name }} ({{ quarter.fiscal_year }})</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Find indicators</label>
+                    <div class="input-group"><span class="input-group-text bg-white"><i class="bi bi-search"></i></span><input type="search" class="form-control" id="indicatorSearch" placeholder="Code or indicator name"></div>
+                </div>
+            </div>
+            {% if selected_county and selected_quarter %}
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <div><h5 class="mb-0">Choose Indicators</h5><small class="text-muted">Submitted and approved entries are locked.</small></div>
+                <div class="d-flex gap-2"><select class="form-select form-select-sm" id="areaFilter"><option value="">All thematic areas</option>{% for area in areas %}<option value="{{ area.pk }}">{{ area.name }}</option>{% endfor %}</select><button type="button" class="btn btn-outline-secondary btn-sm" id="selectAvailable">Select available</button></div>
+            </div>
+            <div class="table-responsive"><table class="table table-hover mb-0"><thead class="table-light"><tr><th style="width:48px"><input class="form-check-input" type="checkbox" id="selectAll"></th><th>Indicator</th><th>Thematic Area</th><th>Existing status</th></tr></thead><tbody>
+                {% for area in areas %}{% for indicator in area.indicator_list %}{% with status=existing_status|get_item:indicator.pk %}
+                <tr class="indicator-row" data-area="{{ area.pk }}"><td><input class="form-check-input indicator-check" type="checkbox" name="selected_indicators" value="{{ indicator.pk }}" {% if indicator.pk in selected_indicators %}checked{% endif %} {% if status == 'approved' or status == 'submitted' %}disabled{% endif %}></td><td><strong>{{ indicator.code }}</strong><small class="d-block text-muted">{{ indicator.name }}</small></td><td>{{ area.name }}</td><td>{% if status == 'approved' %}<span class="badge bg-success">Approved</span>{% elif status == 'submitted' %}<span class="badge bg-warning text-dark">Submitted</span>{% elif status == 'rejected' %}<span class="badge bg-danger">Returned</span>{% elif status == 'draft' %}<span class="badge bg-secondary">Draft</span>{% else %}<span class="text-muted">No entry</span>{% endif %}</td></tr>
+                {% endwith %}{% endfor %}{% endfor %}
+            </tbody></table></div>
+        </div>
+        <div class="sticky-actions d-flex justify-content-between align-items-center"><span class="text-muted"><strong id="selectedCount">0</strong> selected</span><button class="btn btn-primary" name="action" value="continue" type="submit">Continue to data entry <i class="bi bi-arrow-right ms-1"></i></button></div>
+            {% else %}
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-calendar3 fs-1 d-block mb-3"></i>
+                Choose a county and quarter to load entries and identify indicators with no entry for that reporting period.
+            </div>
+            {% endif %}
+    </div>
+</form>
+{% else %}
+<form method="post">
+    {% csrf_token %}<input type="hidden" name="county" value="{{ county_id }}"><input type="hidden" name="quarter" value="{{ quarter_id }}">
+    {% for indicator_id in selected_indicators %}<input type="hidden" name="selected_indicators" value="{{ indicator_id }}">{% endfor %}
+    <div class="entry-summary p-3 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-3"><div><strong>{{ selected_county.name }}</strong><span class="mx-2 text-muted">|</span><strong>{{ selected_quarter.name }}</strong><span class="text-muted">({{ selected_quarter.fiscal_year }})</span></div><div class="d-flex gap-3"><span><strong id="completedCount">0</strong> entered</span><span class="text-danger"><strong id="missingCount">{{ selected_indicators|length }}</strong> missing</span><span class="text-danger"><strong id="invalidCount">0</strong> invalid</span></div></div>
+    <div class="card"><div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2"><span><i class="bi bi-list-check me-2"></i>Enter Values</span><a href="{% url 'data_entry:form' %}?step=select&county={{ county_id }}&quarter={{ quarter_id }}&selected={% for indicator_id in selected_indicators %}{{ indicator_id }}{% if not forloop.last %},{% endif %}{% endfor %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Change selection</a></div><div class="table-responsive"><table class="table table-hover mb-0"><thead class="table-light"><tr><th>Indicator</th><th>Target</th><th>Unit</th><th style="min-width:190px">Value</th><th style="min-width:220px">Notes</th></tr></thead><tbody>
+        {% for indicator in indicators %}{% if indicator.pk in selected_indicators %}<tr><td><strong>{{ indicator.code }}</strong><small class="d-block text-muted">{{ indicator.name }}</small></td><td>{{ indicator.target_value|default:'-' }}</td><td>{{ indicator.unit|default:'-' }}</td><td><input type="text" name="indicator_{{ indicator.pk }}" class="form-control value-input" value="{{ existing_data|get_item:indicator.pk|default:'' }}" data-type="{{ indicator.data_type }}" data-min="{{ indicator.min_value|default:'' }}" data-max="{{ indicator.max_value|default:'' }}" placeholder="Enter value"><small class="validation-feedback"></small></td><td><input type="text" name="notes_{{ indicator.pk }}" class="form-control" value="{{ existing_notes|get_item:indicator.pk|default:'' }}" placeholder="Optional note"></td></tr>{% endif %}{% endfor %}
+    </tbody></table></div><div class="sticky-actions d-flex flex-wrap justify-content-between align-items-center gap-2"><a class="btn btn-outline-secondary" href="{% url 'data_entry:form' %}?step=select&county={{ county_id }}&quarter={{ quarter_id }}"><i class="bi bi-arrow-left me-1"></i>Back</a><div class="d-flex gap-2"><button class="btn btn-outline-primary" type="submit" name="action" value="draft"><i class="bi bi-save me-1"></i>Save and return later</button><button class="btn btn-primary" type="submit" name="action" value="submit" id="submitButton"><i class="bi bi-send me-1"></i>Submit for approval</button></div></div></div>
+</form>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
 <script>
-// ===== STEP NAVIGATION =====
-function goToStep1() {
-    const county = document.getElementById('countySelect')?.value;
-    const quarter = document.getElementById('quarterSelect')?.value;
-    const url = window.location.pathname + '?step=1' + (county ? '&county=' + county : '') + (quarter ? '&quarter=' + quarter : '');
-    window.location.href = url;
-}
-
-function goToStep2() {
-    const county = document.getElementById('countySelect')?.value || document.querySelector('input[name="county"]')?.value;
-    const quarter = document.getElementById('quarterSelect')?.value || document.querySelector('input[name="quarter"]')?.value;
-    
-    if (!county || !quarter) {
-        alert('Please select both county and quarter.');
-        return;
-    }
-    window.location.href = window.location.pathname + '?step=2&county=' + county + '&quarter=' + quarter;
-}
-
-function goToStep3() {
-    const selected = [];
-    document.querySelectorAll('.indicator-checkbox:checked:not([disabled])').forEach(cb => {
-        selected.push(cb.value);
-    });
-    if (selected.length === 0) {
-        alert('Please select at least one indicator.');
-        return;
-    }
-    const county = document.querySelector('input[name="county"]')?.value || '{{ county_id }}';
-    const quarter = document.querySelector('input[name="quarter"]')?.value || '{{ quarter_id }}';
-    window.location.href = window.location.pathname + '?step=3&county=' + county + '&quarter=' + quarter + '&selected=' + selected.join(',');
-}
-
-// ===== SELECT ALL =====
-document.getElementById('selectAll')?.addEventListener('change', function() {
-    const checked = this.checked;
-    document.querySelectorAll('.indicator-checkbox:not([disabled])').forEach(cb => cb.checked = checked);
-});
-
-document.getElementById('selectAllRows')?.addEventListener('change', function() {
-    const checked = this.checked;
-    document.querySelectorAll('.indicator-checkbox:not([disabled])').forEach(cb => cb.checked = checked);
-});
-
-// ===== REAL-TIME VALIDATION =====
-document.querySelectorAll('.value-input').forEach(input => {
-    input.addEventListener('input', function() {
-        const id = this.dataset.indicator;
-        const value = this.value.trim();
-        const feedback = document.getElementById('feedback_' + id);
-        
-        if (!value) {
-            this.classList.remove('is-valid', 'is-invalid');
-            if (feedback) feedback.textContent = '';
-            return;
-        }
-        
-        const min = this.dataset.min ? parseFloat(this.dataset.min) : null;
-        const max = this.dataset.max ? parseFloat(this.dataset.max) : null;
-        const dataType = this.dataset.type;
-        
-        let numVal, isValid = true, errors = [];
-        
-        if (['numeric', 'count', 'percentage', 'decimal'].includes(dataType)) {
-            numVal = parseFloat(value);
-            if (isNaN(numVal)) {
-                isValid = false;
-                errors.push('Must be a number');
-            } else if (dataType === 'count') {
-                if (numVal < 0) errors.push('Cannot be negative');
-                if (!Number.isInteger(numVal)) errors.push('Must be whole number');
-            } else if (dataType === 'percentage') {
-                if (numVal < 0 || numVal > 100) errors.push('Must be between 0-100');
-            }
-        }
-        
-        if (!isNaN(numVal) && isValid) {
-            if (min !== null && numVal < min) errors.push('Min: ' + min);
-            if (max !== null && numVal > max) errors.push('Max: ' + max);
-        }
-        
-        if (errors.length === 0 && isValid) {
-            this.classList.remove('is-invalid');
-            this.classList.add('is-valid');
-            if (feedback) {
-                feedback.textContent = '✓ Valid';
-                feedback.className = 'text-success small validation-feedback';
-            }
-        } else {
-            this.classList.remove('is-valid');
-            this.classList.add('is-invalid');
-            if (feedback) {
-                feedback.textContent = '✗ ' + errors.join('; ');
-                feedback.className = 'text-danger small validation-feedback';
-            }
-        }
-    });
-});
-
-// ===== SUBMIT VALIDATION =====
-document.getElementById('submitBtn')?.addEventListener('click', function(e) {
-    const inputs = document.querySelectorAll('.value-input');
-    let hasError = false;
-    let hasEmpty = false;
-    
-    inputs.forEach(input => {
-        if (!input.value.trim()) {
-            hasEmpty = true;
-            input.classList.add('is-invalid');
-        } else if (input.classList.contains('is-invalid')) {
-            hasError = true;
-        }
-    });
-    
-    if (hasEmpty) {
-        e.preventDefault();
-        alert('Please enter values for all selected indicators.');
-        return false;
-    }
-    
-    if (hasError) {
-        e.preventDefault();
-        alert('Please fix all validation errors before submitting.');
-        return false;
-    }
-    
-    if (!confirm('Submit all entries for approval?')) {
-        e.preventDefault();
-        return false;
-    }
-});
-
-// ===== AUTO-LOAD =====
-document.getElementById('countySelect')?.addEventListener('change', autoLoad);
-document.getElementById('quarterSelect')?.addEventListener('change', autoLoad);
-
-function autoLoad() {
-    const county = document.getElementById('countySelect')?.value;
-    const quarter = document.getElementById('quarterSelect')?.value;
-    if (county && quarter) {
-        window.location.href = window.location.pathname + '?step=2&county=' + county + '&quarter=' + quarter;
-    }
-}
+const selectable = () => [...document.querySelectorAll('.indicator-check:not(:disabled)')];
+function updateSelected() { const target = document.getElementById('selectedCount'); if (target) target.textContent = selectable().filter(input => input.checked).length; }
+document.getElementById('selectAll')?.addEventListener('change', event => { selectable().filter(input => input.closest('tr').style.display !== 'none').forEach(input => input.checked = event.target.checked); updateSelected(); });
+document.getElementById('selectAvailable')?.addEventListener('click', () => { selectable().filter(input => input.closest('tr').style.display !== 'none').forEach(input => input.checked = true); updateSelected(); });
+document.querySelectorAll('.indicator-check').forEach(input => input.addEventListener('change', updateSelected));
+function filterIndicators() { const search = document.getElementById('indicatorSearch')?.value.toLowerCase() || ''; const area = document.getElementById('areaFilter')?.value || ''; document.querySelectorAll('.indicator-row').forEach(row => row.style.display = (row.textContent.toLowerCase().includes(search) && (!area || row.dataset.area === area)) ? '' : 'none'); }
+document.getElementById('indicatorSearch')?.addEventListener('input', filterIndicators); document.getElementById('areaFilter')?.addEventListener('change', filterIndicators); updateSelected();
+function loadReportingPeriod() { const county = document.getElementById('countySelect')?.value || document.querySelector('input[name="county"]')?.value; const quarter = document.getElementById('quarterSelect')?.value; if (county && quarter) window.location.href = `{% url 'data_entry:form' %}?step=select&county=${encodeURIComponent(county)}&quarter=${encodeURIComponent(quarter)}`; }
+document.getElementById('countySelect')?.addEventListener('change', loadReportingPeriod); document.getElementById('quarterSelect')?.addEventListener('change', loadReportingPeriod);
+function validate(input) { const value = input.value.trim(); const feedback = input.nextElementSibling; if (!value) { input.classList.remove('is-valid', 'is-invalid'); feedback.textContent = ''; return 'missing'; } const type = input.dataset.type; const numeric = ['numeric', 'count', 'percentage', 'decimal'].includes(type); const number = Number(value); let message = ''; if (numeric && Number.isNaN(number)) message = 'Enter a number'; else if (type === 'count' && (!Number.isInteger(number) || number < 0)) message = 'Enter a non-negative whole number'; else if (type === 'percentage' && (number < 0 || number > 100)) message = 'Enter 0 to 100'; else if (input.dataset.min && number < Number(input.dataset.min)) message = `Minimum: ${input.dataset.min}`; else if (input.dataset.max && number > Number(input.dataset.max)) message = `Maximum: ${input.dataset.max}`; input.classList.toggle('is-invalid', Boolean(message)); input.classList.toggle('is-valid', !message); feedback.textContent = message; feedback.className = message ? 'validation-feedback text-danger small' : 'validation-feedback text-success small'; return message ? 'invalid' : 'valid'; }
+function updateCompletion() { let completed = 0, missing = 0, invalid = 0; document.querySelectorAll('.value-input').forEach(input => { const state = validate(input); if (state === 'valid') completed++; if (state === 'missing') missing++; if (state === 'invalid') invalid++; }); const completedNode = document.getElementById('completedCount'); if (completedNode) { completedNode.textContent = completed; document.getElementById('missingCount').textContent = missing; document.getElementById('invalidCount').textContent = invalid; } }
+document.querySelectorAll('.value-input').forEach(input => input.addEventListener('input', updateCompletion)); updateCompletion();
+document.getElementById('submitButton')?.addEventListener('click', event => { updateCompletion(); if (Number(document.getElementById('missingCount').textContent) || Number(document.getElementById('invalidCount').textContent)) { event.preventDefault(); alert('Enter valid values for all selected indicators before submitting.'); } });
 </script>
 {% endblock %}

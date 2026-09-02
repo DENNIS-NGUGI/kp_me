@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 
-from .constants import AuthConstants
+from .constants import AuthConstants, RoleConstants
 from .managers import UserManager
 
 
@@ -82,8 +82,21 @@ class Role(models.Model):
         default=0,
         help_text=_("Higher priority roles can manage lower priority roles")
     )
+    parent_role = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='child_roles',
+        help_text=_("Parent role for permission inheritance")
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_("Timestamp when role was soft deleted")
+    )
     
     objects = RoleManager()
     
@@ -100,10 +113,33 @@ class Role(models.Model):
         return self.get_display_name()
     
     def clean(self):
-        if self.is_system and not self.is_active:
-            raise ValidationError(_('System roles cannot be deactivated'))
-        if self.is_system and self.name not in ['admin', 'superuser', 'system']:
-            raise ValidationError(_('System roles must be named admin, superuser, or system'))
+        """Validate role configuration"""
+        # Check system role constraints
+        if self.is_system:
+            if not self.is_active:
+                raise ValidationError(_('System roles cannot be deactivated'))
+            if self.name not in RoleConstants.SYSTEM_ROLES:
+                raise ValidationError(
+                    _('System roles must be named one of: {}'.format(
+                        ', '.join(RoleConstants.SYSTEM_ROLES)
+                    ))
+                )
+            if self.deleted_at:
+                raise ValidationError(_('System roles cannot be deleted'))
+        
+        # Check parent role hierarchy (prevent circular references)
+        if self.parent_role:
+            if self.parent_role.pk == self.pk:
+                raise ValidationError(_('A role cannot be its own parent'))
+            
+            # Check for circular reference chains
+            current = self.parent_role
+            visited = set()
+            while current:
+                if current.pk in visited:
+                    raise ValidationError(_('Circular role hierarchy detected'))
+                visited.add(current.pk)
+                current = current.parent_role
     
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -116,19 +152,144 @@ class Role(models.Model):
         return self.users.count()
     
     def has_permission(self, codename: str) -> bool:
-        return self.permissions.filter(codename=codename).exists()
+        """Check if role has permission (including inherited from parent)"""
+        # Check own permissions
+        if self.permissions.filter(codename=codename).exists():
+            return True
+        
+        # Check parent role permissions (recursive)
+        if self.parent_role:
+            return self.parent_role.has_permission(codename)
+        
+        return False
     
     def has_module_permission(self, module: str, action: str = 'view') -> bool:
-        perm_codename = f"{action}_{module}"
+        """Check module permission with support for both custom and auto-generated permissions"""
+        # Map module to permission codename
+        model_name = RoleConstants.MODEL_PERMISSION_MAPPING.get(module)
+        
+        if model_name is None:
+            # Custom module without model mapping
+            perm_codename = f"{action}_{module}"
+        else:
+            # Django auto-generated permission
+            perm_codename = f"{action}_{model_name}"
+        
         return self.has_permission(perm_codename)
     
     def get_all_permissions(self) -> List[str]:
-        return list(self.permissions.values_list('codename', flat=True))
+        """Get all permissions including inherited from parent role"""
+        perms = set(self.permissions.values_list('codename', flat=True))
+        
+        # Include parent permissions recursively
+        if self.parent_role:
+            perms.update(self.parent_role.get_all_permissions())
+        
+        return list(perms)
     
     def can_manage(self, target_role) -> bool:
         if not target_role or not target_role.is_active:
             return False
         return self.priority > target_role.priority or self.is_system
+    
+    def clone(self, new_name: str, new_display_name: str = None) -> 'Role':
+        """Create a copy of this role with a new name and all same permissions"""
+        if Role.objects.filter(name=new_name).exists():
+            raise ValidationError(_('Role with name "{}" already exists').format(new_name))
+        
+        new_role = Role.objects.create(
+            name=new_name,
+            display_name=new_display_name or f"{self.display_name} (Copy)",
+            description=self.description,
+            priority=self.priority - 1,  # Slightly lower priority
+            parent_role=self.parent_role,
+            is_active=True,
+            is_system=False,  # Cloned roles are never system roles
+            icon=self.icon,
+            color=self.color,
+        )
+        # Copy permissions
+        new_role.permissions.set(self.permissions.all())
+        return new_role
+    
+    def soft_delete(self):
+        """Soft delete a role by marking it as deleted"""
+        if self.is_system:
+            raise ValidationError(_('Cannot delete system roles'))
+        self.deleted_at = timezone.now()
+        self.is_active = False
+        self.save()
+    
+    def restore(self):
+        """Restore a soft deleted role"""
+        self.deleted_at = None
+        self.is_active = True
+        self.save()
+
+
+class RoleChangeLog(models.Model):
+    """Audit trail for role changes - tracks what changed and who changed it"""
+    
+    CHANGE_TYPE_CHOICES = (
+        ('created', 'Created'),
+        ('modified', 'Modified'),
+        ('deleted', 'Deleted'),
+        ('permission_added', 'Permission Added'),
+        ('permission_removed', 'Permission Removed'),
+        ('restored', 'Restored'),
+    )
+    
+    role = models.ForeignKey(
+        Role,
+        on_delete=models.CASCADE,
+        related_name='change_logs',
+        help_text=_("Role that was changed")
+    )
+    changed_by = models.ForeignKey(
+        'users.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='role_changes_made',
+        help_text=_("User who made the change")
+    )
+    change_type = models.CharField(
+        max_length=20,
+        choices=CHANGE_TYPE_CHOICES,
+        help_text=_("Type of change made")
+    )
+    field_name = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text=_("Field that was changed (if applicable)")
+    )
+    old_value = models.JSONField(
+        null=True,
+        blank=True,
+        help_text=_("Previous value")
+    )
+    new_value = models.JSONField(
+        null=True,
+        blank=True,
+        help_text=_("New value")
+    )
+    changed_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text=_("When the change was made")
+    )
+    
+    class Meta:
+        ordering = ['-changed_at']
+        indexes = [
+            models.Index(fields=['role', '-changed_at']),
+            models.Index(fields=['changed_by', '-changed_at']),
+            models.Index(fields=['change_type']),
+        ]
+        verbose_name = _('Role Change Log')
+        verbose_name_plural = _('Role Change Logs')
+    
+    def __str__(self) -> str:
+        return f"{self.role.name} - {self.change_type} by {self.changed_by} on {self.changed_at}"
 
 
 class User(AbstractUser):
@@ -275,6 +436,18 @@ class User(AbstractUser):
             ('change_reports', _('Can change reports')),
             ('delete_reports', _('Can delete reports')),
             ('export_reports', _('Can export reports')),
+
+            # ================================================================
+            # FIELD MONITORING - NO model exists (custom module permissions)
+            # These MUST be defined here because Django doesn't auto-generate them
+            # ================================================================
+            
+            ('view_field_monitoring', _('Can view field monitoring')),
+            # ('add_field_monitoring', _('Can add field monitoring report')),
+            # ('change_field_monitoring', _('Can change field monitoring report')),
+            # ('delete_field_monitoring', _('Can delete field monitoring report')),
+            # ('export_field_monitoring', _('Can export field monitoring reports')),
+            # ('can_approve_field_visit', _('Can approve field visit reports')),
             
             # ================================================================
             # CUSTOM PERMISSIONS (can_ prefix)
@@ -291,6 +464,8 @@ class User(AbstractUser):
             ('can_manage_partners', _('Can manage partners')),
             ('can_manage_projects', _('Can manage projects')),
             ('can_manage_county_data', _('Can manage county data')),
+
+            
             
             # ================================================================
             # MODEL PERMISSIONS - NOT DEFINED HERE
@@ -368,50 +543,22 @@ class User(AbstractUser):
         return self.role.has_permission(codename)
     
     def has_module_permission(self, module: str, action: str = 'view') -> bool:
+        """Check module permission using centralized mapping"""
         if self.is_superuser:
             return True
         
-        # Map module names to Django's auto-generated permission names
-        # For modules with models, Django auto-generates: action_modelname
-        # For modules without models, we use the custom defined permissions
-        model_mapping = {
-            # Modules with models (Django auto-generates)
-            'data_entry': 'dataentry',
-            'indicators': 'indicator',
-            'partners': 'partner',
-            'projects': 'project',
-            'users': 'user',
-            'settings': 'systemsetting',
-            'audit_log': 'auditlog',
-            'county': 'county',
-            'quarter': 'quarter',
-            'thematic_area': 'thematicarea',
-            'subcounty': 'subcounty',
-            'logentry': 'logentry',
-            'group': 'group',
-            'permission': 'permission',
-            'session': 'session',
-            'contenttype': 'contenttype',
-            'role': 'role',
-            'captchastore': 'captchastore',
-            'emaildevice': 'emaildevice',
-            'notification': 'notification',
-            'notificationpreference': 'notificationpreference',
-            'projectmilestone': 'projectmilestone',
-            'projectreport': 'projectreport',
-            
-            # Modules without models (custom permissions)
-            'dashboard': f"{action}_dashboard",
-            'reports': f"{action}_reports",
-        }
+        if not self.is_active or self.deleted_at:
+            return False
         
-        model_name = model_mapping.get(module)
+        if not self.role or not self.role.is_active:
+            return False
+        
+        # Use centralized model permission mapping
+        model_name = RoleConstants.MODEL_PERMISSION_MAPPING.get(module)
+        
         if model_name is None:
-            # Fallback: use the module name as-is
+            # Custom module without model mapping
             perm_codename = f"{action}_{module}"
-        elif module in ['dashboard', 'reports']:
-            # These are custom permissions (no model)
-            perm_codename = model_name
         else:
             # Django auto-generated permission
             perm_codename = f"{action}_{model_name}"
@@ -419,28 +566,36 @@ class User(AbstractUser):
         return self.has_permission(perm_codename)
     
     def has_any_permission(self, *codenames: str) -> bool:
+        """Check if user has at least one of the given permissions"""
         if self.is_superuser:
             return True
+        if not self.is_active or self.deleted_at:
+            return False
         if not self.role or not self.role.is_active:
             return False
-        return self.role.permissions.filter(codename__in=codenames).exists()
+        # Check against role's permissions (including inherited)
+        role_perms = self.role.get_all_permissions()
+        return any(codename in role_perms for codename in codenames)
     
     def has_all_permissions(self, *codenames: str) -> bool:
+        """Check if user has all of the given permissions"""
         if self.is_superuser:
             return True
+        if not self.is_active or self.deleted_at:
+            return False
         if not self.role or not self.role.is_active:
             return False
-        user_codenames = set(
-            self.role.permissions.values_list('codename', flat=True)
-        )
-        return all(codename in user_codenames for codename in codenames)
+        # Check against role's permissions (including inherited)
+        role_perms = self.role.get_all_permissions()
+        return all(codename in role_perms for codename in codenames)
     
     def get_all_permissions(self) -> Set[str]:
+        """Get all permissions for the user (including inherited from role hierarchy)"""
         if self.is_superuser:
             return set(Permission.objects.values_list('codename', flat=True))
         if not self.role:
             return set()
-        return set(self.role.permissions.values_list('codename', flat=True))
+        return set(self.role.get_all_permissions())
     
     def can_manage_user(self, target_user) -> bool:
         if not target_user or self.pk == target_user.pk:
@@ -461,10 +616,7 @@ class User(AbstractUser):
     def is_county_user(self) -> bool:
         if not self.is_active or self.deleted_at:
             return False
-        return (
-            self.has_permission('can_manage_county_data') and 
-            self.county is not None
-        )
+        return self.county is not None
     
     @property
     def is_ncpd_user(self) -> bool:
@@ -548,6 +700,10 @@ class User(AbstractUser):
     @property
     def can_view_indicators(self) -> bool:
         return self.has_permission('view_indicator')
+
+    @property
+    def can_view_icpd(self) -> bool:
+        return self.has_permission('view_commitment')
     
     @property
     def can_add_indicators(self) -> bool:
@@ -912,6 +1068,34 @@ class User(AbstractUser):
     def is_partner_user(self):
         """Check if user is a partner user"""
         return self.role and self.role.name == 'partner'
+
+    # ========================================================================
+    # FIELD MONITORING PROPERTIES
+    # ========================================================================
+    
+    @property
+    def can_view_field_monitoring(self) -> bool:
+        return self.has_permission('view_field_monitoring')
+    
+    # @property
+    # def can_add_field_monitoring(self) -> bool:
+    #     return self.has_permission('add_field_monitoring')
+    
+    # @property
+    # def can_change_field_monitoring(self) -> bool:
+    #     return self.has_permission('change_field_monitoring')
+    
+    # @property
+    # def can_delete_field_monitoring(self) -> bool:
+    #     return self.has_permission('delete_field_monitoring')
+    
+    # @property
+    # def can_export_field_monitoring(self) -> bool:
+    #     return self.has_permission('export_field_monitoring')
+    
+    # @property
+    # def can_approve_field_visit(self) -> bool:
+    #     return self.has_permission('can_approve_field_visit')
 
 
 class AuditLog(models.Model):

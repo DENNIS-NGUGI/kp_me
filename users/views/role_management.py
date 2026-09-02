@@ -75,8 +75,8 @@ def _get_module_permissions(role=None):
         if codename in processed_codenames:
             continue
         
-        # Check if it's a custom permission
-        if codename in custom_permissions:
+        # Check if it's a custom permission (hardcoded list or any can_* permission)
+        if codename in custom_permissions or codename.startswith('can_'):
             if 'custom' not in modules:
                 modules['custom'] = {
                     'name': 'Custom Permissions',

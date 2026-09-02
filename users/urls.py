@@ -12,6 +12,9 @@ urlpatterns = [
     path('verify-otp/', views.verify_otp, name='verify_otp'),
     path('resend-otp/', views.resend_otp, name='resend_otp'),
     path('captcha-refresh/', views.ajax_captcha_refresh, name='captcha_refresh'),
+    path('password-reset/', views.UserPasswordResetView.as_view(), name='password_reset'),
+    path('password-reset/done/', views.password_reset_done, name='password_reset_done'),
+    path('password-reset/<uidb64>/<token>/', views.UserPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     
     # Profile
     path('profile/', views.profile, name='profile'),

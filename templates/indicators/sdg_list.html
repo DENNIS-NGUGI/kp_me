@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}Sustainable Development Goals - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div><h3 class="page-title mb-1"><i class="bi bi-globe2 me-2"></i>Sustainable Development Goals</h3><p class="text-muted mb-0">Manage the SDGs available for indicator alignment.</p></div>
+    <div class="d-flex gap-2"><a href="{% url 'indicators:list' %}" class="btn btn-outline-secondary" title="Back to indicators"><i class="bi bi-arrow-left"></i></a>{% if can_add %}<a href="{% url 'indicators:sdg_add' %}" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>Add SDG</a>{% endif %}</div>
+</div>
+<div class="card"><div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th>Number</th><th>Goal</th><th>Linked Indicators</th><th>Status</th><th></th></tr></thead><tbody>{% for sdg in sdgs %}<tr><td><strong>SDG {{ sdg.number }}</strong></td><td>{{ sdg.title }}{% if sdg.description %}<small class="d-block text-muted">{{ sdg.description|truncatechars:120 }}</small>{% endif %}</td><td>{{ sdg.indicators.count }}</td><td><span class="badge {% if sdg.is_active %}bg-success{% else %}bg-secondary{% endif %}">{% if sdg.is_active %}Active{% else %}Inactive{% endif %}</span></td><td class="text-end">{% if can_edit %}<a href="{% url 'indicators:sdg_edit' sdg.pk %}" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="bi bi-pencil"></i></a>{% endif %}{% if can_delete %}<a href="{% url 'indicators:sdg_delete' sdg.pk %}" class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></a>{% endif %}</td></tr>{% empty %}<tr><td colspan="5" class="text-center text-muted py-5">No SDGs have been configured.</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

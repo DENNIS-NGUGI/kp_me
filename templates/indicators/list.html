@@ -98,6 +98,11 @@
         </div>
     </div>
     <div class="d-flex gap-2">
+        {% if can_manage_sdgs %}
+        <a href="{% url 'indicators:sdg_list' %}" class="btn btn-outline-secondary" title="Manage SDGs">
+            <i class="bi bi-globe2"></i>
+        </a>
+        {% endif %}
         {% if can_add %}
         <a href="{% url 'indicators:add' %}" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i>Add Indicator
@@ -167,7 +172,7 @@
 <div class="card">
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover mb-0" id="indicatorTable">
+            <table class="table table-hover mb-0" id="indicatorTable" data-pagination data-page-size="25">
                 <thead class="bg-light">
                     <tr>
                         <th style="width: 100px;">Code</th>
@@ -307,37 +312,6 @@
 </div>
 
 <script>
-$(document).ready(function() {
-    // Simple table sorting without DataTables to reduce complexity
-    $('#indicatorTable').on('click', 'thead th', function() {
-        const table = $(this).closest('table');
-        const index = $(this).index();
-        const rows = table.find('tbody tr').get();
-        const isAsc = $(this).hasClass('sort-asc');
-        
-        // Remove all sorting classes
-        table.find('thead th').removeClass('sort-asc sort-desc');
-        
-        // Sort rows
-        rows.sort(function(a, b) {
-            const aVal = $(a).find('td').eq(index).text().trim();
-            const bVal = $(b).find('td').eq(index).text().trim();
-            return isAsc ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
-        });
-        
-        // Append sorted rows
-        $.each(rows, function(i, row) {
-            table.find('tbody').append(row);
-        });
-        
-        // Toggle sort class
-        $(this).addClass(isAsc ? 'sort-desc' : 'sort-asc');
-    });
-    
-    // Add sort indicator to headers
-    $('#indicatorTable thead th').css('cursor', 'pointer');
-});
-
 // ===== VIEW INDICATOR DETAILS =====
 function viewIndicator(code) {
     // Show modal with loading

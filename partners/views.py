@@ -26,11 +26,18 @@ def partner_list(request):
     # Filters
     partner_type = request.GET.get('type')
     status = request.GET.get('status')
+    search_query = request.GET.get('search', '').strip()
     
     if partner_type:
         partners = partners.filter(partner_type=partner_type)
     if status:
         partners = partners.filter(status=status)
+    if search_query:
+        partners = partners.filter(
+            Q(name__icontains=search_query) |
+            Q(code__icontains=search_query) |
+            Q(contact_person__icontains=search_query)
+        )
     
     context = {
         'partners': partners,
@@ -38,6 +45,7 @@ def partner_list(request):
         'status_choices': Partner.STATUS_CHOICES,
         'selected_type': partner_type,
         'selected_status': status,
+        'search_query': search_query,
         'can_manage': user.can_manage_partners(),
         'can_view': user.can_view_partners(),
     }

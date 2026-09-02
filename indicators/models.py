@@ -15,6 +15,25 @@ class ThematicArea(models.Model):
         return f"{self.code} - {self.name}"
 
 
+class SustainableDevelopmentGoal(models.Model):
+    """A Sustainable Development Goal linked to one or more indicators."""
+
+    number = models.PositiveSmallIntegerField(
+        unique=True,
+        validators=[MinValueValidator(1), MaxValueValidator(17)],
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    sort_order = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['sort_order', 'number']
+
+    def __str__(self):
+        return f'SDG {self.number}: {self.title}'
+
+
 class Indicator(models.Model):
     """Master List of M&E Indicators"""
     DATA_TYPE_CHOICES = (
@@ -44,6 +63,12 @@ class Indicator(models.Model):
     code = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=255)
     thematic_area = models.ForeignKey(ThematicArea, on_delete=models.PROTECT, related_name='indicators')
+    sdgs = models.ManyToManyField(
+        SustainableDevelopmentGoal,
+        blank=True,
+        related_name='indicators',
+        help_text='Sustainable Development Goals this indicator contributes to',
+    )
     indicator_type = models.CharField(max_length=20, choices=INDICATOR_TYPE_CHOICES, default='output')
     description = models.TextField(blank=True)
     

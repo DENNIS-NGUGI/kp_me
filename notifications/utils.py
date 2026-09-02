@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.db.models import Q
+from threading import Thread
 from .models import Notification, NotificationPreference
 
 User = get_user_model()
@@ -85,59 +86,67 @@ def send_email_notification(user, subject, message, notification_type='info', ac
         'action_text': action_text,
     })
     
-    try:
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM,
-            recipient_list=[user.email],
-            html_message=html_message,
-            fail_silently=False,
-        )
-        return True
-    except Exception as e:
-        print(f"Email send error: {e}")
-        return False
+    def deliver_email():
+        try:
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.DEFAULT_FROM,
+                recipient_list=[user.email],
+                html_message=html_message,
+                fail_silently=False,
+            )
+        except Exception as error:
+            print(f"Email send error: {error}")
 
-def notify_submission(entry, user):
-    """Notify when data is submitted"""
-    if not user:
+    Thread(target=deliver_email, daemon=True).start()
+    return True
+
+
+def notify_submissions(entries, user):
+    """Notify once per recipient when a reporting batch is submitted."""
+    if not entries or not user:
         return
-    
-    detail_url = reverse('data_entry:detail', kwargs={'pk': entry.id})
+
+    first_entry = entries[0]
+    entry_count = len(entries)
+    detail_url = reverse('data_entry:detail', kwargs={'pk': first_entry.id})
     pending_url = reverse('data_entry:pending')
-    
-    # Notification for the submitter
+    entry_label = 'entry' if entry_count == 1 else 'entries'
+
     create_notification(
         user=user,
         title='Data Submitted Successfully',
-        message=f'Your data for {entry.indicator.code} - {entry.quarter.name} has been submitted for approval.',
+        message=(f'{entry_count} data {entry_label} for {first_entry.county.name} - '
+                 f'{first_entry.quarter.name} were submitted for approval.'),
         notification_type='submission',
         action_url=detail_url,
         action_text='View Entry',
         content_type='DataEntry',
-        object_id=str(entry.id)
+        object_id=str(first_entry.id),
     )
-    
+
     approvers = User.objects.filter(
-        Q(is_superuser=True) | 
+        Q(is_superuser=True) |
         Q(role__permissions__codename='can_approve_data')
     ).distinct()
-    
-    for approver in approvers:
-        if approver.id == user.id:
-            continue
-            
+    for approver in approvers.exclude(pk=user.pk):
         create_notification(
             user=approver,
             title='New Data Submission',
-            message=f'{user.username} submitted data for {entry.county.name} - {entry.quarter.name}',
+            message=(f'{user.username} submitted {entry_count} data {entry_label} for '
+                     f'{first_entry.county.name} - {first_entry.quarter.name}.'),
             notification_type='submission',
             action_url=pending_url,
             action_text='Review',
             content_type='DataEntry',
-            object_id=str(entry.id)
+            object_id=str(first_entry.id),
         )
+
+
+def notify_submission(entry, user):
+    """Notify when a single data entry is submitted."""
+    notify_submissions([entry], user)
 
 def notify_approval(entry, approver):
     """Notify when data is approved"""

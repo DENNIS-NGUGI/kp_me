@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}ICPD Commitment Access - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div><h3 class="page-title mb-1"><i class="bi bi-person-lock me-2"></i>ICPD Commitment Access</h3><p class="text-muted mb-0">Assign roles and users to the commitments they are responsible for.</p></div>
+    <a href="{% url 'icpd:dashboard' %}" class="btn btn-outline-primary"><i class="bi bi-arrow-left me-1"></i>Back to ICPD</a>
+</div>
+<form method="post">
+    {% csrf_token %}
+    {% for setting in commitment_access_settings %}
+    <section class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center"><span>{{ setting.commitment.title }}</span><div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" name="restricted_{{ setting.commitment.pk }}" id="restricted_{{ setting.commitment.pk }}" {% if setting.is_restricted %}checked{% endif %}><label class="form-check-label" for="restricted_{{ setting.commitment.pk }}">Restrict access</label></div></div>
+        <div class="card-body"><div class="row g-3"><div class="col-md-5"><label class="form-label" for="roles_{{ setting.commitment.pk }}">Allowed roles</label><select class="form-select" id="roles_{{ setting.commitment.pk }}" name="roles_{{ setting.commitment.pk }}" multiple size="5">{% for role in roles %}<option value="{{ role.pk }}" {% if role.pk in setting.allowed_role_ids %}selected{% endif %}>{{ role.get_display_name }}</option>{% endfor %}</select></div><div class="col-md-7"><label class="form-label" for="users_{{ setting.commitment.pk }}">Allowed users</label><select class="form-select" id="users_{{ setting.commitment.pk }}" name="users_{{ setting.commitment.pk }}" multiple size="5">{% for selected_user in users %}<option value="{{ selected_user.pk }}" {% if selected_user.pk in setting.allowed_user_ids %}selected{% endif %}>{{ selected_user.get_full_name|default:selected_user.username }}{% if selected_user.role %} ({{ selected_user.role.get_display_name }}){% endif %}</option>{% endfor %}</select></div></div></div>
+    </section>
+    {% endfor %}
+    <button class="btn btn-primary" type="submit"><i class="bi bi-check-lg me-1"></i>Save Access Settings</button>
+</form>
+{% endblock %}

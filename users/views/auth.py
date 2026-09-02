@@ -1,6 +1,8 @@
 import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.views import PasswordResetConfirmView, PasswordResetView
+from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -19,6 +21,22 @@ from ..validators import validate_password_strength, validate_phone_number
 from ..utils import send_otp_email, validate_captcha, get_captcha_context
 
 logger = logging.getLogger(__name__)
+
+
+class UserPasswordResetView(PasswordResetView):
+    template_name = 'users/password_reset.html'
+    email_template_name = 'users/password_reset_email.txt'
+    subject_template_name = 'users/password_reset_subject.txt'
+    success_url = reverse_lazy('users:password_reset_done')
+
+
+class UserPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'users/password_reset_confirm.html'
+    success_url = reverse_lazy('users:login')
+
+
+def password_reset_done(request):
+    return render(request, 'users/password_reset_done.html')
 
 @never_cache
 def login_view(request):
@@ -70,34 +88,24 @@ def login_view(request):
             changes={'method': 'password'}
         )
         
-        # Check email verification
-        if not user.is_email_verified:
-            otp = user.generate_otp()  # Use model method
-            email_sent = send_otp_email(user, otp)
-            
-            if not email_sent:
-                messages.warning(
-                    request, 
-                    'Unable to send verification email. Please contact support.'
-                )
-            else:
-                messages.info(request, 'Please verify your email to complete login.')
-            
-            request.session['pending_verification_user_id'] = user.id
-            return redirect('users:verify_otp')
+        # OTP is required on every login (not just for unverified emails)
+        otp = user.generate_otp()  # Use model method
+        email_sent = send_otp_email(user, otp)
         
-        # Successful login
-        user.reset_login_attempts()
-        login(request, user)
+        if not email_sent:
+            messages.warning(
+                request, 
+                'Unable to send verification email. Please contact support.'
+            )
+        elif not user.is_email_verified:
+            messages.info(request, 'Please verify your email to complete login.')
+        else:
+            messages.info(request, 'A verification code has been sent to your email.')
         
-        messages.success(request, f'Welcome back, {user.get_full_name() or user.username}!')
-        
-        # Redirect to next parameter
-        next_url = request.GET.get('next')
-        if next_url and next_url.startswith('/'):
-            return redirect(next_url)
-        
-        return redirect('reports:dashboard')
+        request.session['pending_verification_user_id'] = user.id
+        request.session['otp_purpose'] = 'email_verification' if not user.is_email_verified else 'login'
+        request.session['otp_next_url'] = request.GET.get('next') or ''
+        return redirect('users:verify_otp')
     
     # GET request
     context = get_captcha_context()
@@ -289,13 +297,8 @@ def verify_otp(request):
         return redirect('users:login')
     
     user = get_object_or_404(User, id=user_id)
-    
-    if user.is_email_verified:
-        messages.info(request, 'Your email is already verified.')
-        login(request, user)
-        if 'pending_verification_user_id' in request.session:
-            del request.session['pending_verification_user_id']
-        return redirect('reports:dashboard')
+    purpose = request.session.get('otp_purpose', 'login')
+    next_url = request.session.get('otp_next_url') or ''
     
     if request.method == 'POST':
         otp = request.POST.get('otp', '').strip()
@@ -309,25 +312,34 @@ def verify_otp(request):
             return render(request, 'users/verify_otp.html', {'email': user.email})
         
         if user.verify_otp(otp):
-            user.is_verified = True
-            user.is_email_verified = True
-            user.email_verified_at = timezone.now()
             user.clear_otp()
+            
+            if purpose == 'email_verification':
+                user.is_verified = True
+                user.is_email_verified = True
+                user.email_verified_at = timezone.now()
+            user.reset_login_attempts()
             user.save()
             
             AuditLog.log(
                 user=user,
-                action=AuditLog.Action.APPROVE,
+                action=AuditLog.Action.APPROVE if purpose == 'email_verification' else AuditLog.Action.LOGIN,
                 request=request,
-                changes={'type': 'email_verification'}
+                changes={'type': purpose}
             )
             
             login(request, user)
             
-            if 'pending_verification_user_id' in request.session:
-                del request.session['pending_verification_user_id']
+            for key in ('pending_verification_user_id', 'otp_purpose', 'otp_next_url'):
+                request.session.pop(key, None)
             
-            messages.success(request, 'Email verified successfully! Welcome to KP M&E System.')
+            if purpose == 'email_verification':
+                messages.success(request, 'Email verified successfully! Welcome to KP M&E System.')
+            else:
+                messages.success(request, f'Welcome back, {user.get_full_name() or user.username}!')
+            
+            if next_url and next_url.startswith('/'):
+                return redirect(next_url)
             return redirect('reports:dashboard')
         else:
             messages.error(request, 'Invalid or expired verification code. Please try again.')

@@ -6,6 +6,9 @@ from .auth import (
     resend_otp,
     terms_conditions,
     ajax_captcha_refresh,
+    UserPasswordResetView,
+    UserPasswordResetConfirmView,
+    password_reset_done,
 )
 from .profile import (
     profile,
@@ -35,6 +38,9 @@ __all__ = [
     'register',
     'verify_otp',
     'resend_otp',
+    'UserPasswordResetView',
+    'UserPasswordResetConfirmView',
+    'password_reset_done',
     'terms_conditions'
     'ajax_captcha_refresh',
     

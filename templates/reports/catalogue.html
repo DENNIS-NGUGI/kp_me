@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Reports - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div><h3 class="page-title mb-1"><i class="bi bi-file-earmark-bar-graph me-2"></i>Reports</h3><p class="text-muted mb-0">Programme, planning, monitoring, and partnership reporting.</p></div>
+    {% if user.can_change_reports %}<a href="{% url 'reports:report_access' %}" class="btn btn-outline-primary"><i class="bi bi-person-lock me-1"></i>Manage Access</a>{% endif %}
+</div>
+{% if user.is_county_user %}<div class="alert alert-info"><i class="bi bi-geo-alt me-2"></i>Reports are limited to {{ user.county.name }}.</div>{% endif %}
+{% for module, reports in report_modules.items %}
+<section class="mb-4"><h5 class="mb-3">{{ module }}</h5><div class="row g-3">
+{% for key, report in reports %}<div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body d-flex flex-column"><div class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-{{ report.icon }} fs-4 text-success"></i><h6 class="mb-0">{{ report.title }}</h6></div><p class="text-muted small flex-grow-1">{{ report.description }}</p><a href="{% url 'reports:preview' key %}" class="btn btn-outline-success align-self-start"><i class="bi bi-eye me-1"></i>Open report</a></div></div></div>{% endfor %}
+</div></section>{% endfor %}
+{% endblock %}

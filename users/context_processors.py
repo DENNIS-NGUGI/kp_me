@@ -59,25 +59,6 @@ def menu_items(request):
             'app_name': 'reports',
         }]
         
-        if user.can_approve_data:
-            report_items.append({
-                'name': 'Pending Approvals',
-                'icon': 'bi-clock-history',
-                'url': 'reports:pending_reports',
-                'permissions': ['can_approve_data'],
-                'app_name': 'reports',
-                'badge': True,
-            })
-        
-        if user.can_export_reports:
-            report_items.append({
-                'name': 'Export/Import',
-                'icon': 'bi-arrow-up-down',
-                'url': 'reports:export_data',
-                'permissions': ['export_reports'],
-                'app_name': 'reports',
-            })
-        
         menu_items.append({'label': 'Reports', 'items': report_items})
     
     # ===== PARTNERS SECTION =====

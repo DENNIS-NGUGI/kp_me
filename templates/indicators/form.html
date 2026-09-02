@@ -89,6 +89,23 @@
                             </div>
                         </div>
 
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3"><i class="bi bi-globe2 me-2"></i>Sustainable Development Goals</h6>
+                            </div>
+                            <div class="col-md-8">
+                                <label for="sdgs" class="form-label fw-bold">Linked SDGs</label>
+                                <select name="sdgs" id="sdgs" class="form-select select2" multiple>
+                                    {% for sdg in sdgs %}
+                                    <option value="{{ sdg.id }}" {% if indicator and sdg in indicator.sdgs.all %}selected{% endif %}>SDG {{ sdg.number }}: {{ sdg.title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <a class="btn btn-outline-secondary" href="{% url 'indicators:sdg_list' %}"><i class="bi bi-gear me-1"></i>Manage SDGs</a>
+                            </div>
+                        </div>
+
                         <!-- ===== TECHNICAL DETAILS ===== -->
                         <div class="row mb-4">
                             <div class="col-12">

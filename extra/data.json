@@ -1,0 +1,627 @@
+{
+  "commitments": [
+    {
+      "title": "Employ innovation and technology to ensure adolescents and youth attain the highest possible standard of health",
+      "description": "Commitment 1",
+      "sort_order": 1,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "Improve health of adolescents and youth to the highest possible standard",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Establishment of Constituency Innovation Hubs (CIHs) centres to facilitate access to life skills education, entrepreneurship training, SRH education",
+              "timeline": "2030",
+              "responsibility": "SDFICT NG-CDF B CDF",
+              "budget_amount": 4000000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. Constituency Innovation Hubs established",
+                  "notes": "No. Constituency Innovation Hubs established",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop applications for youth friendly Sexual Reproductive Health (SRH) information",
+              "timeline": "2030",
+              "responsibility": "SDFICT MoH NAILAB",
+              "budget_amount": 2000000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of applications developed",
+                  "notes": "No. of applications developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Integrate and nurture AYS-RHR related social enterprises and innovations in SRH programming at all levels",
+              "timeline": "2022",
+              "responsibility": "MoH",
+              "budget_amount": 30000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of enterprises and innovations integrated and nurtured",
+                  "notes": "No. of enterprises and innovations integrated and nurtured",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Establish operationalize multi-sectoral collaboration working group at national and county level (health, youth, education) and harmonization of policies",
+              "timeline": "2021",
+              "responsibility": "MoH",
+              "budget_amount": 500000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of established and operational working groups",
+                  "notes": "No. of established and operational working groups",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Finalization and implement strategic MOH policies (RH policy and RH commodity security strategy) and dissemination at all levels",
+              "timeline": "2021",
+              "responsibility": "MoH",
+              "budget_amount": 20000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of policies finalized and being implemented",
+                  "notes": "No. of policies finalized and being implemented",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of disseminations undertaken",
+                  "notes": "No. of disseminations undertaken",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Conduct education and demand creation at community level for SRH interventions including abstinence for minors",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 60000000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "No. of community level education and demand creation forums held",
+                  "notes": "No. of community level education and demand creation forums held",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Advocate for integration of comprehensive SRH services in UHC package",
+              "timeline": "2020",
+              "responsibility": "MoH",
+              "budget_amount": 500000000,
+              "budget_currency": "KES",
+              "sort_order": 7,
+              "indicators": [
+                {
+                  "name": "No. of advocacy forums held",
+                  "notes": "No. of advocacy forums held",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Eliminate teenage pregnancies by 2030",
+          "sort_order": 2,
+          "activities": [
+            {
+              "title": "Develop and implement a health sector response action plan for teenage pregnancy",
+              "timeline": "2021",
+              "responsibility": "MoH",
+              "budget_amount": 18000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Health sector response action plan",
+                  "notes": "Health sector response action plan",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop and implement increase access to age-appropriate information/life skills including advocacy for abstinence for adolescents and young people in and out of school using multiple approaches",
+              "timeline": "2021",
+              "responsibility": "MoH",
+              "budget_amount": 60000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of strategies developed and being implemented",
+                  "notes": "No. of strategies developed and being implemented",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop and implement SRH care giver capacity building and support mechanism for care givers handling adolescents and young people in and out of school using multiple approaches and stakeholders",
+              "timeline": "2022",
+              "responsibility": "MoH",
+              "budget_amount": 60000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "Support mechanism for care givers handling adolescents and young people",
+                  "notes": "Support mechanism for care givers handling adolescents and young people",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Increase access to adolescent and youth friendly health services and support for school re-entry and services for first time mothers",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 48000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of youth accessing youth friendly health services",
+                  "notes": "No. of youth accessing youth friendly health services",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop a health sector adolescent SRH service segmentation SOP/guideline to fast enhance individualized quality access to services to adolescents and youth",
+              "timeline": "2021",
+              "responsibility": "MoH",
+              "budget_amount": 10000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "Health sector adolescent SRH service segmentation SOP/guideline",
+                  "notes": "Health sector adolescent SRH service segmentation SOP/guideline",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Generate and disseminate evidence on context specific interventions that reduce and mitigate the impact of teenage pregnancy",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 150000000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "Evidence generated and disseminated biannually",
+                  "notes": "Evidence generated and disseminated biannually",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Eliminate preventable maternal and newborn morbidity and mortality",
+      "description": "Commitment 2",
+      "sort_order": 2,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "Increased demand and utilization of high-quality family planning services",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Develop and disseminate Family Planning IEC Materials, Training packages, Standards and guidelines",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 29500000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Family Planning IEC Materials, Training packages, Standards and guidelines developed and utilized",
+                  "notes": "Family Planning IEC Materials, Training packages, Standards and guidelines developed and utilized",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Capacity build 5000 healthcare workers and CHWs from across the 47 counties on FP counselling, services and reporting",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 50900000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of health workers capacity built on FP counselling, services and reporting",
+                  "notes": "No. of health workers capacity built on FP counselling, services and reporting",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Establish and implement FP pharmacovigilance in all 47 counties",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 10250000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of counties implementing FP pharmacovigilance",
+                  "notes": "No. of counties implementing FP pharmacovigilance",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Increased number of women and girls living with obstetric fistula receiving access to care and rehabilitation",
+          "sort_order": 2,
+          "activities": [
+            {
+              "title": "Equip and support at least 2 county referral facilities to integrate fistula management into routine care",
+              "timeline": "2022",
+              "responsibility": "MoH",
+              "budget_amount": 235000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of county referral facilities with integrate fistula management",
+                  "notes": "No. of county referral facilities with integrate fistula management",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Train 1000 health care workers on obstetric fistula (OF) care and rehabilitation",
+              "timeline": "2024",
+              "responsibility": "MoH",
+              "budget_amount": 34000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of health care workers trained on obstetric fistula care",
+                  "notes": "No. of health care workers trained on obstetric fistula care",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop and roll out of fistula strategic framework",
+              "timeline": "2022",
+              "responsibility": "MoH",
+              "budget_amount": 19750000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "Fistula strategic framework developed and rolled out",
+                  "notes": "Fistula strategic framework developed and rolled out",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Integrate obstetric fistula prevention and management into the Linda Mama and UHC package of care",
+              "timeline": "2022",
+              "responsibility": "MoH",
+              "budget_amount": 100000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "Obstetric fistula prevention & management integrated into Linda Mama and UHC",
+                  "notes": "Obstetric fistula prevention & management integrated into Linda Mama and UHC",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Conduct advocacy and public education on obstetric fistula",
+              "timeline": "2022",
+              "responsibility": "MoH",
+              "budget_amount": 20000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of advocacy & public education forums on obstetric fistula held",
+                  "notes": "No. of advocacy & public education forums on obstetric fistula held",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Increased number of young people receiving integrated sexual reproductive health prevention and care services (HIV/GBV/TB & SRH)",
+          "sort_order": 3,
+          "activities": [
+            {
+              "title": "Develop and roll out SRH, HIV, TB, GBV prevention and control frameworks / guidelines including eMTCT to all the 47 counties",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 60000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "SRH, HIV, TB, GBV prevention and control frameworks / guidelines developed and rolled out",
+                  "notes": "SRH, HIV, TB, GBV prevention and control frameworks / guidelines developed and rolled out",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Strengthen annual integrated SRH/HIV/STI multi-sectoral coordination at national and county level",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 235000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "Annual integrated SRH/HIV/STI multi-sectoral coordination strengthened",
+                  "notes": "Annual integrated SRH/HIV/STI multi-sectoral coordination strengthened",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Establish and facilitate functional eMTCT accountability forums and implementation at all levels",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 235000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "eMTCT accountability forums established",
+                  "notes": "eMTCT accountability forums established",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Enhanced accountability and surveillance of MTCT and HIV new infection prevention in all counties and up to community level",
+          "sort_order": 4,
+          "activities": [
+            {
+              "title": "Facilitate routine service documentation and real-time data relay for eMTCT and HIV care and prevention efforts",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 600000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Routine service documentation and real-time data relay for eMTCT and HIV in place",
+                  "notes": "Routine service documentation and real-time data relay for eMTCT and HIV in place",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Increased number of people living with HIV (including children, young people and pregnant women) accessing quality care and support",
+          "sort_order": 5,
+          "activities": [
+            {
+              "title": "Further decentralization of HIV testing, linkage care and treatment delivery points",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 45000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Level of decentralization of HIV testing, linkage care and treatment delivery points",
+                  "notes": "Level of decentralization of HIV testing, linkage care and treatment delivery points",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Procurement of HIV commodities (testing kits, ARVS and lab monitoring reagents) through UHC /domestic financing",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 6500000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "HIV commodities procured through UHC / domestic financing",
+                  "notes": "HIV commodities procured through UHC / domestic financing",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Train at least 6000 health care workers on HIV care including PMTCT from across the 47 counties",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 94000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of health care workers trained on HIV care",
+                  "notes": "No. of health care workers trained on HIV care",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Expand Mentor mother program across all the 47 counties",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 450000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of counties implementing mentor mother program",
+                  "notes": "No. of counties implementing mentor mother program",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Progressively increase health sector financing to 15 percent of total budget, as per the Abuja declaration, by 2030.",
+      "description": "Commitment 3",
+      "sort_order": 3,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "Increase resource allocation and investment for SRH",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Conduct robust annual forecasting and quantification of life-saving SGBV kits and drugs, RH and HIV prevention commodities",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 15000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of annual forecasts and quantification done",
+                  "notes": "No. of annual forecasts and quantification done",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Conduct and disseminate evidence-based investment cases including costing studies for ASRH and SGBV",
+              "timeline": "2021",
+              "responsibility": "MoH",
+              "budget_amount": 28000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of investment cases conducted and disseminated",
+                  "notes": "No. of investment cases conducted and disseminated",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Strengthen Coordination and Accountability of the SRH Programme",
+          "sort_order": 2,
+          "activities": [
+            {
+              "title": "Hold annual SRH /Gender intergovernmental forums and stocktaking",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 24000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of annual forums and stocktaking",
+                  "notes": "No. of annual forums and stocktaking",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Operationalize the partnership framework in the context of SRH including biannual RNMCH partners/RH ICC accountability meetings",
+              "timeline": "2021",
+              "responsibility": "MoH",
+              "budget_amount": 2000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "Operational partnership framework",
+                  "notes": "Operational partnership framework",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop and operationalize an online resource tracking platform for SRH interventions",
+              "timeline": "2024",
+              "responsibility": "MoH",
+              "budget_amount": 28000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "Operational online resource tracking platform",
+                  "notes": "Operational online resource tracking platform",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Undertake periodic supervisions, COEs and TWGs at National and County level",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 1650000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of periodic supervisions, COEs and TWGs held",
+                  "notes": "No. of periodic supervisions, COEs and TWGs held",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Institutionalize social accountability approaches in SRH and Gender interventions at all levels including an annual community SRH dialogue day",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 300000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "Institutionalized social accountability approaches",
+                  "notes": "Institutionalized social accountability approaches",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

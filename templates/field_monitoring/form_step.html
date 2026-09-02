@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} - Field Visit Report{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <h1 class="page-title mb-1"><i class="bi bi-clipboard2-check me-2"></i>{{ title }}</h1>
+            {% if report %}
+            <p class="text-muted mb-0">
+                Progress is saved automatically as you move between steps.
+            </p>
+            {% else %}
+            <p class="text-muted mb-0">Start by entering the basic visit information.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Stepper -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="progress mb-3" style="height: 6px;">
+                <div class="progress-bar" role="progressbar"
+                     style="width: {{ progress_percent }}%;"
+                     aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+
+            <div class="stepper-scroll">
+                <div class="d-flex flex-nowrap gap-1">
+                    {% for s in steps %}
+                        {% if s.is_clickable %}<a href="?step={{ s.key }}" class="stepper-node text-decoration-none">{% else %}<span class="stepper-node disabled">{% endif %}
+                            <span class="stepper-circle
+                                {% if s.is_current %}stepper-current{% elif s.is_done %}stepper-done{% else %}stepper-pending{% endif %}">
+                                {% if s.is_done %}<i class="bi bi-check-lg"></i>{% else %}{{ s.number }}{% endif %}
+                            </span>
+                            <span class="stepper-label
+                                {% if s.is_current %}text-primary fw-semibold{% elif s.is_done %}text-success{% else %}text-muted{% endif %}">
+                                {{ s.label }}
+                            </span>
+                        {% if s.is_clickable %}</a>{% else %}</span>{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .stepper-scroll { overflow-x: auto; padding-bottom: 4px; }
+        .stepper-node {
+            display: flex; flex-direction: column; align-items: center;
+            width: 100px; flex-shrink: 0; text-align: center; gap: 4px;
+        }
+        .stepper-node.disabled { pointer-events: none; opacity: 0.5; }
+        .stepper-circle {
+            width: 34px; height: 34px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 0.9rem; border: 2px solid transparent;
+        }
+        .progress-bar, .stepper-current { background-color: var(--primary-green); }
+        .stepper-current { color: #fff; border-color: var(--primary-green); }
+        .stepper-done { background-color: var(--secondary-green); color: #fff; border-color: var(--secondary-green); }
+        .stepper-pending { background-color: var(--green-tint); color: var(--muted); border-color: var(--line); }
+        .stepper-label { font-size: 0.75rem; line-height: 1.1; }
+    </style>
+
+    {% if current_step == 'review' %}
+    <!-- Review & Submit -->
+    <div class="card mb-4">
+        <div class="card-header bg-light-green text-green">
+            <h5 class="mb-0"><i class="bi bi-check2-circle"></i> Review &amp; Submit</h5>
+        </div>
+        <div class="card-body">
+            <p>Here's a quick summary of what's been captured so far:</p>
+            <div class="row text-center g-3 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="border rounded p-3">
+                        <h4 class="mb-0">{{ review_stats.team_members }}</h4>
+                        <small class="text-muted">Team Members</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="border rounded p-3">
+                        <h4 class="mb-0">{{ review_stats.persons_met }}</h4>
+                        <small class="text-muted">Persons Met</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="border rounded p-3">
+                        <h4 class="mb-0">{{ review_stats.services }}</h4>
+                        <small class="text-muted">Services</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="border rounded p-3">
+                        <h4 class="mb-0">{{ review_stats.challenges }}</h4>
+                        <small class="text-muted">Challenges</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="border rounded p-3">
+                        <h4 class="mb-0">{{ review_stats.practices }}</h4>
+                        <small class="text-muted">Best Practices</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="border rounded p-3">
+                        <h4 class="mb-0">{{ review_stats.partners }}</h4>
+                        <small class="text-muted">Partners</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="border rounded p-3">
+                        <h4 class="mb-0">{{ review_stats.attachments }}</h4>
+                        <small class="text-muted">Attachments</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+                <a href="?step={{ prev_step }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <a href="{% url 'field_monitoring:field_visit_detail' report.id %}" class="btn btn-outline-primary">
+                    <i class="bi bi-eye"></i> View Full Report
+                </a>
+                {% if is_owner and report.status == 'draft' %}
+                <a href="{% url 'field_monitoring:field_visit_submit' report.id %}" class="btn btn-success ms-auto"
+                   onclick="return confirm('Submit this report for review? You will no longer be able to edit it unless it is returned.')">
+                    <i class="bi bi-send"></i> Submit for Review
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <form method="post" enctype="multipart/form-data" id="field-visit-form">
+        {% csrf_token %}
+        <input type="hidden" name="step" value="{{ current_step }}">
+
+        <div class="card mb-4">
+            <div class="card-header bg-light-green text-green">
+                <h5 class="mb-0">
+                    {% for s in steps %}{% if s.is_current %}<i class="bi {{ s.icon }}"></i> {{ s.label }}{% endif %}{% endfor %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if form %}
+                    {{ form|crispy }}
+                {% elif formset %}
+                    <div id="dynamic-formset">
+                        {{ formset.management_form }}
+                        {% for f in formset %}
+                        <div class="formset-item card mb-3" data-has-instance="{% if f.instance.pk %}1{% else %}0{% endif %}">
+                            <div class="card-body position-relative">
+                                <button type="button"
+                                        class="btn-close position-absolute top-0 end-0 m-2 remove-formset-item"
+                                        aria-label="Remove"></button>
+                                <div class="d-none">{{ f.DELETE }}</div>
+                                {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+                                {% for field in f.visible_fields %}
+                                    {% if field.name != 'DELETE' %}
+                                        <div class="mb-2">{{ field|as_crispy_field }}</div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" id="add-formset-item" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-plus-circle"></i> Add Another
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            {% if report and prev_step %}
+            <a href="?step={{ prev_step }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary">
+                Save &amp; Continue <i class="bi bi-arrow-right"></i>
+            </button>
+
+            {% if report %}
+            <button type="submit" name="save_exit" value="1" class="btn btn-outline-success ms-auto">
+                <i class="bi bi-cloud-check"></i> Save as Draft &amp; Exit
+            </button>
+            {% else %}
+            <a href="{% url 'field_monitoring:field_visit_list' %}" class="btn btn-outline-secondary ms-auto">
+                Cancel
+            </a>
+            {% endif %}
+        </div>
+    </form>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('click', function (e) {
+    const removeBtn = e.target.closest('.remove-formset-item');
+    if (!removeBtn) return;
+
+    const item = removeBtn.closest('.formset-item');
+    if (item.dataset.hasInstance === '1') {
+        // Existing saved row: mark for deletion on next save, hide it
+        const deleteCheckbox = item.querySelector('input[type=checkbox][name$="-DELETE"]');
+        if (deleteCheckbox) deleteCheckbox.checked = true;
+        item.style.display = 'none';
+    } else {
+        // Newly added, unsaved row: just drop it from the DOM
+        item.remove();
+    }
+});
+
+document.getElementById('add-formset-item')?.addEventListener('click', function () {
+    const container = document.getElementById('dynamic-formset');
+    const totalFormsInput = container.querySelector('[name$="-TOTAL_FORMS"]');
+    const totalForms = parseInt(totalFormsInput.value, 10);
+
+    const items = container.querySelectorAll('.formset-item');
+    const templateItem = items[items.length - 1];
+    const newItem = templateItem.cloneNode(true);
+    newItem.dataset.hasInstance = '0';
+    newItem.style.display = '';
+
+    newItem.querySelectorAll('input, select, textarea').forEach(function (input) {
+        const name = input.getAttribute('name');
+        const id = input.getAttribute('id');
+        if (name) input.setAttribute('name', name.replace(/-\d+-/, `-${totalForms}-`));
+        if (id) input.setAttribute('id', id.replace(/-\d+-/, `-${totalForms}-`));
+
+        if (input.type === 'checkbox' || input.type === 'radio') {
+            input.checked = false;
+        } else if (input.type === 'hidden' && name && name.endsWith('-id')) {
+            input.value = '';
+        } else if (input.type !== 'hidden') {
+            input.value = '';
+        }
+    });
+
+    newItem.querySelectorAll('label').forEach(function (label) {
+        if (label.htmlFor) label.htmlFor = label.htmlFor.replace(/-\d+-/, `-${totalForms}-`);
+    });
+
+    container.appendChild(newItem);
+    totalFormsInput.value = totalForms + 1;
+});
+</script>
+{% endblock %}

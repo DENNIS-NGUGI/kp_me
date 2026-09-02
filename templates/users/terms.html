@@ -1,69 +1,185 @@
-{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms & Conditions - KP M&E System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f5f7f5;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .terms-card {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .terms-header {
+            background: linear-gradient(135deg, #1a5632, #2d8a4e);
+            padding: 20px 30px;
+            color: white;
+        }
+        .terms-header h3 {
+            margin: 0;
+            font-weight: 700;
+        }
+        .terms-header small {
+            opacity: 0.8;
+        }
+        .terms-body {
+            padding: 30px 35px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .terms-body h5 {
+            color: #1a5632;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .terms-body h5:first-child {
+            margin-top: 0;
+        }
+        .terms-body p, .terms-body li {
+            color: #333;
+            line-height: 1.6;
+        }
+        .terms-body ul {
+            padding-left: 20px;
+        }
+        .terms-footer {
+            padding: 15px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .terms-footer .text-muted {
+            font-size: 0.85rem;
+        }
+        .btn-close-terms {
+            padding: 8px 25px;
+            background: #1a5632;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-close-terms:hover {
+            background: #2d8a4e;
+        }
+        .terms-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        .terms-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        .terms-body::-webkit-scrollbar-thumb {
+            background: #1a5632;
+            border-radius: 3px;
+        }
+        .terms-body::-webkit-scrollbar-thumb:hover {
+            background: #2d8a4e;
+        }
+    </style>
+</head>
+<body>
+    <div class="terms-card">
+        <div class="terms-header">
+            <h3><i class="bi bi-file-text me-2"></i>Terms & Conditions</h3>
+            <small>KP M&E System - Kenya Population Programme</small>
+        </div>
+        <div class="terms-body">
+            <h5>1. Acceptance of Terms</h5>
+            <p>By registering for and using the KP M&E System (hereinafter referred to as "the System"), you agree to be bound by these Terms & Conditions. If you do not agree to these terms, please do not use the System.</p>
 
-{% block title %}Terms and Conditions - KP M&E System{% endblock %}
+            <h5>2. Description of Service</h5>
+            <p>The System is a Monitoring and Evaluation platform for the Kenya Population Programme. It provides users with the ability to:</p>
+            <ul>
+                <li>Enter and manage data entries</li>
+                <li>Access reports and analytics</li>
+                <li>Manage indicators and thematic areas</li>
+                <li>Collaborate with other users</li>
+            </ul>
 
-{% block content %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h4 class="mb-0">
-                        <i class="bi bi-file-text me-2 text-primary"></i>
-                        Terms and Conditions
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <div class="mb-4">
-                        <h5>1. Introduction</h5>
-                        <p>Welcome to the KP M&E System. By using this system, you agree to comply with and be bound by the following terms and conditions.</p>
-                    </div>
+            <h5>3. User Accounts</h5>
+            <ul>
+                <li>You must provide accurate and complete information when creating your account.</li>
+                <li>You are solely responsible for maintaining the confidentiality of your password.</li>
+                <li>You are responsible for all activities that occur under your account.</li>
+                <li>You must notify us immediately of any unauthorized use of your account.</li>
+            </ul>
 
-                    <div class="mb-4">
-                        <h5>2. User Accounts</h5>
-                        <p>You are responsible for maintaining the confidentiality of your account credentials. Any activities that occur under your account are your responsibility.</p>
-                    </div>
+            <h5>4. User Responsibilities</h5>
+            <ul>
+                <li>You agree to use the System only for lawful purposes.</li>
+                <li>You agree to enter accurate and truthful data.</li>
+                <li>You agree not to attempt to gain unauthorized access to the System.</li>
+                <li>You agree not to interfere with the proper functioning of the System.</li>
+            </ul>
 
-                    <div class="mb-4">
-                        <h5>3. Data Integrity</h5>
-                        <p>All data entered into the system must be accurate and complete. Any false or misleading information is strictly prohibited.</p>
-                    </div>
+            <h5>5. Data Privacy</h5>
+            <ul>
+                <li>Your personal data will be handled in accordance with our Privacy Policy.</li>
+                <li>Data entered into the System becomes the property of the Kenya Population Programme.</li>
+                <li>We implement reasonable security measures to protect your data.</li>
+            </ul>
 
-                    <div class="mb-4">
-                        <h5>4. System Usage</h5>
-                        <ul>
-                            <li>The system is for official M&E purposes only</li>
-                            <li>Unauthorized access or use is prohibited</li>
-                            <li>You must not attempt to circumvent security measures</li>
-                        </ul>
-                    </div>
+            <h5>6. Intellectual Property</h5>
+            <ul>
+                <li>All content and materials on the System are owned by the Kenya Population Programme.</li>
+                <li>You may not reproduce, distribute, or create derivative works without permission.</li>
+            </ul>
 
-                    <div class="mb-4">
-                        <h5>5. Data Privacy</h5>
-                        <p>Your personal information will be handled in accordance with our Privacy Policy and relevant data protection laws.</p>
-                    </div>
+            <h5>7. Data Accuracy</h5>
+            <ul>
+                <li>Users are responsible for the accuracy of data they enter.</li>
+                <li>The System may perform validation checks, but ultimate responsibility lies with the user.</li>
+            </ul>
 
-                    <div class="mb-4">
-                        <h5>6. Modifications</h5>
-                        <p>We reserve the right to modify these terms at any time. Continued use of the system constitutes acceptance of the updated terms.</p>
-                    </div>
+            <h5>8. Termination</h5>
+            <ul>
+                <li>We reserve the right to suspend or terminate accounts that violate these terms.</li>
+                <li>Users may delete their accounts by contacting the administrator.</li>
+            </ul>
 
-                    <div class="mb-4">
-                        <h5>7. Contact</h5>
-                        <p>For any questions regarding these terms, please contact the system administrator.</p>
-                    </div>
+            <h5>9. Disclaimer of Warranties</h5>
+            <p>The System is provided "as is" without warranties of any kind. We do not guarantee that the System will be uninterrupted or error-free.</p>
 
-                    <div class="text-center mt-4">
-                        <a href="{% url 'users:login' %}" class="btn btn-primary">
-                            <i class="bi bi-arrow-left me-1"></i>Back to Login
-                        </a>
-                    </div>
-                </div>
-                <div class="card-footer text-center text-muted small">
-                    Last Updated: {% now "F d, Y" %}
-                </div>
-            </div>
+            <h5>10. Limitation of Liability</h5>
+            <p>We shall not be liable for any damages arising from the use of the System, including but not limited to data loss, business interruption, or loss of profits.</p>
+
+            <h5>11. Changes to Terms</h5>
+            <p>We reserve the right to update these terms at any time. Users will be notified of significant changes.</p>
+
+            <h5>12. Governing Law</h5>
+            <p>These terms shall be governed by and construed in accordance with the laws of the Republic of Kenya.</p>
+
+            <h5>13. Contact Information</h5>
+            <p>For any questions regarding these terms, please contact the System Administrator at:</p>
+            <p>
+                <i class="bi bi-envelope me-1"></i> <a href="mailto:admin@kpmis.go.ke">admin@kpmis.go.ke</a><br>
+                <i class="bi bi-telephone me-1"></i> +254-20-123-4567
+            </p>
+
+            <p class="text-muted small mt-3"><em>Last updated: June 2025</em></p>
+        </div>
+        <div class="terms-footer">
+            <span class="text-muted"><i class="bi bi-clock me-1"></i>Please review all terms before agreeing</span>
+            <button class="btn-close-terms" onclick="window.close()">
+                <i class="bi bi-x-circle me-1"></i>Close
+            </button>
         </div>
     </div>
-</div>
-{% endblock %}
+</body>
+</html>

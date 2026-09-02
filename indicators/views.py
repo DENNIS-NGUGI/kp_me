@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.http import JsonResponse
-from .models import Indicator, ThematicArea
+from .models import Indicator, SustainableDevelopmentGoal, ThematicArea
 from users.decorators import module_permission_required, permission_required
 
 
@@ -40,6 +40,7 @@ def indicator_list(request):
         'can_edit': request.user.has_module_permission('indicators', 'change'),
         'can_delete': request.user.has_module_permission('indicators', 'delete'),
         'total_count': indicators.count(),
+        'can_manage_sdgs': request.user.has_permission('view_sustainabledevelopmentgoal'),
     }
     return render(request, 'indicators/list.html', context)
 
@@ -66,6 +67,7 @@ def indicator_detail(request, code):
             'created_at': indicator.created_at.strftime('%B %d, %Y %H:%M') if indicator.created_at else None,
             'is_active': indicator.is_active,
             'range_display': indicator.get_range_display(),
+            'sdgs': [str(sdg) for sdg in indicator.sdgs.all()],
         }
         
         return JsonResponse(data)
@@ -104,6 +106,7 @@ def indicator_detail_api(request, code):
             'created_at': indicator.created_at.strftime('%B %d, %Y %H:%M') if indicator.created_at else None,
             'is_active': indicator.is_active,
             'range_display': indicator.get_range_display(),
+            'sdgs': [str(sdg) for sdg in indicator.sdgs.all()],
         }
         
         return JsonResponse(data)
@@ -142,16 +145,18 @@ def indicator_add(request):
             if not code or not name:
                 messages.error(request, 'Code and Name are required.')
                 areas = ThematicArea.objects.all()
-                return render(request, 'indicators/form.html', {'areas': areas})
+                sdgs = SustainableDevelopmentGoal.objects.filter(is_active=True)
+                return render(request, 'indicators/form.html', {'areas': areas, 'sdgs': sdgs})
             
             if Indicator.objects.filter(code=code).exists():
                 messages.error(request, f'Indicator with code "{code}" already exists.')
                 areas = ThematicArea.objects.all()
-                return render(request, 'indicators/form.html', {'areas': areas})
+                sdgs = SustainableDevelopmentGoal.objects.filter(is_active=True)
+                return render(request, 'indicators/form.html', {'areas': areas, 'sdgs': sdgs})
             
             thematic_area = ThematicArea.objects.get(id=thematic_area_id)
             
-            Indicator.objects.create(
+            indicator = Indicator.objects.create(
                 code=code,
                 name=name,
                 thematic_area=thematic_area,
@@ -166,6 +171,7 @@ def indicator_add(request):
                 max_value=float(max_value) if max_value else None,
                 created_by=request.user
             )
+            indicator.sdgs.set(request.POST.getlist('sdgs'))
             messages.success(request, f'Indicator "{code}" added successfully!')
             return redirect('indicators:list')
             
@@ -177,7 +183,8 @@ def indicator_add(request):
             messages.error(request, f'Error adding indicator: {str(e)}')
     
     areas = ThematicArea.objects.all()
-    return render(request, 'indicators/form.html', {'areas': areas, 'is_edit': False})
+    sdgs = SustainableDevelopmentGoal.objects.filter(is_active=True)
+    return render(request, 'indicators/form.html', {'areas': areas, 'sdgs': sdgs, 'is_edit': False})
 
 @login_required
 @module_permission_required('indicators', 'change')
@@ -201,7 +208,7 @@ def indicator_edit(request, code):
             indicator.min_value = float(min_value) if min_value else None
             max_value = request.POST.get('max_value')
             indicator.max_value = float(max_value) if max_value else None
-            
+            indicator.sdgs.set(request.POST.getlist('sdgs'))
             indicator.save()
             messages.success(request, f'Indicator "{code}" updated successfully!')
             return redirect('indicators:list')
@@ -212,9 +219,11 @@ def indicator_edit(request, code):
             messages.error(request, f'Error updating indicator: {str(e)}')
     
     areas = ThematicArea.objects.all()
+    sdgs = SustainableDevelopmentGoal.objects.filter(is_active=True)
     return render(request, 'indicators/form.html', {
         'indicator': indicator, 
         'areas': areas,
+        'sdgs': sdgs,
         'is_edit': True
     })
 
@@ -326,3 +335,59 @@ def thematic_area_delete(request, pk):
         return redirect('indicators:thematic_areas')
     
     return render(request, 'indicators/thematic_area_delete.html', {'area': area})
+
+
+@login_required
+@permission_required('view_sustainabledevelopmentgoal')
+def sdg_list(request):
+    sdgs = SustainableDevelopmentGoal.objects.all().prefetch_related('indicators')
+    return render(request, 'indicators/sdg_list.html', {
+        'sdgs': sdgs,
+        'can_add': request.user.has_permission('add_sustainabledevelopmentgoal'),
+        'can_edit': request.user.has_permission('change_sustainabledevelopmentgoal'),
+        'can_delete': request.user.has_permission('delete_sustainabledevelopmentgoal'),
+    })
+
+
+def _sdg_form(request, sdg=None):
+    if request.method == 'POST':
+        number = request.POST.get('number', '').strip()
+        title = request.POST.get('title', '').strip()
+        if not number.isdigit() or not title:
+            messages.error(request, 'SDG number and title are required.')
+        elif SustainableDevelopmentGoal.objects.filter(number=number).exclude(pk=getattr(sdg, 'pk', None)).exists():
+            messages.error(request, f'SDG {number} already exists.')
+        else:
+            sdg = sdg or SustainableDevelopmentGoal()
+            sdg.number = number
+            sdg.title = title
+            sdg.description = request.POST.get('description', '').strip()
+            sdg.sort_order = request.POST.get('sort_order') or number
+            sdg.is_active = request.POST.get('is_active') == 'on'
+            sdg.save()
+            messages.success(request, f'SDG {sdg.number} saved successfully.')
+            return redirect('indicators:sdg_list')
+    return render(request, 'indicators/sdg_form.html', {'sdg': sdg})
+
+
+@login_required
+@permission_required('add_sustainabledevelopmentgoal')
+def sdg_add(request):
+    return _sdg_form(request)
+
+
+@login_required
+@permission_required('change_sustainabledevelopmentgoal')
+def sdg_edit(request, pk):
+    return _sdg_form(request, get_object_or_404(SustainableDevelopmentGoal, pk=pk))
+
+
+@login_required
+@permission_required('delete_sustainabledevelopmentgoal')
+def sdg_delete(request, pk):
+    sdg = get_object_or_404(SustainableDevelopmentGoal, pk=pk)
+    if request.method == 'POST':
+        sdg.delete()
+        messages.success(request, f'SDG {sdg.number} deleted successfully.')
+        return redirect('indicators:sdg_list')
+    return render(request, 'indicators/sdg_delete.html', {'sdg': sdg})

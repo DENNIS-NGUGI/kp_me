@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Report Access - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="page-title mb-1"><i class="bi bi-person-lock me-2"></i>Report Access</h3>
+        <p class="text-muted mb-0">Restrict each report to selected roles and individual users.</p>
+    </div>
+    <a href="{% url 'reports:report_list' %}" class="btn btn-outline-primary"><i class="bi bi-arrow-left me-1"></i>Back to Reports</a>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    {% for setting in report_access_settings %}
+    <section class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div><i class="bi bi-{{ setting.report.icon }} text-green me-2"></i>{{ setting.report.title }}</div>
+            <div class="form-check form-switch mb-0">
+                <input class="form-check-input" type="checkbox" name="restricted_{{ setting.key }}" id="restricted_{{ setting.key }}" {% if setting.is_restricted %}checked{% endif %}>
+                <label class="form-check-label" for="restricted_{{ setting.key }}">Restrict access</label>
+            </div>
+        </div>
+        <div class="card-body">
+            <p class="text-muted small">{{ setting.report.description }}</p>
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label for="roles_{{ setting.key }}" class="form-label">Allowed roles</label>
+                    <select class="form-select" id="roles_{{ setting.key }}" name="roles_{{ setting.key }}" multiple size="5">
+                        {% for role in roles %}<option value="{{ role.id }}" {% if role.id in setting.allowed_role_ids %}selected{% endif %}>{{ role.get_display_name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-7">
+                    <label for="users_{{ setting.key }}" class="form-label">Allowed users</label>
+                    <select class="form-select" id="users_{{ setting.key }}" name="users_{{ setting.key }}" multiple size="5">
+                        {% for selected_user in users %}<option value="{{ selected_user.id }}" {% if selected_user.id in setting.allowed_user_ids %}selected{% endif %}>{{ selected_user.get_full_name|default:selected_user.username }}{% if selected_user.role %} ({{ selected_user.role.get_display_name }}){% endif %}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Save Access Settings</button>
+</form>
+{% endblock %}

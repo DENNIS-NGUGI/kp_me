@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Field Monitoring Reports - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <h1 class="page-title mb-1"><i class="bi bi-binoculars me-2"></i>Field Visit Reports</h1>
+            <p class="text-muted mb-0">Track field visit reports and their review status.</p>
+        </div>
+        <div class="col-md-4 d-flex justify-content-md-end gap-2 mt-3 mt-md-0">
+            <a href="{% url 'field_monitoring:field_visit_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i> New Report
+            </a>
+            <a href="{% url 'field_monitoring:dashboard_view' %}" class="btn btn-outline-primary">
+                <i class="bi bi-bar-chart-line me-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+            <i class="bi bi-funnel me-2 text-green"></i>Filters
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="search" class="form-control" placeholder="Search reports..." 
+                           value="{{ search_query }}" />
+                </div>
+                <div class="col-md-3">
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        {% for status_value, status_label in status_choices %}
+                        <option value="{{ status_value }}" {% if status_filter == status_value %}selected{% endif %}>
+                            {{ status_label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="county" class="form-select">
+                        <option value="">All Counties</option>
+                        {% for county in counties %}
+                        <option value="{{ county.id }}" {% if county_filter|stringformat:'s' == county.id|stringformat:'s' %}selected{% endif %}>
+                            {{ county.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i> Filter
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'field_monitoring:field_visit_list' %}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reports Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Reports ({{ page_obj.paginator.count }} total)</h5>
+        </div>
+        <div class="table-responsive">
+            {% if reports %}
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Report Code</th>
+                        <th>Organization</th>
+                        <th>County</th>
+                        <th>Visit Date</th>
+                        <th>Status</th>
+                        <th>Compiled By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'field_monitoring:field_visit_detail' report.id %}">
+                                <strong>{{ report.report_code }}</strong>
+                            </a>
+                        </td>
+                        <td>{{ report.organization_name }}</td>
+                        <td>{{ report.county.name }}</td>
+                        <td>{{ report.visit_date|date:"Y-m-d" }}</td>
+                        <td>
+                            {% if report.status == 'draft' %}
+                                <span class="badge bg-secondary">Draft</span>
+                            {% elif report.status == 'submitted' %}
+                                <span class="badge bg-warning text-dark">Submitted</span>
+                            {% elif report.status == 'reviewed' %}
+                                <span class="badge bg-info">Reviewed</span>
+                            {% elif report.status == 'approved' %}
+                                <span class="badge bg-success">Approved</span>
+                            {% elif report.status == 'archived' %}
+                                <span class="badge bg-dark">Archived</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ report.report_compiled_by.get_full_name }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'field_monitoring:field_visit_detail' report.id %}" 
+                                   class="btn btn-sm btn-outline-primary" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if report.status in 'draft,submitted' %}
+                                <a href="{% url 'field_monitoring:field_visit_update' report.id %}" 
+                                   class="btn btn-sm btn-outline-warning" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% endif %}
+                                {% if report.status == 'draft' %}
+                                <a href="{% url 'field_monitoring:field_visit_delete' report.id %}" 
+                                   class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="p-4 text-center text-muted">
+                <i class="bi bi-inbox fs-1 d-block mb-2 text-green"></i>
+                <p>No field visit reports found.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{{ request.GET.urlencode|add:'&' }}">First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{ request.GET.urlencode|add:'&' }}">Previous</a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{{ request.GET.urlencode|add:'&' }}">{{ num }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{{ request.GET.urlencode|add:'&' }}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{{ request.GET.urlencode|add:'&' }}">Last</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

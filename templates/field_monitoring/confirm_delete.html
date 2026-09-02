@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Report - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Delete Report?
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">
+                        Are you sure you want to delete the following field visit report?
+                    </p>
+                    <div class="alert alert-light">
+                        <p class="mb-1"><strong>Report Code:</strong> {{ report.report_code }}</p>
+                        <p class="mb-1"><strong>Organization:</strong> {{ report.organization_name }}</p>
+                        <p class="mb-0"><strong>County:</strong> {{ report.county.name }}</p>
+                    </div>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-info-circle me-1"></i>
+                        This action cannot be undone.
+                    </p>
+                </div>
+                <div class="card-footer bg-white">
+                    <form method="post" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i> Yes, Delete
+                        </button>
+                        <a href="{% url 'field_monitoring:field_visit_detail' report.id %}" class="btn btn-secondary">
+                            <i class="bi bi-x-lg me-1"></i> Cancel
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

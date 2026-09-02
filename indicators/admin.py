@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ThematicArea, Indicator
+from .models import Indicator, SustainableDevelopmentGoal, ThematicArea
 
 @admin.register(ThematicArea)
 class ThematicAreaAdmin(admin.ModelAdmin):
@@ -42,3 +42,11 @@ class IndicatorAdmin(admin.ModelAdmin):
     def get_fieldsets(self, request, obj=None):
         fieldsets = super().get_fieldsets(request, obj)
         return fieldsets
+
+
+@admin.register(SustainableDevelopmentGoal)
+class SustainableDevelopmentGoalAdmin(admin.ModelAdmin):
+    list_display = ('number', 'title', 'is_active', 'sort_order')
+    list_filter = ('is_active',)
+    search_fields = ('number', 'title', 'description')
+    ordering = ('sort_order', 'number')

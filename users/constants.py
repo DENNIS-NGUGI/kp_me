@@ -32,3 +32,53 @@ class AuthConstants:
     
     # Audit log retention
     AUDIT_LOG_RETENTION_DAYS = 90
+
+
+class RoleConstants:
+    """Role-related constants"""
+    
+    # System roles that cannot be deleted or modified
+    SYSTEM_ROLES = ['admin', 'superuser', 'system']
+    
+    # Default system role priorities
+    SYSTEM_ADMIN_PRIORITY = 100
+    DEFAULT_ADMIN_PRIORITY = 90
+    MANAGER_PRIORITY = 50
+    USER_PRIORITY = 10
+    
+    # Minimum permissions required for system roles
+    SYSTEM_ROLE_REQUIRED_PERMISSIONS = [
+        'view_dashboard',
+        'view_dataentry',
+        'view_indicator',
+        'view_user',
+    ]
+    
+    # Role-to-model permission mapping
+    # Maps module names to Django's auto-generated permission model names
+    MODEL_PERMISSION_MAPPING = {
+        # Modules with models (Django auto-generates: action_modelname)
+        'data_entry': 'dataentry',
+        'indicators': 'indicator',
+        'partners': 'partner',
+        'projects': 'project',
+        'users': 'user',
+        'settings': 'systemsetting',
+        'audit_log': 'auditlog',
+        'county': 'county',
+        'quarter': 'quarter',
+        'thematic_area': 'thematicarea',
+        'subcounty': 'subcounty',
+        'logentry': 'logentry',
+        'group': 'group',
+        'permission': 'permission',
+        'session': 'session',
+        'contenttype': 'contenttype',
+        'role': 'role',
+        'captchastore': 'captchastore',
+        'emaildevice': 'emaildevice',
+        'notification': 'notification',
+        'notificationpreference': 'notificationpreference',
+        'projectmilestone': 'projectmilestone',
+        'projectreport': 'projectreport',
+    }

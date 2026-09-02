@@ -51,10 +51,10 @@ class SubCounty(models.Model):
 class Quarter(models.Model):
     """Reporting Quarters - Configurable by Admin"""
     QUARTER_CHOICES = (
-        (1, 'Q1 (Jan-Mar)'),
-        (2, 'Q2 (Apr-Jun)'),
-        (3, 'Q3 (Jul-Sep)'),
-        (4, 'Q4 (Oct-Dec)'),
+        (1, 'Q1 (July -Sep)'),
+        (2, 'Q2 (Oct-Dec)'),
+        (3, 'Q3 (Jan-Mar)'),
+        (4, 'Q4 (Apr-Jun)'),
     )
     
     name = models.CharField(max_length=20, help_text="e.g., Q1 2025")

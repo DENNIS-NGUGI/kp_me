@@ -1,6 +1,7 @@
 import io
 import json
 import csv
+import logging
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
@@ -12,6 +13,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from io import BytesIO
 from django.contrib import messages
+from django.views.decorators.cache import cache_page
 from data_entry.models import DataEntry
 from indicators.models import Indicator, ThematicArea
 from core.models import County, Quarter
@@ -22,6 +24,21 @@ from users.decorators import (
     admin_required, 
     ncpd_or_admin_required
 )
+
+# Import optimized aggregation functions
+from .aggregations import (
+    count_entries_met,
+    get_thematic_performance,
+    get_quarterly_performance,
+    get_county_performance,
+    audit_log_export,
+    rate_limit_check
+)
+from .models import ReportAccessPolicy
+from users.models import Role, User
+
+# Setup logger for exports
+logger = logging.getLogger('data_export')
 
 # ============================================
 # DASHBOARD - Uses database permissions
@@ -98,7 +115,17 @@ def dashboard(request):
         pending_approvals = 0
     
     # ===== SUBMISSION RATE =====
-    current_quarter = Quarter.objects.filter(is_active=True, is_closed=False).first()
+    today = timezone.localdate()
+    current_quarter = Quarter.objects.filter(
+        is_active=True,
+        is_closed=False,
+        start_date__lte=today,
+        end_date__gte=today,
+    ).first()
+    current_quarter_label = (
+        f"Q{current_quarter.quarter_number} {current_quarter.start_date.year}"
+        if current_quarter else None
+    )
     submission_rate = 0
     if current_quarter:
         if is_county_user and county:
@@ -116,13 +143,14 @@ def dashboard(request):
             ).values('county').distinct().count()
             submission_rate = round((submitted_counties / total_counties_for_quarter * 100) if total_counties_for_quarter > 0 else 0)
     
-    # ===== OVERALL PERFORMANCE =====
+    # ===== OVERALL PERFORMANCE - OPTIMIZED AGGREGATION =====
     if total_entries > 0:
-        met_target = 0
-        for entry in entries:
-            if entry.is_met() is True:
-                met_target += 1
-        overall_performance = round((met_target / total_entries * 100))
+        try:
+            counts = count_entries_met(entries)
+            overall_performance = round((counts['met'] / total_entries * 100))
+        except Exception as e:
+            logger.error(f"Error calculating performance: {str(e)}")
+            overall_performance = 0
     else:
         overall_performance = 0
     
@@ -140,71 +168,34 @@ def dashboard(request):
     else:
         counties_with_no_data = 0
     
-    # ===== THEMATIC PERFORMANCE =====
-    thematic_performance = []
-    thematic_colors = {
-        'Fertility': '#1a5632',
-        'Morbidity & Mortality': '#b71c1c',
-        'Migration & Urbanization': '#f39c12',
-        'PHED': '#2d8a4e'
-    }
+    # ===== THEMATIC PERFORMANCE - OPTIMIZED AGGREGATION =====
+    try:
+        thematic_performance = get_thematic_performance(entries)
+        # Filter empty results for county users
+        if is_county_user:
+            thematic_performance = [p for p in thematic_performance if p['total_entries'] > 0]
+    except Exception as e:
+        logger.error(f"Error calculating thematic performance: {str(e)}")
+        thematic_performance = []
     
-    for area in ThematicArea.objects.all():
-        area_indicators = Indicator.objects.filter(thematic_area=area, is_active=True)
-        area_entries = entries.filter(indicator__in=area_indicators)
-        total = area_entries.count()
-        met = 0
-        not_met = 0
-        for e in area_entries:
-            if e.is_met() is True:
-                met += 1
-            elif e.is_met() is False:
-                not_met += 1
+    # ===== QUARTERLY PERFORMANCE DATA FOR CHART - OPTIMIZED AGGREGATION =====
+    try:
+        chart_quarters_data = get_quarterly_performance(entries)
         
-        if is_county_user and total == 0:
-            continue
+        chart_labels = [q['name'] for q in chart_quarters_data]
+        chart_data = [q['percentage'] for q in chart_quarters_data]
+        chart_target = [65] * len(chart_labels)
         
-        thematic_performance.append({
-            'name': area.name,
-            'code': area.code,
-            'total_indicators': area_indicators.count(),
-            'total_entries': total,
-            'met': met,
-            'not_met': not_met if total > 0 else 0,
-            'no_data': area_indicators.count() - total if area_indicators.count() > total else 0,
-            'percentage': round((met / total * 100) if total > 0 else 0),
-            'color': thematic_colors.get(area.name, '#6c757d')
-        })
-    
-    # ===== QUARTERLY PERFORMANCE DATA FOR CHART =====
-    quarters = Quarter.objects.filter(is_active=True).order_by('-start_date')[:8]
-    chart_labels = []
-    chart_data = []
-    chart_target = []
-    chart_quarters_data = []
-    
-    for q in reversed(quarters):
-        chart_labels.append(q.name)
-        q_entries = entries.filter(quarter=q)
-        q_total = q_entries.count()
-        q_met = 0
-        for e in q_entries:
-            if e.is_met() is True:
-                q_met += 1
-        percentage = round((q_met / q_total * 100) if q_total > 0 else 0)
-        chart_data.append(percentage)
-        chart_target.append(65)
-        chart_quarters_data.append({
-            'name': q.name,
-            'total': q_total,
-            'met': q_met,
-            'percentage': percentage
-        })
-    
-    if not chart_labels:
+        if not chart_labels:
+            chart_labels = ['No Data']
+            chart_data = [0]
+            chart_target = [65]
+    except Exception as e:
+        logger.error(f"Error calculating quarterly performance: {str(e)}")
         chart_labels = ['No Data']
         chart_data = [0]
         chart_target = [65]
+        chart_quarters_data = []
     
     # ===== STATUS DISTRIBUTION =====
     if is_county_user and county:
@@ -229,25 +220,12 @@ def dashboard(request):
             'draft': 0,
         }
     
-    # ===== COUNTY PERFORMANCE =====
-    county_performance = []
-    for c in counties:
-        county_entries = entries.filter(county=c)
-        total = county_entries.count()
-        if total > 0:
-            met = 0
-            for e in county_entries:
-                if e.is_met() is True:
-                    met += 1
-            county_performance.append({
-                'name': c.name,
-                'total': total,
-                'met': met,
-                'percentage': round((met / total * 100) if total > 0 else 0)
-            })
-    
-    county_performance.sort(key=lambda x: x['percentage'], reverse=True)
-    county_performance = county_performance[:10]
+    # ===== COUNTY PERFORMANCE - OPTIMIZED AGGREGATION =====
+    try:
+        county_performance = get_county_performance(entries, counties)
+    except Exception as e:
+        logger.error(f"Error calculating county performance: {str(e)}")
+        county_performance = []
     
     # ===== RECENT ACTIVITY =====
     recent_entries = entries.select_related('county', 'quarter', 'indicator', 'indicator__thematic_area').order_by('-created_at')[:10]
@@ -261,17 +239,21 @@ def dashboard(request):
     else:
         most_active_counties = []
     
-    # Indicator completion rate
+    # ===== INDICATOR COMPLETION RATE - OPTIMIZED =====
     indicator_completion = {}
-    for ind in Indicator.objects.filter(is_active=True)[:10]:
-        ind_entries = entries.filter(indicator=ind)
-        if ind_entries.count() > 0:
-            indicator_completion[ind.code] = {
-                'name': ind.name,
-                'total': ind_entries.count(),
-                'met': sum(1 for e in ind_entries if e.is_met() is True),
-                'percentage': round((sum(1 for e in ind_entries if e.is_met() is True) / ind_entries.count() * 100) if ind_entries.count() > 0 else 0)
-            }
+    try:
+        for ind in Indicator.objects.filter(is_active=True)[:10]:
+            ind_entries = entries.filter(indicator=ind)
+            if ind_entries.count() > 0:
+                counts = count_entries_met(ind_entries)
+                indicator_completion[ind.code] = {
+                    'name': ind.name,
+                    'total': counts['total'],
+                    'met': counts['met'],
+                    'percentage': round((counts['met'] / counts['total'] * 100) if counts['total'] > 0 else 0)
+                }
+    except Exception as e:
+        logger.error(f"Error calculating indicator completion: {str(e)}")
     
     context = {
         # Stats
@@ -282,6 +264,7 @@ def dashboard(request):
         'pending_approvals': pending_approvals,
         'submission_rate': submission_rate,
         'current_quarter': current_quarter,
+        'current_quarter_label': current_quarter_label,
         'overall_performance': overall_performance,
         'counties_with_no_data': counties_with_no_data,
         'user_scope': user_scope,
@@ -367,6 +350,11 @@ def report_list(request):
     pending_count = 0
     if user.has_permission('can_approve_data'):
         pending_count = DataEntry.objects.filter(status='submitted').count()
+
+    report_modules = {}
+    for report_key, report in REPORT_CATALOGUE.items():
+        if _user_can_access_report(request.user, report_key):
+            report_modules.setdefault(report['module'], []).append((report_key, report))
     
     context = {
         'thematic_areas': thematic_areas,
@@ -377,8 +365,9 @@ def report_list(request):
         'user_role': user.role.get_display_name() if user.role else 'No Role',
         'is_county_user': is_county_user,
         'county_name': user.county.name if user.county else None,
+        'report_modules': report_modules,
     }
-    return render(request, 'reports/list.html', context)
+    return render(request, 'reports/catalogue.html', context)
 
 
 # ============================================
@@ -966,6 +955,13 @@ def export_data(request):
     thematic_areas = ThematicArea.objects.all()
     indicators = Indicator.objects.filter(is_active=True)
     
+    # Check rate limit
+    allowed, remaining = rate_limit_check(user, 'export_page', max_per_hour=1000)
+    if not allowed:
+        messages.warning(request, 'You have exceeded the export limit.')
+    else:
+        messages.info(request, f'Export quota remaining this hour: {remaining}')
+    
     # ===== RBAC USING DATABASE PERMISSIONS =====
     if is_county_user:
         counties = County.objects.filter(id=user.county.id)
@@ -1003,12 +999,26 @@ def export_excel(request):
     user = request.user
     is_county_user = user.has_permission('manage_county_data') and user.county
     
+    # Check rate limit
+    allowed, remaining = rate_limit_check(user, 'excel')
+    if not allowed:
+        messages.error(request, 'Export limit exceeded. Max 100 exports per hour.')
+        return redirect('reports:export_data')
+    
     # Get filters from request
     county_id = request.GET.get('county')
     quarter_id = request.GET.get('quarter')
     thematic_area_id = request.GET.get('thematic_area')
     indicator_id = request.GET.get('indicator')
     export_type = request.GET.get('type', 'entries')
+    
+    # Log export request
+    audit_log_export(user, 'excel', {
+        'county_id': county_id,
+        'quarter_id': quarter_id,
+        'thematic_area_id': thematic_area_id,
+        'indicator_id': indicator_id
+    })
     
     # Build query
     query = Q()
@@ -1417,6 +1427,441 @@ def download_indicators_template():
     response['Content-Disposition'] = 'attachment; filename="indicators_import_template.xlsx"'
     wb.save(response)
     return response
+
+
+# Cross-module report catalogue
+REPORT_CATALOGUE = {
+    'data-entries': {
+        'title': 'M&E Data Entries', 'module': 'Core M&E', 'icon': 'table',
+        'description': 'Approved indicator values by county and reporting period.',
+        'columns': ['County', 'Quarter', 'Indicator Code', 'Indicator', 'Value', 'Unit', 'Target', 'Met Target'],
+    },
+    'sdg-progress': {
+        'title': 'SDG Progress', 'module': 'Indicators', 'icon': 'globe2',
+        'description': 'Approved indicator performance grouped by SDG.',
+        'columns': ['SDG', 'Indicator Code', 'Indicator', 'County', 'Quarter', 'Value', 'Target', 'Met Target'],
+    },
+    'field-visits': {
+        'title': 'Field Visit Register', 'module': 'Field Monitoring', 'icon': 'clipboard2-pulse',
+        'description': 'Field monitoring visits, locations, dates, and approval status.',
+        'columns': ['Report Code', 'Organization', 'County', 'Visit Date', 'Status', 'Compiled By'],
+    },
+    'icpd-plan': {
+        'title': 'ICPD Implementation Plan', 'module': 'ICPD', 'icon': 'diagram-3',
+        'description': 'Commitments, objectives, activities, budgets, and accountability.',
+        'columns': ['Commitment', 'Objective', 'Activity', 'Timeline', 'Responsibility', 'Budget'],
+    },
+    'icpd-performance': {
+        'title': 'ICPD Annual Performance', 'module': 'ICPD', 'icon': 'bar-chart-line',
+        'description': 'ICPD indicator baselines, targets, achievements, and status by financial year.',
+        'columns': ['Financial Year', 'Indicator Code', 'Indicator', 'Baseline', 'Target', 'Achievement', 'Status'],
+    },
+    'icpd-comprehensive': {
+        'title': 'Comprehensive ICPD Implementation Report', 'module': 'ICPD', 'icon': 'clipboard-data',
+        'description': 'Complete commitment plan, budget, annual targets, achievements, expenditure, and remarks.',
+        'columns': ['Commitment', 'Objective', 'Activity', 'Timeline', 'Responsibility', 'Budget (KES million)', 'Financial Year', 'Activity Indicator', 'Baseline', 'Baseline Year', 'Target', 'Achievement', 'Cumulative Target', 'Cumulative Achievement', 'Actual Expenditure (KES million)', 'Remarks'],
+    },
+    'icpd-narratives': {
+        'key': 'icpd-narratives', 'title': 'ICPD Commitment Narratives', 'module': 'ICPD', 'icon': 'journal-text',
+        'description': 'Saved commitment implementation narratives submitted by assigned contributors.',
+        'columns': ['Commitment', 'Financial Year', 'Author', 'Last Updated'],
+    },
+    'partners': {
+        'title': 'Partner Register', 'module': 'Partners', 'icon': 'people',
+        'description': 'Partner profile, type, status, and county coverage.',
+        'columns': ['Code', 'Partner', 'Type', 'Status', 'Counties', 'Contact Person', 'Email'],
+    },
+    'projects': {
+        'title': 'Project Portfolio', 'module': 'Partners', 'icon': 'folder2-open',
+        'description': 'Projects, delivery dates, budgets, expenditure, and progress.',
+        'columns': ['Code', 'Project', 'Partner', 'Status', 'Start Date', 'End Date', 'Budget', 'Expenditure', 'Progress'],
+    },
+}
+
+
+def _user_can_access_report(user, report_key):
+    """Return whether a user is included in a report's optional access policy."""
+    if user.is_superuser:
+        return True
+
+    policy = ReportAccessPolicy.objects.filter(
+        report_key=report_key,
+        is_restricted=True,
+    ).first()
+    if not policy:
+        return True
+
+    return (
+        policy.allowed_users.filter(pk=user.pk).exists()
+        or (user.role_id and policy.allowed_roles.filter(pk=user.role_id).exists())
+    )
+
+
+@login_required
+@permission_required('change_reports')
+def report_access(request):
+    """Allow report managers to select the roles and users for each report."""
+    if request.method == 'POST':
+        roles = Role.objects.filter(is_active=True)
+        users = User.objects.filter(is_active=True, is_verified=True)
+
+        for report_key in REPORT_CATALOGUE:
+            policy, _ = ReportAccessPolicy.objects.get_or_create(report_key=report_key)
+            policy.is_restricted = request.POST.get(f'restricted_{report_key}') == 'on'
+            policy.save()
+            policy.allowed_roles.set(roles.filter(pk__in=request.POST.getlist(f'roles_{report_key}')))
+            policy.allowed_users.set(users.filter(pk__in=request.POST.getlist(f'users_{report_key}')))
+
+        messages.success(request, 'Report access settings updated.')
+        return redirect('reports:report_access')
+
+    policies = {
+        policy.report_key: policy
+        for policy in ReportAccessPolicy.objects.prefetch_related('allowed_roles', 'allowed_users')
+    }
+    report_access_settings = []
+    for report_key, report in REPORT_CATALOGUE.items():
+        policy = policies.get(report_key)
+        report_access_settings.append({
+            'key': report_key,
+            'report': report,
+            'is_restricted': policy.is_restricted if policy else False,
+            'allowed_role_ids': list(policy.allowed_roles.values_list('id', flat=True)) if policy else [],
+            'allowed_user_ids': list(policy.allowed_users.values_list('id', flat=True)) if policy else [],
+        })
+
+    return render(request, 'reports/access.html', {
+        'report_access_settings': report_access_settings,
+        'roles': Role.objects.filter(is_active=True).order_by('display_name', 'name'),
+        'users': User.objects.filter(is_active=True, is_verified=True).select_related('role').order_by('username'),
+    })
+
+
+def _report_scope(request):
+    """Return the requester's authoritative county scope, if any."""
+    return request.user.county if request.user.is_county_user else None
+
+
+def _icpd_report_filters(request):
+    """Build the ICPD hierarchy filter querysets from the selected report filters."""
+    from icpd.models import Activity, ActivityIndicator, Commitment, Objective
+
+    commitment_ids = request.GET.getlist('commitment')
+    objective_ids = request.GET.getlist('objective')
+    activity_ids = request.GET.getlist('activity')
+    indicator_ids = request.GET.getlist('activity_indicator')
+    financial_years = request.GET.getlist('financial_year')
+
+    commitments = Commitment.objects.filter(is_active=True)
+    objectives = Objective.objects.filter(commitment_id__in=commitment_ids) if commitment_ids else Objective.objects.all()
+    activities = Activity.objects.filter(objective_id__in=objective_ids) if objective_ids else Activity.objects.filter(
+        objective__commitment_id__in=commitment_ids,
+    ) if commitment_ids else Activity.objects.all()
+    indicators = ActivityIndicator.objects.filter(activity_id__in=activity_ids) if activity_ids else ActivityIndicator.objects.filter(
+        activity__objective_id__in=objective_ids,
+    ) if objective_ids else ActivityIndicator.objects.filter(
+        activity__objective__commitment_id__in=commitment_ids,
+    ) if commitment_ids else ActivityIndicator.objects.all()
+
+    return {
+        'commitment_ids': commitment_ids,
+        'objective_ids': objective_ids,
+        'activity_ids': activity_ids,
+        'indicator_ids': indicator_ids,
+        'financial_years': financial_years,
+        'commitments': commitments,
+        'objectives': objectives,
+        'activities': activities,
+        'indicators': indicators,
+    }
+
+
+def _report_rows(report_key, request):
+    county = _report_scope(request)
+    county_ids = request.GET.getlist('county')
+    if county:
+        county_ids = [str(county.id)]
+    quarter_ids = request.GET.getlist('quarter')
+
+    if report_key == 'data-entries':
+        entries = DataEntry.objects.filter(status='approved').select_related('county', 'quarter', 'indicator')
+        if county_ids:
+            entries = entries.filter(county_id__in=county_ids)
+        if quarter_ids:
+            entries = entries.filter(quarter_id__in=quarter_ids)
+        return [[entry.county.name, entry.quarter.name, entry.indicator.code, entry.indicator.name,
+                 entry.value or '', entry.indicator.unit, entry.target_at_submission or '',
+                 'Yes' if entry.is_met() is True else 'No' if entry.is_met() is False else 'N/A'] for entry in entries]
+
+    if report_key == 'sdg-progress':
+        entries = DataEntry.objects.filter(status='approved', indicator__sdgs__isnull=False).select_related(
+            'county', 'quarter', 'indicator').prefetch_related('indicator__sdgs').distinct()
+        if county_ids:
+            entries = entries.filter(county_id__in=county_ids)
+        if quarter_ids:
+            entries = entries.filter(quarter_id__in=quarter_ids)
+        return [[', '.join(f'SDG {sdg.number}' for sdg in entry.indicator.sdgs.all()), entry.indicator.code,
+                 entry.indicator.name, entry.county.name, entry.quarter.name, entry.value or '',
+                 entry.target_at_submission or '', 'Yes' if entry.is_met() is True else 'No' if entry.is_met() is False else 'N/A'] for entry in entries]
+
+    if report_key == 'field-visits':
+        from field_monitoring.models import FieldVisitReport
+        visits = FieldVisitReport.objects.select_related('county', 'report_compiled_by')
+        if county_ids:
+            visits = visits.filter(county_id__in=county_ids)
+        return [[visit.report_code, visit.organization_name, visit.county.name, visit.visit_date,
+                 visit.get_status_display(), visit.report_compiled_by.get_full_name() if visit.report_compiled_by else ''] for visit in visits]
+
+    if report_key == 'icpd-plan':
+        from icpd.models import Activity
+        filters = _icpd_report_filters(request)
+        activities = Activity.objects.select_related('objective__commitment')
+        if filters['commitment_ids']:
+            activities = activities.filter(objective__commitment_id__in=filters['commitment_ids'])
+        if filters['objective_ids']:
+            activities = activities.filter(objective_id__in=filters['objective_ids'])
+        if filters['activity_ids']:
+            activities = activities.filter(pk__in=filters['activity_ids'])
+        if filters['indicator_ids']:
+            activities = activities.filter(activity_indicators__id__in=filters['indicator_ids'])
+        return [[activity.objective.commitment.title, activity.objective.title, activity.title, activity.timeline,
+                 activity.responsibility, f'{activity.budget_currency} {activity.budget_amount or 0}']
+                for activity in activities.distinct()]
+
+    if report_key == 'icpd-performance':
+        from icpd.models import IndicatorYearData
+        filters = _icpd_report_filters(request)
+        year_data_rows = IndicatorYearData.objects.select_related('activity_indicator__activity__objective__commitment')
+        if filters['commitment_ids']:
+            year_data_rows = year_data_rows.filter(activity_indicator__activity__objective__commitment_id__in=filters['commitment_ids'])
+        if filters['objective_ids']:
+            year_data_rows = year_data_rows.filter(activity_indicator__activity__objective_id__in=filters['objective_ids'])
+        if filters['activity_ids']:
+            year_data_rows = year_data_rows.filter(activity_indicator__activity_id__in=filters['activity_ids'])
+        if filters['indicator_ids']:
+            year_data_rows = year_data_rows.filter(activity_indicator_id__in=filters['indicator_ids'])
+        if filters['financial_years']:
+            year_data_rows = year_data_rows.filter(financial_year__in=filters['financial_years'])
+        return [[year_data.financial_year, year_data.activity_indicator.code,
+             year_data.activity_indicator.name, year_data.activity_indicator.baseline_value or '',
+                 year_data.target_value or '', year_data.achievement_value or '', year_data.get_status_display()]
+                for year_data in year_data_rows]
+
+    if report_key == 'icpd-comprehensive':
+        from icpd.models import Activity, ActivityYearData, IndicatorYearData
+        filters = _icpd_report_filters(request)
+        activities = Activity.objects.select_related('objective__commitment').prefetch_related(
+            'activity_indicators__yearly_data', 'yearly_expenditure',
+        )
+        if filters['commitment_ids']:
+            activities = activities.filter(objective__commitment_id__in=filters['commitment_ids'])
+        if filters['objective_ids']:
+            activities = activities.filter(objective_id__in=filters['objective_ids'])
+        if filters['activity_ids']:
+            activities = activities.filter(pk__in=filters['activity_ids'])
+        if filters['indicator_ids']:
+            activities = activities.filter(activity_indicators__id__in=filters['indicator_ids']).distinct()
+
+        rows = []
+        for activity in activities:
+            expenditures = {item.financial_year: item for item in activity.yearly_expenditure.all()}
+            for indicator in activity.activity_indicators.all():
+                year_data_rows = list(indicator.yearly_data.all())
+                if filters['financial_years']:
+                    year_data_rows = [item for item in year_data_rows if item.financial_year in filters['financial_years']]
+                if not year_data_rows:
+                    if not filters['financial_years']:
+                        rows.append(_icpd_comprehensive_row(activity, indicator, None, None))
+                    continue
+                for year_data in year_data_rows:
+                    rows.append(_icpd_comprehensive_row(
+                        activity, indicator, year_data, expenditures.get(year_data.financial_year),
+                    ))
+            if not activity.activity_indicators.all() and not filters['indicator_ids'] and not filters['financial_years']:
+                rows.append(_icpd_comprehensive_row(activity, None, None, None))
+        return rows
+
+    if report_key == 'icpd-narratives':
+        from icpd.models import CommitmentNarrativeReport
+        narratives = CommitmentNarrativeReport.objects.select_related('commitment', 'author').order_by(
+            'commitment__sort_order', 'financial_year', 'author__username',
+        )
+        filters = _icpd_report_filters(request)
+        if filters['commitment_ids']:
+            narratives = narratives.filter(commitment_id__in=filters['commitment_ids'])
+        if filters['financial_years']:
+            narratives = narratives.filter(financial_year__in=filters['financial_years'])
+        if not (request.user.is_superuser or request.user.is_admin_user):
+            narratives = narratives.filter(
+                Q(commitment__access_policy__isnull=True)
+                | Q(commitment__access_policy__is_restricted=False)
+                | Q(commitment__access_policy__allowed_users=request.user)
+                | Q(commitment__access_policy__allowed_roles=request.user.role_id if request.user.role_id else None),
+            ).distinct()
+        return [
+            [narrative.commitment.title, narrative.financial_year,
+             narrative.author.get_full_name() or narrative.author.username,
+             narrative.updated_at.strftime('%d %b %Y, %H:%M')]
+            for narrative in narratives
+            if _narrative_has_content(narrative)
+        ]
+
+    if report_key == 'partners':
+        from partners.models import Partner
+        partners = Partner.objects.prefetch_related('counties')
+        if county_ids:
+            partners = partners.filter(counties__id__in=county_ids).distinct()
+        return [[partner.code, partner.name, partner.get_partner_type_display(), partner.get_status_display(),
+                 ', '.join(partner.counties.values_list('name', flat=True)), partner.contact_person, partner.contact_email]
+                for partner in partners]
+
+    if report_key == 'projects':
+        from partners.models import Project
+        projects = Project.objects.select_related('partner').prefetch_related('counties', 'milestones')
+        if county_ids:
+            projects = projects.filter(counties__id__in=county_ids).distinct()
+        return [[project.code, project.name, project.partner.name, project.get_status_display(), project.start_date,
+                 project.end_date, project.budget, project.expenditure, f'{project.get_progress()}%'] for project in projects]
+
+    raise KeyError(report_key)
+
+
+def _icpd_comprehensive_row(activity, indicator, year_data, expenditure):
+    return [
+        activity.objective.commitment.title,
+        activity.objective.title,
+        activity.title,
+        activity.timeline,
+        activity.responsibility,
+        activity.budget_amount if activity.budget_amount is not None else '',
+        year_data.financial_year if year_data else '',
+        f'{indicator.code} - {indicator.name}' if indicator else '',
+        indicator.baseline_value if indicator and indicator.baseline_value is not None else '',
+        indicator.baseline_year if indicator else '',
+        year_data.target_value if year_data and year_data.target_value is not None else '',
+        year_data.achievement_value if year_data and year_data.achievement_value is not None else '',
+        indicator.cumulative_target_value if indicator and indicator.cumulative_target_value is not None else '',
+        indicator.cumulative_achievement_value if indicator and indicator.cumulative_achievement_value is not None else '',
+        expenditure.expenditure_amount if expenditure and expenditure.expenditure_amount is not None else '',
+        year_data.remarks if year_data else '',
+    ]
+
+
+def _narrative_has_content(narrative):
+    return any((
+        narrative.introduction,
+        narrative.executive_summary,
+        narrative.abbreviations,
+        narrative.other_actor_contributions,
+        narrative.facilitating_factors,
+        narrative.challenges,
+        narrative.opportunities,
+        narrative.conclusion_and_recommendations,
+        narrative.references,
+    ))
+
+
+@login_required
+@view_reports_required
+def report_preview(request, report_key):
+    report = get_object_or_404_placeholder(report_key)
+    if not _user_can_access_report(request.user, report_key):
+        messages.error(request, 'You do not have access to this report.')
+        return redirect('reports:report_list')
+    icpd_filters = _icpd_report_filters(request) if report_key.startswith('icpd-') else None
+    icpd_financial_years = []
+    if icpd_filters:
+        from icpd.models import FINANCIAL_YEAR_CHOICES
+        icpd_financial_years = FINANCIAL_YEAR_CHOICES
+    narrative_entries = []
+    if report_key == 'icpd-narratives':
+        from icpd.models import CommitmentNarrativeReport
+        narrative_entries = CommitmentNarrativeReport.objects.select_related('commitment', 'author').order_by(
+            'commitment__sort_order', 'financial_year', 'author__username',
+        )
+        if icpd_filters['commitment_ids']:
+            narrative_entries = narrative_entries.filter(commitment_id__in=icpd_filters['commitment_ids'])
+        if icpd_filters['financial_years']:
+            narrative_entries = narrative_entries.filter(financial_year__in=icpd_filters['financial_years'])
+        if not (request.user.is_superuser or request.user.is_admin_user):
+            narrative_entries = narrative_entries.filter(
+                Q(commitment__access_policy__isnull=True)
+                | Q(commitment__access_policy__is_restricted=False)
+                | Q(commitment__access_policy__allowed_users=request.user)
+                | Q(commitment__access_policy__allowed_roles=request.user.role_id if request.user.role_id else None),
+            ).distinct()
+        narrative_entries = [entry for entry in narrative_entries if _narrative_has_content(entry)]
+        for entry in narrative_entries:
+            entry.sections = (
+                ('a. Introduction (1-2 paragraphs)', entry.introduction),
+                ('b. Executive summary', entry.executive_summary),
+                ('c. Abbreviations', entry.abbreviations),
+                ('e. Contribution by other actors', entry.other_actor_contributions),
+                ('f. Facilitating factors', entry.facilitating_factors),
+                ('What challenges slowed progress?', entry.challenges),
+                ('What opportunities to enhance implementation exist?', entry.opportunities),
+                ('g. Conclusion and Recommendations', entry.conclusion_and_recommendations),
+                ('h. References', entry.references),
+            )
+
+    return render(request, 'reports/preview.html', {
+        'report': report,
+        'rows': _report_rows(report_key, request),
+        'counties': County.objects.filter(id=request.user.county_id) if _report_scope(request) else County.objects.filter(is_active=True),
+        'quarters': Quarter.objects.filter(is_active=True),
+        'selected_counties': [str(request.user.county_id)] if _report_scope(request) else request.GET.getlist('county'),
+        'selected_quarters': request.GET.getlist('quarter'),
+        'icpd_filters': icpd_filters,
+        'icpd_financial_years': icpd_financial_years,
+        'narrative_entries': narrative_entries,
+    })
+
+
+def get_object_or_404_placeholder(report_key):
+    try:
+        return REPORT_CATALOGUE[report_key]
+    except KeyError:
+        from django.http import Http404
+        raise Http404('Unknown report')
+
+
+@login_required
+@view_reports_required
+def report_export(request, report_key, export_format):
+    report = get_object_or_404_placeholder(report_key)
+    if not _user_can_access_report(request.user, report_key):
+        messages.error(request, 'You do not have access to this report.')
+        return redirect('reports:report_list')
+    rows = _report_rows(report_key, request)
+    filename = report_key.replace('-', '_')
+    if export_format == 'excel':
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = report['title'][:31]
+        sheet.append(report['columns'])
+        for row in rows:
+            sheet.append(row)
+        for cell in sheet[1]:
+            cell.font = Font(bold=True)
+        for column in sheet.columns:
+            sheet.column_dimensions[column[0].column_letter].width = min(max(len(str(cell.value or '')) for cell in column) + 2, 45)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename="{filename}.xlsx"'
+        workbook.save(response)
+        return response
+    if export_format == 'pdf':
+        from reportlab.lib import colors
+        from reportlab.lib.pagesizes import landscape, letter
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.platypus import SimpleDocTemplate, Spacer, Paragraph, Table, TableStyle
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}.pdf"'
+        document = SimpleDocTemplate(response, pagesize=landscape(letter))
+        table = Table([report['columns']] + [[str(value) for value in row] for row in rows], repeatRows=1)
+        table.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a5632')), ('TEXTCOLOR', (0, 0), (-1, 0), colors.white), ('GRID', (0, 0), (-1, -1), 0.25, colors.grey), ('FONTSIZE', (0, 0), (-1, -1), 7)]))
+        document.build([Paragraph(report['title'], getSampleStyleSheet()['Title']), Spacer(1, 12), table])
+        return response
+    return HttpResponse('Unsupported export format.', status=400)
 
 
 def download_data_entries_template():

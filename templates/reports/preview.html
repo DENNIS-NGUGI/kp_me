@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ report.title }} - KP M&E System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-4">
+    <div>
+        <a href="{% url 'reports:report_list' %}" class="text-decoration-none small"><i class="bi bi-arrow-left"></i> Reports</a>
+        <h3 class="page-title mb-1">{{ report.title }}</h3>
+        <p class="text-muted mb-0">{{ report.description }}</p>
+    </div>
+    <div class="btn-group">
+        <a href="{% url 'reports:export' request.resolver_match.kwargs.report_key 'pdf' %}?{{ request.GET.urlencode }}" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+        <a href="{% url 'reports:export' request.resolver_match.kwargs.report_key 'excel' %}?{{ request.GET.urlencode }}" class="btn btn-success"><i class="bi bi-file-earmark-excel"></i> Excel</a>
+    </div>
+</div>
+
+{% if icpd_filters %}
+<form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-md-4">
+        <label class="form-label">Commitment</label>
+        <select name="commitment" class="form-select" multiple data-placeholder="All commitments">
+            {% for commitment in icpd_filters.commitments %}<option value="{{ commitment.pk }}" {% if commitment.pk|stringformat:'s' in icpd_filters.commitment_ids %}selected{% endif %}>{{ commitment.title }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Objective</label>
+        <select name="objective" class="form-select" multiple data-placeholder="All objectives">
+            {% for objective in icpd_filters.objectives %}<option value="{{ objective.pk }}" {% if objective.pk|stringformat:'s' in icpd_filters.objective_ids %}selected{% endif %}>{{ objective.title }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Activity</label>
+        <select name="activity" class="form-select" multiple data-placeholder="All activities">
+            {% for activity in icpd_filters.activities %}<option value="{{ activity.pk }}" {% if activity.pk|stringformat:'s' in icpd_filters.activity_ids %}selected{% endif %}>{{ activity.title }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Activity Indicator</label>
+        <select name="activity_indicator" class="form-select" multiple data-placeholder="All activity indicators">
+            {% for indicator in icpd_filters.indicators %}<option value="{{ indicator.pk }}" {% if indicator.pk|stringformat:'s' in icpd_filters.indicator_ids %}selected{% endif %}>{{ indicator.code }} - {{ indicator.name }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Financial Year</label>
+        <select name="financial_year" class="form-select" multiple data-placeholder="All financial years">
+            {% for value, label in icpd_financial_years %}<option value="{{ value }}" {% if value in icpd_filters.financial_years %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2"><button class="btn btn-primary w-100"><i class="bi bi-funnel"></i> Apply</button></div>
+    <div class="col-md-2"><a href="{% url 'reports:preview' request.resolver_match.kwargs.report_key %}" class="btn btn-outline-secondary w-100">Reset</a></div>
+</form>
+{% else %}
+<form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-md-4">
+        <label class="form-label">County</label>
+        <select name="county" class="form-select" multiple data-placeholder="All counties" {% if user.is_county_user %}disabled{% endif %}>
+            {% for county in counties %}<option value="{{ county.id }}" {% if county.id|stringformat:'s' in selected_counties %}selected{% endif %}>{{ county.name }}</option>{% endfor %}
+        </select>
+        {% if user.is_county_user %}<input type="hidden" name="county" value="{{ selected_counties.0 }}">{% endif %}
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Reporting Period</label>
+        <select name="quarter" class="form-select" multiple data-placeholder="All reporting periods">
+            {% for quarter in quarters %}<option value="{{ quarter.id }}" {% if quarter.id|stringformat:'s' in selected_quarters %}selected{% endif %}>{{ quarter.name }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2"><button class="btn btn-primary w-100"><i class="bi bi-funnel"></i> Apply</button></div>
+</form>
+{% endif %}
+
+{% if report.key == 'icpd-narratives' %}
+<div class="accordion" id="narrativeEntries">
+    {% for narrative in narrative_entries %}
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="narrative-heading-{{ narrative.pk }}">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#narrative-{{ narrative.pk }}" aria-expanded="false" aria-controls="narrative-{{ narrative.pk }}">
+                <span class="me-3 fw-semibold">{{ narrative.commitment.title }}</span><span class="text-muted me-3">{{ narrative.financial_year }}</span><span class="text-muted">{{ narrative.author.get_full_name|default:narrative.author.username }}</span>
+            </button>
+        </h2>
+        <div id="narrative-{{ narrative.pk }}" class="accordion-collapse collapse" aria-labelledby="narrative-heading-{{ narrative.pk }}" data-bs-parent="#narrativeEntries">
+            <div class="accordion-body">
+                <div class="d-flex justify-content-end mb-3"><a class="btn btn-sm btn-outline-primary" href="{% url 'icpd:narrative_report_export' %}?commitment={{ narrative.commitment.pk }}&financial_year={{ narrative.financial_year }}&narrative={{ narrative.pk }}"><i class="bi bi-file-earmark-word me-1"></i>Export This Narrative to Word</a></div>
+                {% for title, content in narrative.sections %}{% if content %}<section class="mb-4"><h6>{{ title }}</h6><p class="mb-0" style="white-space: pre-line;">{{ content }}</p></section>{% endif %}{% endfor %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="card"><div class="card-body text-center text-muted py-4">No saved narratives match these filters.</div></div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card"><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0" data-pagination data-page-size="25"><thead><tr>{% for column in report.columns %}<th>{{ column }}</th>{% endfor %}</tr></thead><tbody>{% for row in rows %}<tr>{% for value in row %}<td>{{ value }}</td>{% endfor %}</tr>{% empty %}<tr>{% for column in report.columns %}<td class="text-muted py-4{% if forloop.first %} text-center{% endif %}">{% if forloop.first %}No records match these filters.{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div></div></div>
+{% endif %}
+{% endblock %}

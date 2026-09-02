@@ -17,6 +17,12 @@
     <div class="card-body">
         <form method="get" class="row g-2">
             <div class="col-md-3">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="search" name="search" class="form-control" value="{{ search_query }}" placeholder="Search name, code, contact">
+                </div>
+            </div>
+            <div class="col-md-3">
                 <select name="type" class="form-select form-select-sm">
                     <option value="">All Types</option>
                     {% for code, name in partner_types %}

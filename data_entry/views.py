@@ -10,7 +10,7 @@ from indicators.models import Indicator, ThematicArea
 from .models import DataEntry
 from users.decorators import permission_required, module_permission_required
 from users.permissions import get_data_entry_queryset_filter
-from notifications.utils import notify_submission, notify_approval, notify_rejection
+from notifications.utils import notify_approval, notify_rejection, notify_submission, notify_submissions
 
 
 @login_required
@@ -102,7 +102,10 @@ def data_entry_form(request):
     # Get parameters
     county_id = request.GET.get('county')
     quarter_id = request.GET.get('quarter')
-    step = request.GET.get('step', '1')
+    step = request.GET.get('step', 'select')
+    step = {'1': 'select', '2': 'select', '3': 'enter'}.get(step, step)
+    if step not in ('select', 'enter'):
+        step = 'select'
     
     # County user auto-select
     is_county_user = user.county is not None
@@ -117,17 +120,22 @@ def data_entry_form(request):
     # Get existing data
     existing_data = {}
     existing_status = {}
+    existing_notes = {}
     selected_county = None
     selected_quarter = None
     
     if county_id and quarter_id:
         selected_county = get_object_or_404(County, id=county_id)
         selected_quarter = get_object_or_404(Quarter, id=quarter_id)
+        if is_county_user and selected_county != user.county:
+            messages.error(request, 'You can only enter data for your assigned county.')
+            return redirect('data_entry:form')
         
         entries = DataEntry.objects.filter(county=selected_county, quarter=selected_quarter)
         for entry in entries:
             existing_data[entry.indicator_id] = entry.value
             existing_status[entry.indicator_id] = entry.status
+            existing_notes[entry.indicator_id] = entry.notes
     
     # Group indicators
     from indicators.models import ThematicArea
@@ -147,26 +155,33 @@ def data_entry_form(request):
         county_id = request.POST.get('county')
         quarter_id = request.POST.get('quarter')
         selected_indicators = request.POST.getlist('selected_indicators')
+
+        if is_county_user and str(user.county_id) != county_id:
+            messages.error(request, 'You can only enter data for your assigned county.')
+            return redirect('data_entry:form')
         
-        # Step 2 -> Step 3
-        if 'go_to_data_entry' in request.POST:
+        if action == 'continue':
+            if not county_id or not quarter_id:
+                messages.error(request, 'Select both a county and quarter.')
+                return redirect(f'{request.path}?step=select')
             if not selected_indicators:
-                messages.error(request, 'Please select at least one indicator.')
-                return redirect(f'{request.path}?step=2&county={county_id}&quarter={quarter_id}')
+                messages.error(request, 'Select at least one indicator.')
+                return redirect(f'{request.path}?step=select&county={county_id}&quarter={quarter_id}')
             
             selected_str = ','.join(selected_indicators)
-            return redirect(f'{request.path}?step=3&county={county_id}&quarter={quarter_id}&selected={selected_str}')
+            return redirect(f'{request.path}?step=enter&county={county_id}&quarter={quarter_id}&selected={selected_str}')
         
         # Step 3 -> Submit or Save Draft
         if action in ['submit', 'draft']:
             if not selected_indicators:
                 messages.error(request, 'No indicators selected.')
-                return redirect(f'{request.path}?step=2&county={county_id}&quarter={quarter_id}')
+                return redirect(f'{request.path}?step=select&county={county_id}&quarter={quarter_id}')
             
             county = get_object_or_404(County, id=county_id)
             quarter = get_object_or_404(Quarter, id=quarter_id)
             
             saved = 0
+            locked = 0
             errors = []
             submitted_entries = []
             
@@ -190,6 +205,7 @@ def data_entry_form(request):
                 ).first()
                 
                 if existing and existing.status in ['approved', 'submitted']:
+                    locked += 1
                     continue
                 
                 try:
@@ -227,16 +243,20 @@ def data_entry_form(request):
                 except Exception as e:
                     errors.append(f"{indicator.code}: {str(e)}")
             
-            # Send notifications for submitted entries
+            # One notification/email per recipient for the entire submitted batch.
             if action == 'submit' and submitted_entries:
-                for entry in submitted_entries:
-                    notify_submission(entry, user)
+                notify_submissions(submitted_entries, user)
             
             if errors:
                 for err in errors[:3]:
                     messages.error(request, err)
             
-            if saved == 0 and action == 'submit':
+            if saved == 0 and locked:
+                messages.warning(
+                    request,
+                    'The selected entries have already been submitted or approved and cannot be changed.',
+                )
+            elif saved == 0 and action == 'submit':
                 messages.error(request, 'No data submitted. Please enter values.')
             elif saved == 0:
                 messages.warning(request, 'No data saved. Please enter values.')
@@ -246,7 +266,7 @@ def data_entry_form(request):
                 messages.success(request, f'Submitted for approval! ({saved} entries)')
                 return redirect('data_entry:list')
             
-            return redirect('data_entry:list')
+            return redirect(f"{redirect('data_entry:list').url}?county={county_id}&quarter={quarter_id}")
     
     context = {
         'counties': counties,
@@ -256,6 +276,7 @@ def data_entry_form(request):
         'is_county_user': is_county_user,
         'existing_data': existing_data,
         'existing_status': existing_status,
+        'existing_notes': existing_notes,
         'selected_county': selected_county,
         'selected_quarter': selected_quarter,
         'county_id': county_id,
