@@ -145,7 +145,6 @@ def register(request):
         email = request.POST.get('email', '').strip().lower()
         password1 = request.POST.get('password1', '')
         password2 = request.POST.get('password2', '')
-        role_id = request.POST.get('role')
         organization = request.POST.get('organization', '').strip()
         phone_number = request.POST.get('phone_number', '').strip()
         first_name = request.POST.get('first_name', '').strip()
@@ -200,10 +199,8 @@ def register(request):
         if errors:
             for error in errors:
                 messages.error(request, error)
-            roles = Role.objects.filter(is_active=True)
             context = get_captcha_context()
             context.update({
-                'roles': roles,
                 'form_data': {
                     'username': username,
                     'email': email,
@@ -211,7 +208,6 @@ def register(request):
                     'phone_number': phone_number,
                     'first_name': first_name,
                     'last_name': last_name,
-                    'role_id': role_id,
                     'terms_accepted': terms_accepted,
                 }
             })
@@ -231,14 +227,6 @@ def register(request):
                 is_verified=False,
                 is_email_verified=False,
             )
-            
-            if role_id:
-                try:
-                    role = Role.objects.get(id=role_id, is_active=True)
-                    user.role = role
-                    user.save()
-                except Role.DoesNotExist:
-                    logger.warning(f"Invalid role ID during registration: {role_id}")
             
             # Generate OTP using model method
             otp = user.generate_otp()
@@ -263,21 +251,18 @@ def register(request):
             )
             
             request.session['pending_verification_user_id'] = user.id
+            request.session['otp_purpose'] = 'email_verification'
             return redirect('users:verify_otp')
             
         except Exception as e:
             logger.error(f"Registration error: {e}")
             messages.error(request, 'An error occurred during registration.')
-            roles = Role.objects.filter(is_active=True)
             context = get_captcha_context()
-            context['roles'] = roles
             return render(request, 'users/register.html', context)
     
     # GET request
-    roles = Role.objects.filter(is_active=True)
     context = get_captcha_context()
     context.update({
-        'roles': roles,
         'site_name': settings.SITE_NAME,
         'allow_registration': getattr(settings, 'ALLOW_REGISTRATION', True),
     })
@@ -315,7 +300,6 @@ def verify_otp(request):
             user.clear_otp()
             
             if purpose == 'email_verification':
-                user.is_verified = True
                 user.is_email_verified = True
                 user.email_verified_at = timezone.now()
             user.reset_login_attempts()
@@ -334,10 +318,12 @@ def verify_otp(request):
                 request.session.pop(key, None)
             
             if purpose == 'email_verification':
-                messages.success(request, 'Email verified successfully! Welcome to KPPIMES.')
+                messages.success(request, 'Email verified successfully. Your account is pending administrator verification.')
             else:
                 messages.success(request, f'Welcome back, {user.get_full_name() or user.username}!')
             
+            if not user.is_verified and not user.is_superuser:
+                return redirect('users:pending_verification')
             if next_url and next_url.startswith('/'):
                 return redirect(next_url)
             return redirect('reports:dashboard')

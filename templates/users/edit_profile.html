@@ -25,19 +25,13 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label for="id_email" class="form-label">Email</label>
-                        <input type="email" name="email" id="id_email" 
-                               class="form-control" value="{{ user.email }}">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" value="{{ user.email }}" readonly>
                     </div>
                     <div class="mb-3">
                         <label for="id_phone_number" class="form-label">Phone Number</label>
                         <input type="tel" name="phone_number" id="id_phone_number" 
                                class="form-control" value="{{ user.phone_number }}">
-                    </div>
-                    <div class="mb-3">
-                        <label for="id_organization" class="form-label">Organization</label>
-                        <input type="text" name="organization" id="id_organization" 
-                               class="form-control" value="{{ user.organization }}">
                     </div>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save me-2"></i>Save Changes

@@ -513,7 +513,7 @@
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
     <!-- ===== SIDEBAR ===== -->
-    {% if user.is_authenticated and user.is_verified %}
+    {% if user.is_authenticated %}
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <img src="{% static 'images/coat.png' %}" alt="KP Logo" class="img-fluid mb-2" style="max-height: 50px;">
@@ -522,6 +522,17 @@
         </div>
         
         <nav class="sidebar-menu">
+            {% if not user.is_verified and not user.is_superuser %}
+            <div class="menu-label">Main</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.app_name == 'users' and request.resolver_match.url_name == 'pending_verification' %}active{% endif %}"
+                       href="{% url 'users:pending_verification' %}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+            </ul>
+            {% else %}
             <!-- ===== MAIN ===== -->
             <div class="menu-label">Main</div>
             <ul class="nav flex-column">
@@ -684,10 +695,11 @@
                 {% endif %}
             </ul>
             {% endif %}
+            {% endif %}
         </nav>
         
         <div class="sidebar-footer">
-            <span class="version">v1.0.0</span>
+            <span class="version">v2.0.0</span>
         </div>
     </aside>
     {% endif %}

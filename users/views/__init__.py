@@ -11,6 +11,7 @@ from .auth import (
     password_reset_done,
 )
 from .profile import (
+    pending_verification,
     profile,
     edit_profile,
     permission_denied,
@@ -45,6 +46,7 @@ __all__ = [
     'ajax_captcha_refresh',
     
     # Profile views
+    'pending_verification',
     'profile',
     'edit_profile',
     'permission_denied',

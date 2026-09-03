@@ -17,6 +17,7 @@ urlpatterns = [
     path('password-reset/<uidb64>/<token>/', views.UserPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     
     # Profile
+    path('pending-verification/', views.pending_verification, name='pending_verification'),
     path('profile/', views.profile, name='profile'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('permission-denied/', views.permission_denied, name='permission_denied'),

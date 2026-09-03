@@ -11,6 +11,13 @@ from ..validators import validate_phone_number
 logger = logging.getLogger(__name__)
 
 @login_required
+def pending_verification(request):
+    """Display the restricted dashboard for accounts awaiting administrator approval."""
+    if request.user.is_verified or request.user.is_superuser:
+        return redirect('reports:dashboard')
+    return render(request, 'users/pending_verification.html')
+
+@login_required
 def profile(request):
     """
     User profile page
@@ -54,19 +61,10 @@ def edit_profile(request):
         # Get form data
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
-        email = request.POST.get('email', '').strip().lower()
         phone_number = request.POST.get('phone_number', '').strip()
-        organization = request.POST.get('organization', '').strip()
         
         errors = []
         changes = {}
-        
-        # Validate email
-        if email:
-            if User.objects.filter(email=email).exclude(pk=user.pk).exists():
-                errors.append('Email already in use by another account.')
-        else:
-            errors.append('Email is required.')
         
         # Validate phone number
         if phone_number and not validate_phone_number(phone_number):
@@ -86,17 +84,9 @@ def edit_profile(request):
             changes['last_name'] = {'old': user.last_name, 'new': last_name}
             user.last_name = last_name
         
-        if user.email != email:
-            changes['email'] = {'old': user.email, 'new': email}
-            user.email = email
-        
         if user.phone_number != phone_number:
             changes['phone_number'] = {'old': user.phone_number, 'new': phone_number}
             user.phone_number = phone_number
-        
-        if user.organization != organization:
-            changes['organization'] = {'old': user.organization, 'new': organization}
-            user.organization = organization
         
         # Save user
         user.save()

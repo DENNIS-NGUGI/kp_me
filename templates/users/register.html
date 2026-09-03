@@ -228,25 +228,6 @@
                 </div>
                 
                 <div class="mb-2">
-                    <label for="id_role" class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
-                    <select name="role" id="id_role" class="form-select" required>
-                        <option value="">Select your role</option>
-                        {% for role in roles %}
-                        <option value="{{ role.id }}" {% if form_data.role_id|stringformat:"s" == role.id|stringformat:"s" %}selected{% endif %}>
-                            {{ role.get_display_name }}
-                            {% if role.is_system %}
-                            <span class="role-system">System</span>
-                            {% endif %}
-                        </option>
-                        {% endfor %}
-                    </select>
-                    <small class="text-muted form-text">
-                        <i class="bi bi-info-circle me-1"></i>
-                        Select the role that best describes your responsibilities.
-                    </small>
-                </div>
-                
-                <div class="mb-2">
                     <label for="id_password1" class="form-label fw-semibold">Password <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
