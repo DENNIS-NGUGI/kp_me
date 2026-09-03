@@ -120,14 +120,13 @@
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="county" class="form-label fw-bold">
-                                    County
+                                <label for="counties" class="form-label fw-bold">
+                                    Counties
                                 </label>
-                                <select name="county" id="county" class="form-select">
-                                    <option value="">No County</option>
+                                <select name="counties" id="counties" class="form-select" multiple>
                                     {% for county in counties %}
                                     <option value="{{ county.id }}" 
-                                            {% if edit_user.county and edit_user.county.id == county.id %}selected{% endif %}>
+                                            {% if county in edit_user.counties.all %}selected{% endif %}>
                                         {{ county.name }}
                                     </option>
                                     {% endfor %}

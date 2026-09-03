@@ -19,7 +19,7 @@ def user_management(request):
     Manage users - uses database permission
     Lists all users with filtering and search capabilities
     """
-    users = User.objects.select_related('role', 'county').all().order_by('-date_joined')
+    users = User.objects.select_related('role').prefetch_related('counties').all().order_by('-date_joined')
     
     # Apply filters
     role_filter = request.GET.get('role')
@@ -30,7 +30,7 @@ def user_management(request):
     if role_filter:
         users = users.filter(role_id=role_filter)
     if county_filter:
-        users = users.filter(county_id=county_filter)
+        users = users.filter(counties__id=county_filter)
     if search_query:
         users = users.filter(
             Q(username__icontains=search_query) |
@@ -74,7 +74,7 @@ def user_edit(request, pk):
     Allows admins to modify user accounts
     """
     user_obj = get_object_or_404(
-        User.objects.select_related('role', 'county'), 
+        User.objects.select_related('role').prefetch_related('counties'),
         pk=pk
     )
     
@@ -93,7 +93,7 @@ def user_edit(request, pk):
         is_active = request.POST.get('is_active') == 'on'
         is_verified = request.POST.get('is_verified') == 'on'
         role_id = request.POST.get('role')
-        county_id = request.POST.get('county')
+        county_ids = request.POST.getlist('counties')
         
         errors = []
         changes = {}
@@ -161,26 +161,15 @@ def user_edit(request, pk):
                 changes['role'] = {'old': user_obj.role.get_display_name(), 'new': None}
                 user_obj.role = None
         
-        # Update county
-        new_county = None
-        if county_id:
-            try:
-                new_county = County.objects.get(id=county_id, is_active=True)
-                if user_obj.county_id != new_county.id:
-                    changes['county'] = {
-                        'old': user_obj.county.name if user_obj.county else None,
-                        'new': new_county.name
-                    }
-                    user_obj.county = new_county
-            except County.DoesNotExist:
-                pass
-        else:
-            if user_obj.county:
-                changes['county'] = {'old': user_obj.county.name, 'new': None}
-                user_obj.county = None
+        assigned_counties = list(County.objects.filter(id__in=county_ids, is_active=True))
+        old_counties = list(user_obj.counties.values_list('name', flat=True))
+        new_counties = [county.name for county in assigned_counties]
+        if set(old_counties) != set(new_counties):
+            changes['counties'] = {'old': old_counties, 'new': new_counties}
         
         # Save user
         user_obj.save()
+        user_obj.counties.set(assigned_counties)
         
         # Log the changes
         if changes:

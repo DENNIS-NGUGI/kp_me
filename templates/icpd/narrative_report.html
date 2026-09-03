@@ -2,6 +2,21 @@
 
 {% block title %}ICPD Commitment Narrative - KPPIMES{% endblock %}
 
+{% block extra_css %}
+<style>
+	.select2-container--bootstrap-5 .select2-selection--single {
+		height: auto;
+		min-height: 38px;
+	}
+
+	.select2-container--bootstrap-5 .select2-selection__rendered,
+	.select2-container--bootstrap-5 .select2-results__option {
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="mb-4"><a href="{% url 'icpd:dashboard' %}" class="text-decoration-none text-muted small"><i class="bi bi-arrow-left"></i> ICPD25 Commitments</a><h3 class="page-title mt-2 mb-1"><i class="bi bi-file-earmark-text me-2"></i>ICPD Reporting</h3><p class="text-muted mb-0">Prepare the narrative contribution for your assigned commitment.</p></div>
 <ul class="nav nav-tabs mb-4"><li class="nav-item"><a class="nav-link" href="{% url 'icpd:report_entry' %}"><i class="bi bi-graph-up me-1"></i>Actuals</a></li><li class="nav-item"><a class="nav-link active" href="{% url 'icpd:report_entry' %}?tab=narrative"><i class="bi bi-file-earmark-text me-1"></i>Commitment Narrative</a></li></ul>
@@ -27,5 +42,23 @@ document.getElementById('select-all-narratives')?.addEventListener('change', fun
 		checkbox.checked = this.checked;
 	});
 });
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+	$(function() {
+		$('select').each(function() {
+			if (!$(this).data('select2')) {
+				$(this).select2({
+					theme: 'bootstrap-5',
+					width: '100%',
+					placeholder: $(this).find('option:first').text(),
+					allowClear: false,
+					closeOnSelect: true,
+				});
+			}
+		});
+	});
 </script>
 {% endblock %}

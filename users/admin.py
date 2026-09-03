@@ -15,15 +15,19 @@ class RoleAdmin(admin.ModelAdmin):
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    list_display = ['username', 'email', 'role', 'county', 'organization', 'is_active']
-    list_filter = ['role', 'county', 'is_active', 'is_verified']
+    list_display = ['username', 'email', 'role', 'assigned_counties', 'organization', 'is_active']
+    list_filter = ['role', 'counties', 'is_active', 'is_verified']
     search_fields = ['username', 'email', 'first_name', 'last_name']
     
     fieldsets = UserAdmin.fieldsets + (
         ('Custom Fields', {
-            'fields': ('role', 'county', 'organization', 'phone_number', 'is_verified', 'approved_by', 'approved_at')
+            'fields': ('role', 'counties', 'organization', 'phone_number', 'is_verified', 'approved_by', 'approved_at')
         }),
     )
+
+    @admin.display(description='Counties')
+    def assigned_counties(self, obj):
+        return ', '.join(obj.counties.values_list('name', flat=True)) or '-'
 
 @admin.register(AuditLog)
 class AuditLogAdmin(admin.ModelAdmin):

@@ -218,7 +218,7 @@ def get_pending_count(request):
     if request.user.is_superuser or request.user.has_permission('can_approve_data'):
         if request.user.is_county_user:
             return DataEntry.objects.filter(
-                county=request.user.county, 
+                county__in=request.user.counties.all(),
                 status='submitted'
             ).count()
         return DataEntry.objects.filter(status='submitted').count()

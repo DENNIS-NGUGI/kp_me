@@ -157,8 +157,9 @@ class CountyDataScopeTests(TestCase):
 			Permission.objects.get(codename='add_dataentry'),
 		)
 		user = User.objects.create_user(
-			username='county_reporter', password='test-password', role=role, county=county
+			username='county_reporter', password='test-password', role=role
 		)
+		user.counties.add(county)
 		DataEntry.objects.create(
 			county=county, quarter=quarter, indicator=indicator, value='30', status='submitted'
 		)

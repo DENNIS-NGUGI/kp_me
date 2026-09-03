@@ -35,7 +35,7 @@ def data_entry_list(request):
         # Only apply county filter if user has permission
         if user.is_superuser or user.has_permission('can_approve_data'):
             entries = entries.filter(county_id=county_filter)
-        elif user.is_county_user and int(county_filter) == user.county.id:
+        elif user.is_county_user and user.counties.filter(id=county_filter).exists():
             entries = entries.filter(county_id=county_filter)
     if quarter_filter:
         entries = entries.filter(quarter_id=quarter_filter)
@@ -64,7 +64,7 @@ def data_entry_list(request):
     indicators = Indicator.objects.filter(is_active=True)
     
     if user.is_county_user:
-        counties = counties.filter(id=user.county.id)
+        counties = user.counties.all()
     
     can_add = user.has_module_permission('data_entry', 'add')
     can_approve = user.has_permission('can_approve_data')
@@ -80,7 +80,7 @@ def data_entry_list(request):
         'quarters': quarters,
         'indicators': indicators,
         'is_county_user': user.is_county_user,
-        'county_name': user.county.name if user.is_county_user else None,
+        'county_name': ', '.join(user.counties.values_list('name', flat=True)) if user.is_county_user else None,
         'can_add': can_add,
         'can_approve': can_approve,
         'filters': {
@@ -108,12 +108,12 @@ def data_entry_form(request):
         step = 'select'
     
     # County user auto-select
-    is_county_user = user.county is not None
+    is_county_user = user.is_county_user
     if is_county_user and not county_id:
-        county_id = str(user.county.id)
+        county_id = str(user.counties.first().id)
     
     # Get data
-    counties = County.objects.filter(id=user.county.id) if is_county_user else County.objects.filter(is_active=True)
+    counties = user.counties.all() if is_county_user else County.objects.filter(is_active=True)
     quarters = Quarter.objects.filter(is_active=True, is_closed=False)
     indicators = Indicator.objects.filter(is_active=True)
     
@@ -127,8 +127,8 @@ def data_entry_form(request):
     if county_id and quarter_id:
         selected_county = get_object_or_404(County, id=county_id)
         selected_quarter = get_object_or_404(Quarter, id=quarter_id)
-        if is_county_user and selected_county != user.county:
-            messages.error(request, 'You can only enter data for your assigned county.')
+        if is_county_user and not user.has_county_access(selected_county):
+            messages.error(request, 'You can only enter data for your assigned counties.')
             return redirect('data_entry:form')
         
         entries = DataEntry.objects.filter(county=selected_county, quarter=selected_quarter)
@@ -156,8 +156,8 @@ def data_entry_form(request):
         quarter_id = request.POST.get('quarter')
         selected_indicators = request.POST.getlist('selected_indicators')
 
-        if is_county_user and str(user.county_id) != county_id:
-            messages.error(request, 'You can only enter data for your assigned county.')
+        if is_county_user and not user.counties.filter(id=county_id).exists():
+            messages.error(request, 'You can only enter data for your assigned counties.')
             return redirect('data_entry:form')
         
         if action == 'continue':
@@ -272,7 +272,7 @@ def data_entry_form(request):
         'counties': counties,
         'quarters': quarters,
         'areas': areas,
-        'default_county': user.county if is_county_user else None,
+        'default_county': user.counties.first() if is_county_user else None,
         'is_county_user': is_county_user,
         'existing_data': existing_data,
         'existing_status': existing_status,
@@ -485,7 +485,7 @@ def pending_approvals(request):
     ).order_by('submitted_at')
     
     if user.is_county_user:
-        pending = pending.filter(county=user.county)
+        pending = pending.filter(county__in=user.counties.all())
     
     context = {
         'pending': pending,
@@ -500,7 +500,7 @@ def data_entry_detail(request, pk):
     entry = get_object_or_404(DataEntry, pk=pk)
     user = request.user
     
-    if user.is_county_user and entry.county.id != user.county.id:
+    if user.is_county_user and not user.has_county_access(entry.county):
         if not user.has_permission('can_approve_data'):
             messages.error(request, 'You do not have permission to view this entry.')
             return redirect('data_entry:list')
@@ -520,7 +520,7 @@ def data_entry_detail_api(request, pk):
         entry = get_object_or_404(DataEntry, pk=pk)
         user = request.user
         
-        if user.is_county_user and entry.county.id != user.county.id:
+        if user.is_county_user and not user.has_county_access(entry.county):
             if not user.has_permission('can_approve_data'):
                 return JsonResponse({
                     'error': 'Permission denied',

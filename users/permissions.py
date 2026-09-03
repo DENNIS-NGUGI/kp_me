@@ -19,7 +19,7 @@ def can_view_data_entry(user, entry):
         return False
     
     # County users can only view their county's data
-    if user.is_county_user and user.county == entry.county:
+    if user.is_county_user and user.has_county_access(entry.county):
         return True
     
     # NCPD/Admin can view all
@@ -45,7 +45,7 @@ def can_edit_data_entry(user, entry):
         return False
     
     # County users can only edit their county's data
-    if user.is_county_user and user.county == entry.county:
+    if user.is_county_user and user.has_county_access(entry.county):
         return entry.status in ['draft', 'rejected']
     
     # NCPD/Admin can edit all
@@ -70,7 +70,7 @@ def can_submit_data_entry(user, entry):
         return False
     
     # County users can only submit their county's data
-    if user.is_county_user and user.county == entry.county:
+    if user.is_county_user and user.has_county_access(entry.county):
         return entry.status in ['draft', 'rejected']
     
     # NCPD/Admin can submit all
@@ -92,7 +92,7 @@ def can_approve_data_entry(user, entry):
         return False
     
     # County users can only approve their county's data
-    if user.is_county_user and user.county == entry.county:
+    if user.is_county_user and user.has_county_access(entry.county):
         return True
     
     # NCPD/Admin can approve all
@@ -111,7 +111,7 @@ def can_delete_data_entry(user, entry):
         return False
     
     # County users can only delete their county's data
-    if user.is_county_user and user.county == entry.county:
+    if user.is_county_user and user.has_county_access(entry.county):
         return entry.status in ['draft', 'rejected']
     
     # NCPD/Admin can delete all
@@ -129,8 +129,8 @@ def get_data_entry_queryset_filter(user):
     if user.is_superuser:
         return Q()
     
-    if user.is_county_user and user.county:
-        return Q(county=user.county)
+    if user.is_county_user:
+        return Q(county__in=user.counties.all())
     
     if user.has_permission('can_approve_data'):
         return Q()
@@ -217,7 +217,7 @@ def get_partner_queryset_filter(user):
         return Q()
     
     if user.is_county_user:
-        return Q(counties=user.county)
+        return Q(counties__in=user.counties.all())
     
     if user.has_permission('can_approve_data') or user.has_permission('can_manage_partners'):
         return Q()
@@ -239,7 +239,7 @@ def get_project_queryset_filter(user):
         return Q()
     
     if user.is_county_user:
-        return Q(counties=user.county)
+        return Q(counties__in=user.counties.all())
     
     if user.has_permission('can_approve_data') or user.has_permission('can_manage_projects'):
         return Q()

@@ -156,7 +156,7 @@
             Real-time monitoring and analytics for Kenya Population Programme
             {% if user.is_county_user %}
             <span class="badge bg-info ms-2">
-                <i class="bi bi-geo-alt me-1"></i>{{ user.county.name }}
+                <i class="bi bi-geo-alt me-1"></i>{{ user.counties.all|join:", " }}
             </span>
             {% endif %}
             <span class="badge bg-secondary ms-1">{{ user.get_role_display }}</span>

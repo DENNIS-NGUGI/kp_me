@@ -69,8 +69,8 @@
                                 <td>{{ user.role.get_display_name|default:"No Role Assigned" }}</td>
                             </tr>
                             <tr>
-                                <th>County</th>
-                                <td>{{ user.county.name|default:"Not assigned" }}</td>
+                                <th>Counties</th>
+                                <td>{{ user.counties.all|join:", "|default:"Not assigned" }}</td>
                             </tr>
                             <tr>
                                 <th>Member Since</th>

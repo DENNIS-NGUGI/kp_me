@@ -143,7 +143,7 @@ class Activity(models.Model):
 		ordering = ['objective', 'sort_order', 'id']
 
 	def __str__(self):
-		return self.title[:100]
+		return self.title
 
 
 class ActivityYearData(models.Model):

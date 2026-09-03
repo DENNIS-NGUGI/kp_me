@@ -120,8 +120,8 @@ def _get_visible_reports(user):
     own_reports = Q(report_compiled_by=user)
 
     finalized = Q(status__in=['reviewed', 'approved', 'archived'])
-    if getattr(user, 'county', None):
-        finalized &= Q(county=user.county)
+    if user.is_county_user:
+        finalized &= Q(county__in=user.counties.all())
     else:
         finalized &= Q(pk__in=[])
 

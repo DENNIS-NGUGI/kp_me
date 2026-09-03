@@ -360,6 +360,12 @@ class User(AbstractUser):
         related_name='users',
         help_text=_("County this user belongs to")
     )
+    counties = models.ManyToManyField(
+        'core.County',
+        blank=True,
+        related_name='assigned_users',
+        help_text=_("Counties this user is assigned to")
+    )
     organization = models.CharField(
         max_length=200, 
         blank=True,
@@ -616,7 +622,11 @@ class User(AbstractUser):
     def is_county_user(self) -> bool:
         if not self.is_active or self.deleted_at:
             return False
-        return self.county is not None
+        return self.counties.exists()
+
+    def has_county_access(self, county) -> bool:
+        """Return whether this user is assigned to the supplied county."""
+        return bool(county and self.counties.filter(pk=county.pk).exists())
     
     @property
     def is_ncpd_user(self) -> bool:

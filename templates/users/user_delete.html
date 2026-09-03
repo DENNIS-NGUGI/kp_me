@@ -77,13 +77,15 @@
                                 </div>
                                 <hr class="my-2">
                                 <div class="row mb-2">
-                                    <div class="col-sm-4 text-muted">County</div>
+                                    <div class="col-sm-4 text-muted">Counties</div>
                                     <div class="col-sm-8">
-                                        {% if user.county %}
+                                        {% if user.counties.all %}
+                                        {% for county in user.counties.all %}
                                         <span class="badge bg-info">
                                             <i class="bi bi-geo-alt me-1"></i>
-                                            {{ user.county.name }}
+                                            {{ county.name }}
                                         </span>
+                                        {% endfor %}
                                         {% else %}
                                         <span class="text-muted">Not assigned</span>
                                         {% endif %}

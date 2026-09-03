@@ -110,11 +110,12 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if user_obj.county %}
+                                {% if user_obj.counties.all %}
+                                {% for county in user_obj.counties.all %}
                                 <span class="badge bg-info">
-                                    <i class="bi bi-geo-alt me-1"></i>
-                                    {{ user_obj.county.name }}
+                                    <i class="bi bi-geo-alt me-1"></i>{{ county.name }}
                                 </span>
+                                {% endfor %}
                                 {% else %}
                                 <span class="text-muted">—</span>
                                 {% endif %}

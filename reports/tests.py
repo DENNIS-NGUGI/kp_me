@@ -30,8 +30,9 @@ class ReportCatalogueTests(TestCase):
 			data_type='count', unit='people', frequency='quarterly', target_value=10,
 		)
 		self.user = User.objects.create_superuser(
-			username='report_admin', email='report@example.com', password='test-password', county=self.county,
+			username='report_admin', email='report@example.com', password='test-password',
 		)
+		self.user.counties.add(self.county)
 		self.client.force_login(self.user)
 
 	def test_preview_and_excel_export_render_for_a_report(self):

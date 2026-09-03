@@ -628,7 +628,10 @@ def activity_delete(request, pk):
 def activity_indicator_create(request):
 	if not _require_icpd_admin(request):
 		return redirect('icpd:activity_indicator_list')
-	activity = get_object_or_404(Activity.objects.select_related('objective__commitment'), pk=request.GET.get('activity') or request.POST.get('activity'))
+	activity_id = request.GET.get('activity') or request.POST.get('activity')
+	if not activity_id:
+		return _form_view(request, ActivityIndicatorForm, 'Activity Indicator')
+	activity = get_object_or_404(Activity.objects.select_related('objective__commitment'), pk=activity_id)
 	if not _require_commitment_access(request, activity.objective.commitment):
 		return redirect('icpd:dashboard')
 	return _form_view(request, ActivityIndicatorForm, 'Activity Indicator', initial={'activity': activity.pk})

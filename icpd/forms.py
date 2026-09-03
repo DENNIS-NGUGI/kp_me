@@ -5,7 +5,7 @@ from .models import Activity, ActivityIndicator, ActivityYearData, Commitment, C
 
 class ActivityChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, activity):
-        return f'{activity.objective.commitment.title} | {activity.objective.title} | {activity.title[:90]}'
+        return f'{activity.objective.commitment.title} | {activity.objective.title} | {activity.title}'
 
 
 class BootstrapModelForm(forms.ModelForm):

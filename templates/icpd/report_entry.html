@@ -2,10 +2,49 @@
 
 {% block title %}Report ICPD Actuals{% endblock %}
 
+{% block extra_css %}
+<style>
+	.select2-container--bootstrap-5 .select2-selection--single {
+		height: auto;
+		min-height: 38px;
+	}
+
+	.select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered,
+	.select2-container--bootstrap-5 .select2-results__option {
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+
+	.select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+		padding-top: 7px;
+		padding-bottom: 7px;
+		padding-right: 2.5rem;
+	}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-start gap-3 mb-4"><div><a href="{% url 'icpd:dashboard' %}" class="text-decoration-none text-muted small"><i class="bi bi-arrow-left"></i> ICPD25 Commitments</a><h3 class="page-title mt-2 mb-1"><i class="bi bi-pencil-square me-2"></i>ICPD Reporting</h3><p class="text-muted mb-0">Select the preconfigured planning hierarchy, then enter only actual values.</p></div></div>
 <ul class="nav nav-tabs mb-4"><li class="nav-item"><a class="nav-link active" href="{% url 'icpd:report_entry' %}"><i class="bi bi-graph-up me-1"></i>Actuals</a></li><li class="nav-item"><a class="nav-link" href="{% url 'icpd:report_entry' %}?tab=narrative"><i class="bi bi-file-earmark-text me-1"></i>Commitment Narrative</a></li></ul>
 <div class="card mb-4"><div class="card-body"><form method="get" class="row g-3"><div class="col-md-4"><label class="form-label">Commitment</label><select name="commitment" class="form-select" onchange="this.form.submit()"><option value="">Select commitment</option>{% for commitment in commitments %}<option value="{{ commitment.pk }}" {% if selected_commitment == commitment.pk|stringformat:'s' %}selected{% endif %}>{{ commitment.title }}</option>{% endfor %}</select></div><div class="col-md-4"><label class="form-label">Objective</label><select name="objective" class="form-select" onchange="this.form.submit()" {% if not selected_commitment %}disabled{% endif %}><option value="">Select objective</option>{% for objective in objectives %}<option value="{{ objective.pk }}" {% if selected_objective == objective.pk|stringformat:'s' %}selected{% endif %}>{{ objective.title }}</option>{% endfor %}</select></div><div class="col-md-4"><label class="form-label">Activity</label><select name="activity" class="form-select" onchange="this.form.submit()" {% if not selected_objective %}disabled{% endif %}><option value="">Select activity</option>{% for activity in activities %}<option value="{{ activity.pk }}" {% if selected_activity == activity.pk|stringformat:'s' %}selected{% endif %}>{{ activity.title }}</option>{% endfor %}</select></div><div class="col-md-6"><label class="form-label">Activity Indicator</label><select name="activity_indicator" class="form-select" onchange="this.form.submit()" {% if not selected_activity %}disabled{% endif %}><option value="">Select activity indicator</option>{% for indicator in activity_indicators %}<option value="{{ indicator.pk }}" {% if selected_activity_indicator == indicator.pk|stringformat:'s' %}selected{% endif %}>{{ indicator.code }} - {{ indicator.name }}</option>{% endfor %}</select></div><div class="col-md-4"><label class="form-label">Financial Year</label><select name="financial_year" class="form-select" onchange="this.form.submit()" {% if not selected_activity_indicator %}disabled{% endif %}><option value="">Select financial year</option>{% for value, label in financial_years %}<option value="{{ value }}" {% if selected_financial_year == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div><div class="col-md-2 d-flex align-items-end"><a class="btn btn-outline-secondary w-100" href="{% url 'icpd:report_entry' %}"><i class="bi bi-arrow-counterclockwise"></i> Reset</a></div></form></div></div>
 {% if selected_activity_indicator and not financial_years %}<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-2"></i>No financial year is available for this activity indicator. An ICPD administrator must first add the annual target for the required financial year.</div>{% endif %}
 {% if year_data %}<div class="card"><div class="card-header">Preconfigured Plan</div><div class="card-body"><div class="row g-3 mb-4"><div class="col-md-2"><small class="text-muted d-block">Baseline Value</small><strong>{{ year_data.activity_indicator.baseline_value|default:'-' }}</strong></div><div class="col-md-2"><small class="text-muted d-block">Baseline Year</small><strong>{{ year_data.activity_indicator.baseline_year|default:'-' }}</strong></div><div class="col-md-2"><small class="text-muted d-block">Target Value</small><strong>{{ year_data.target_value|default:'-' }}</strong></div><div class="col-md-2"><small class="text-muted d-block">Activity Budget</small><strong>KES {{ year_data.activity_indicator.activity.budget_amount|default:'-' }} million</strong></div><div class="col-md-2"><small class="text-muted d-block">Responsibility</small><strong>{{ year_data.activity_indicator.activity.responsibility|default:'-' }}</strong></div><div class="col-md-2"><small class="text-muted d-block">Timeline</small><strong>{{ year_data.activity_indicator.activity.timeline|default:'-' }}</strong></div></div><form method="post">{% csrf_token %}<input type="hidden" name="commitment" value="{{ selected_commitment }}"><input type="hidden" name="objective" value="{{ selected_objective }}"><input type="hidden" name="activity" value="{{ selected_activity }}"><input type="hidden" name="activity_indicator" value="{{ selected_activity_indicator }}"><input type="hidden" name="financial_year" value="{{ selected_financial_year }}"><div class="row g-3"><div class="col-md-4"><label class="form-label" for="{{ year_form.achievement_value.id_for_label }}">Achievement Value</label>{{ year_form.achievement_value }}{{ year_form.achievement_value.errors }}</div><div class="col-md-4"><label class="form-label" for="{{ year_form.status.id_for_label }}">Status</label>{{ year_form.status }}{{ year_form.status.errors }}</div><div class="col-md-4"><label class="form-label" for="{{ expenditure_form.expenditure_amount.id_for_label }}">Expenditure (KES millions)</label>{{ expenditure_form.expenditure_amount }}{{ expenditure_form.expenditure_amount.errors }}</div><div class="col-md-6"><label class="form-label" for="{{ year_form.remarks.id_for_label }}">Achievement Remarks</label>{{ year_form.remarks }}</div><div class="col-md-6"><label class="form-label" for="{{ expenditure_form.remarks.id_for_label }}">Expenditure Remarks</label>{{ expenditure_form.remarks }}</div></div><button class="btn btn-primary mt-4" type="submit"><i class="bi bi-save me-1"></i>Save Actuals</button></form></div></div>{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+	$(function() {
+		$('select[name="commitment"], select[name="objective"], select[name="activity"], select[name="activity_indicator"], select[name="financial_year"], select[name="status"]').each(function() {
+			if (!$(this).data('select2')) {
+				$(this).select2({
+					theme: 'bootstrap-5',
+					width: '100%',
+					placeholder: $(this).find('option:first').text(),
+					allowClear: false,
+					closeOnSelect: true,
+				});
+			}
+		});
+	});
+</script>
 {% endblock %}

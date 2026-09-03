@@ -42,9 +42,8 @@ def profile(request):
         'account_verified': user.is_verified,
     }
     
-    # Add county info if county user
-    if user.county:
-        context['county_name'] = user.county.name
+    if user.is_county_user:
+        context['county_names'] = ', '.join(user.counties.values_list('name', flat=True))
     
     return render(request, 'users/profile.html', context)
 

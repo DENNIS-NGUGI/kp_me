@@ -142,6 +142,21 @@ class IcpdPlanningModelTests(TestCase):
 
 
 class IcpdPermissionTests(TestCase):
+	def test_activity_indicator_create_url_resolves_for_an_icpd_administrator(self):
+		user = User.objects.create_superuser(
+			username='activity_indicator_admin',
+			email='activity-indicator-admin@example.com',
+			password='test-password',
+		)
+		commitment = Commitment.objects.create(title='Test Commitment')
+		objective = Objective.objects.create(commitment=commitment, title='Test Objective')
+		activity = Activity.objects.create(objective=objective, title='Test Activity')
+		self.client.force_login(user)
+
+		response = self.client.get('/icpd/activity-indicators/add/', {'activity': activity.pk})
+
+		self.assertEqual(response.status_code, 200)
+
 	def test_dashboard_requires_view_commitment_permission(self):
 		role = Role.objects.create(name='icpd_planner', display_name='ICPD Planner')
 		user = User.objects.create_user(username='planner', password='test-password', role=role)
