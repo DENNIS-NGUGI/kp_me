@@ -220,7 +220,7 @@ def get_quarterly_performance(entries):
     return quarterly_data
 
 
-def get_county_performance(entries, counties):
+def get_county_performance(entries, counties, limit=10):
     """
     Optimized: Get performance by county
     
@@ -229,7 +229,7 @@ def get_county_performance(entries, counties):
         counties: County queryset
     
     Returns:
-        list of dicts with county performance (top 10)
+        list of dicts with county performance
     """
     county_performance = []
     
@@ -251,9 +251,39 @@ def get_county_performance(entries, counties):
             'percentage': percentage
         })
     
-    # Sort by percentage descending and limit to top 10
+    # Sort by percentage descending and optionally limit the results.
     county_performance.sort(key=lambda x: x['percentage'], reverse=True)
-    return county_performance[:10]
+    return county_performance[:limit] if limit else county_performance
+
+
+def get_county_map_data(approved_entries, all_entries, counties):
+    """Build county-level dashboard metrics for the interactive map."""
+    county_metrics = []
+    for county in counties:
+        county_approved_entries = approved_entries.filter(county=county)
+        county_all_entries = all_entries.filter(county=county)
+        performance_counts = count_entries_met(county_approved_entries)
+        approved = performance_counts['total']
+        county_metrics.append({
+            'id': county.id,
+            'name': county.name,
+            'approved': approved,
+            'submitted': county_all_entries.filter(status='submitted').count(),
+            'rejected': county_all_entries.filter(status='rejected').count(),
+            'draft': county_all_entries.filter(status='draft').count(),
+            'indicators': county_all_entries.values('indicator_id').distinct().count(),
+            'thematic_areas': list(
+                county_all_entries.values_list(
+                    'indicator__thematic_area__name', flat=True
+                ).distinct().order_by('indicator__thematic_area__name')
+            ),
+            'total': approved,
+            'met': performance_counts['met'],
+            'percentage': round(
+                (performance_counts['met'] / approved * 100) if approved else 0
+            ),
+        })
+    return county_metrics
 
 
 def audit_log_export(user, export_type, filters=None):

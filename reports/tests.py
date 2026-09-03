@@ -1,3 +1,4 @@
+import json
 from datetime import date
 from unittest.mock import patch
 
@@ -56,6 +57,39 @@ class ReportCatalogueTests(TestCase):
 
 		self.assertContains(response, 'Dashboard')
 		self.assertContains(response, 'Reports')
+		self.assertContains(response, 'County Performance Map')
+		self.assertContains(response, 'id="mapMetric"')
+		self.assertContains(response, 'id="mapThematicArea"')
+		self.assertContains(response, 'id="countyAnalysisModal"')
+		self.assertContains(response, 'showCountyModal(feature.properties.COUNTY)')
+		self.assertContains(response, 'pointer-events: auto !important')
+		self.assertContains(response, 'const countyRenderer = L.canvas({ padding: 0.5 });')
+		self.assertContains(response, 'bubblingMouseEvents: false')
+		self.assertContains(response, 'mousemove: function(event)')
+		self.assertContains(response, 'highlightCounty(event.target)')
+		self.assertContains(response, "mapThematicArea.addEventListener('change', updateMapAnalysis)")
+		self.assertContains(response, 'View Data Records')
+		self.assertEqual(
+			json.loads(response.context['county_map_data']),
+			[{
+				'id': self.county.id,
+				'name': 'Report County',
+				'approved': 0,
+				'submitted': 0,
+				'rejected': 0,
+				'draft': 0,
+				'indicators': 0,
+				'thematic_areas': [],
+				'total': 0,
+				'met': 0,
+				'percentage': 0,
+			}],
+		)
+	def test_county_map_boundaries_are_available_to_dashboard_users(self):
+		response = self.client.get('/dashboard/county-boundaries/')
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(len(response.json()['features']), 47)
 
 	def test_dashboard_total_entries_excludes_drafts(self):
 		for status, code in (('approved', 'REPORT-101'), ('submitted', 'REPORT-102'), ('rejected', 'REPORT-103'), ('draft', 'REPORT-104')):
@@ -72,6 +106,22 @@ class ReportCatalogueTests(TestCase):
 
 		self.assertEqual(response.context['approved_entries'], 1)
 		self.assertEqual(response.context['total_entries'], 3)
+		self.assertEqual(
+			json.loads(response.context['county_map_data']),
+			[{
+				'id': self.county.id,
+				'name': 'Report County',
+				'approved': 1,
+				'submitted': 1,
+				'rejected': 1,
+				'draft': 1,
+				'indicators': 4,
+				'thematic_areas': ['Report Area'],
+				'total': 1,
+				'met': 1,
+				'percentage': 100,
+			}],
+		)
 
 	@patch('reports.views.timezone.localdate', return_value=date(2026, 2, 15))
 	def test_dashboard_uses_the_quarter_containing_today(self, mocked_localdate):

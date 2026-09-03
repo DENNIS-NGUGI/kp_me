@@ -2,10 +2,12 @@ import io
 import json
 import csv
 import logging
+from pathlib import Path
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Count, Q, Avg, Sum
@@ -14,6 +16,8 @@ from datetime import datetime, timedelta
 from io import BytesIO
 from django.contrib import messages
 from django.views.decorators.cache import cache_page
+from django.views.decorators.cache import cache_control
+from django.conf import settings
 from data_entry.models import DataEntry
 from indicators.models import Indicator, ThematicArea
 from core.models import County, Quarter
@@ -31,6 +35,7 @@ from .aggregations import (
     get_thematic_performance,
     get_quarterly_performance,
     get_county_performance,
+    get_county_map_data,
     audit_log_export,
     rate_limit_check
 )
@@ -39,6 +44,15 @@ from users.models import Role, User
 
 # Setup logger for exports
 logger = logging.getLogger('data_export')
+
+
+@login_required
+@cache_control(private=True, max_age=86400)
+def county_map_boundaries(request):
+    """Return the local Kenya county boundaries used by the dashboard map."""
+    boundary_file = Path(settings.BASE_DIR) / 'static' / 'map' / 'kenyan-counties.geojson'
+    with boundary_file.open(encoding='utf-8') as geojson_file:
+        return JsonResponse(json.load(geojson_file), safe=False)
 
 # ============================================
 # DASHBOARD - Uses database permissions
@@ -223,9 +237,11 @@ def dashboard(request):
     # ===== COUNTY PERFORMANCE - OPTIMIZED AGGREGATION =====
     try:
         county_performance = get_county_performance(entries, counties)
+        county_map_data = get_county_map_data(entries, all_entries, counties)
     except Exception as e:
         logger.error(f"Error calculating county performance: {str(e)}")
         county_performance = []
+        county_map_data = []
     
     # ===== RECENT ACTIVITY =====
     recent_entries = entries.select_related('county', 'quarter', 'indicator', 'indicator__thematic_area').order_by('-created_at')[:10]
@@ -283,6 +299,9 @@ def dashboard(request):
         
         # County performance
         'county_performance': county_performance,
+        'county_map_data': json.dumps(county_map_data),
+        'data_entry_list_url': reverse('data_entry:list'),
+        'can_view_data_entry': user.has_module_permission('data_entry', 'view'),
         
         # Recent entries
         'recent_entries': recent_entries,
