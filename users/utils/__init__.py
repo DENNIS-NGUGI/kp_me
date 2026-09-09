@@ -1,4 +1,4 @@
-from .email import send_otp_email
+from .email import send_otp_email, send_registration_email
 from .captcha import validate_captcha, get_captcha_context
 
 # For backwards compatibility with templatetags
@@ -45,6 +45,7 @@ def user_can_manage_users(user):
 
 __all__ = [
     'send_otp_email',
+    'send_registration_email',
     'validate_captcha',
     'get_captcha_context',
     'user_has_permission',

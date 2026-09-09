@@ -322,6 +322,8 @@ def verify_otp(request):
             else:
                 messages.success(request, f'Welcome back, {user.get_full_name() or user.username}!')
             
+            if user.force_password_change:
+                return redirect('users:change_password')
             if not user.is_verified and not user.is_superuser:
                 return redirect('users:pending_verification')
             if next_url and next_url.startswith('/'):

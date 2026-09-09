@@ -50,3 +50,33 @@ def send_otp_email(user, otp):
     except Exception as e:
         logger.error(f"Failed to send OTP email to {user.email}: {e}")
         return False
+
+
+def send_registration_email(user, temporary_password):
+    """Send an administrator-created user's initial sign-in credentials."""
+    subject = 'KPPIMES - Your account has been created'
+    message = f"""Dear {user.get_full_name() or user.username},
+
+An administrator has created your KPPIMES account.
+
+Username: {user.username}
+Temporary password: {temporary_password}
+
+Sign in at {settings.SITE_URL or 'the KPPIMES login page'}. You will receive a verification code by email and must change this temporary password before you can use the system.
+
+KPPIMES
+Kenya Population Programme
+"""
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+        logger.info(f"Registration email sent to {user.email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send registration email to {user.email}: {e}")
+        return False

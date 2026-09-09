@@ -1,5 +1,6 @@
 import logging
 from django.shortcuts import render, redirect
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
@@ -146,7 +147,9 @@ def change_password(request):
         
         # Change password
         request.user.set_password(new_password1)
+        request.user.force_password_change = False
         request.user.save()
+        update_session_auth_hash(request, request.user)
         
         # Log password change
         AuditLog.log(
@@ -158,6 +161,6 @@ def change_password(request):
         )
         
         messages.success(request, 'Password changed successfully!')
-        return redirect('users:profile')
+        return redirect('reports:dashboard')
     
     return render(request, 'users/change_password.html')

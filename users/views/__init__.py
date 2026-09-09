@@ -15,9 +15,11 @@ from .profile import (
     profile,
     edit_profile,
     permission_denied,
+    change_password,
 )
 from .user_management import (
     user_management,
+    user_add,
     user_edit,
     user_toggle_status,
     user_delete,
@@ -50,9 +52,11 @@ __all__ = [
     'profile',
     'edit_profile',
     'permission_denied',
+    'change_password',
     
     # User management views
     'user_management',
+    'user_add',
     'user_edit',
     'user_toggle_status',
     'user_delete',

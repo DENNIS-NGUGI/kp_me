@@ -1,13 +1,16 @@
 import logging
+import secrets
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import Q
 from django.views.decorators.http import require_http_methods
 
 from ..models import User, Role, AuditLog
 from ..decorators import permission_required
 from ..validators import validate_phone_number
+from ..utils import send_registration_email
 from core.models import County
 
 logger = logging.getLogger(__name__)
@@ -65,6 +68,102 @@ def user_management(request):
         'verified_users': verified_users,
     }
     return render(request, 'users/user_management.html', context)
+
+
+@login_required
+@permission_required('can_manage_users')
+def user_add(request):
+    """Create a verified user and send a temporary password by email."""
+    roles = Role.objects.filter(is_active=True)
+    counties = County.objects.filter(is_active=True)
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip().lower()
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        phone_number = request.POST.get('phone_number', '').strip()
+        organization = request.POST.get('organization', '').strip()
+        role_id = request.POST.get('role')
+        county_ids = request.POST.getlist('counties')
+        errors = []
+
+        if not username:
+            errors.append('Username is required.')
+        elif len(username) < 3:
+            errors.append('Username must be at least 3 characters.')
+        elif User.objects.filter(username__iexact=username).exists():
+            errors.append('Username already exists.')
+        elif not username.replace('_', '').replace('-', '').isalnum():
+            errors.append('Username can only contain letters, numbers, underscores, and hyphens.')
+
+        if not email:
+            errors.append('Email is required.')
+        elif User.objects.filter(email=email).exists():
+            errors.append('Email already in use by another account.')
+
+        if phone_number and not validate_phone_number(phone_number):
+            errors.append('Please enter a valid phone number (e.g., +254712345678).')
+
+        role = None
+        if role_id:
+            try:
+                role = roles.get(pk=role_id)
+            except Role.DoesNotExist:
+                errors.append('Please select a valid role.')
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, 'users/user_add.html', {
+                'roles': roles,
+                'counties': counties,
+                'form_data': request.POST,
+            })
+
+        temporary_password = secrets.token_urlsafe(12)
+        try:
+            with transaction.atomic():
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=temporary_password,
+                    first_name=first_name,
+                    last_name=last_name,
+                    phone_number=phone_number,
+                    organization=organization,
+                    role=role,
+                    is_active=True,
+                    is_verified=True,
+                    is_email_verified=True,
+                    force_password_change=True,
+                    approved_by=request.user,
+                )
+                user.counties.set(counties.filter(id__in=county_ids))
+
+                if not send_registration_email(user, temporary_password):
+                    raise RuntimeError('Unable to send the registration email.')
+
+                AuditLog.log(
+                    user=request.user,
+                    action=AuditLog.Action.CREATE,
+                    request=request,
+                    model_instance=user,
+                    changes={'method': 'administrator_registration'},
+                )
+        except Exception:
+            logger.exception('Administrator user registration failed')
+            messages.error(request, 'The user was not created because the registration email could not be sent.')
+            return render(request, 'users/user_add.html', {
+                'roles': roles,
+                'counties': counties,
+                'form_data': request.POST,
+            })
+
+        messages.success(request, f'User "{user.get_full_name() or user.username}" was created and sent their temporary password.')
+        return redirect('users:user_management')
+
+    return render(request, 'users/user_add.html', {'roles': roles, 'counties': counties})
 
 @login_required
 @permission_required('can_manage_users')

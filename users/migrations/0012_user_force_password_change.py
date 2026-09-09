@@ -1,0 +1,19 @@
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('users', '0011_user_counties'),
+    ]
+
+    operations = [
+        migrations.AddField(
+            model_name='user',
+            name='force_password_change',
+            field=models.BooleanField(
+                default=False,
+                help_text='Whether the user must change their password before using the system',
+            ),
+        ),
+    ]

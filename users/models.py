@@ -327,6 +327,10 @@ class User(AbstractUser):
         default=False,
         help_text=_("Whether the user's email has been verified")
     )
+    force_password_change = models.BooleanField(
+        default=False,
+        help_text=_("Whether the user must change their password before using the system")
+    )
     email_verified_at = models.DateTimeField(
         null=True, 
         blank=True

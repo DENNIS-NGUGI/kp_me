@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Add User - KPPIMES{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="page-title mb-0"><i class="bi bi-person-plus me-2"></i>Add User</h4>
+                <p class="text-muted small mt-1">The user will receive a temporary password by email.</p>
+            </div>
+            <a href="{% url 'users:user_management' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-2"></i>Back</a>
+        </div>
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="id_username" class="form-label">Username</label>
+                            <input type="text" name="username" id="id_username" class="form-control" value="{{ form_data.username|default:'' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_email" class="form-label">Email</label>
+                            <input type="email" name="email" id="id_email" class="form-control" value="{{ form_data.email|default:'' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_first_name" class="form-label">First Name</label>
+                            <input type="text" name="first_name" id="id_first_name" class="form-control" value="{{ form_data.first_name|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_last_name" class="form-label">Last Name</label>
+                            <input type="text" name="last_name" id="id_last_name" class="form-control" value="{{ form_data.last_name|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_phone_number" class="form-label">Phone Number</label>
+                            <input type="tel" name="phone_number" id="id_phone_number" class="form-control" value="{{ form_data.phone_number|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_organization" class="form-label">Organization</label>
+                            <input type="text" name="organization" id="id_organization" class="form-control" value="{{ form_data.organization|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_role" class="form-label">Role</label>
+                            <select name="role" id="id_role" class="form-select">
+                                <option value="">No role</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if form_data.role == role.id|stringformat:'s' %}selected{% endif %}>{{ role.get_display_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_counties" class="form-label">Counties</label>
+                            <select name="counties" id="id_counties" class="form-select" multiple>
+                                {% for county in counties %}
+                                <option value="{{ county.id }}">{{ county.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-send me-2"></i>Create and Send Credentials</button>
+                        <a href="{% url 'users:user_management' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

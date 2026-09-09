@@ -20,10 +20,12 @@ urlpatterns = [
     path('pending-verification/', views.pending_verification, name='pending_verification'),
     path('profile/', views.profile, name='profile'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
+    path('password-change/', views.change_password, name='change_password'),
     path('permission-denied/', views.permission_denied, name='permission_denied'),
     
     # User Management
     path('users/', views.user_management, name='user_management'),
+    path('users/add/', views.user_add, name='user_add'),
     path('users/<int:pk>/edit/', views.user_edit, name='user_edit'),
     path('users/<int:pk>/toggle-status/', views.user_toggle_status, name='user_toggle_status'),
     path('users/<int:pk>/delete/', views.user_delete, name='user_delete'),
