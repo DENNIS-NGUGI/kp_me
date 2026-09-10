@@ -140,6 +140,34 @@ class IcpdPlanningModelTests(TestCase):
 
 		self.assertEqual(Commitment.objects.filter(title='Existing Commitment').count(), 1)
 
+	def test_json_import_accepts_source_key_action_schema(self):
+		payload = {
+			'commitments': [{
+				'title': 'Imported Commitment',
+				'objectives': [{
+					'title': 'Imported Objective',
+					'activities': [{
+						'key_action': 'Imported key action',
+						'indicator': 'Imported source indicator',
+						'annual_values': {'2024/2025': 12, '2025/2026': '#####'},
+						'remarks': None,
+					}],
+				}],
+			}],
+		}
+		with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as json_file:
+			json.dump(payload, json_file)
+			json_path = Path(json_file.name)
+		try:
+			call_command('import_icpd_plan', str(json_path))
+		finally:
+			json_path.unlink()
+
+		activity = Activity.objects.get(title='Imported key action')
+		indicator = activity.activity_indicators.get(name='Imported source indicator')
+		self.assertEqual(indicator.yearly_data.get().financial_year, '2024/25')
+		self.assertEqual(indicator.yearly_data.get().target_value, 12)
+
 
 class IcpdPermissionTests(TestCase):
 	def test_activity_indicator_create_url_resolves_for_an_icpd_administrator(self):

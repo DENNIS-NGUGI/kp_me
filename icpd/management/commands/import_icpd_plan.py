@@ -1,5 +1,5 @@
 import json
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 from django.core.management.base import BaseCommand, CommandError
@@ -65,16 +65,25 @@ class Command(BaseCommand):
                     for activity_data in objective_data.get('activities', []):
                         activity = Activity.objects.create(
                             objective=objective,
-                            title=activity_data['title'],
+                            title=activity_data.get('title', activity_data.get('key_action', '')),
                             timeline=activity_data.get('timeline', ''),
                             responsibility=activity_data.get('responsibility', ''),
                             budget_amount=self._to_millions(activity_data.get('budget_amount')),
                             budget_currency=activity_data.get('budget_currency', 'KES'),
-                            remarks=activity_data.get('remarks', ''),
+                            remarks=activity_data.get('remarks') or '',
                             sort_order=activity_data.get('sort_order', 0),
                         )
                         counts['activities'] += 1
-                        for indicator_data in activity_data.get('indicators', []):
+                        indicators = activity_data.get('indicators')
+                        if indicators is None and activity_data.get('indicator'):
+                            indicators = [{
+                                'name': activity_data['indicator'],
+                                'annual_targets': [
+                                    {'financial_year': year, 'target_value': value}
+                                    for year, value in activity_data.get('annual_values', {}).items()
+                                ],
+                            }]
+                        for indicator_data in indicators or []:
                             indicator = ActivityIndicator.objects.create(
                                 activity=activity,
                                 name=indicator_data['name'],
@@ -84,10 +93,13 @@ class Command(BaseCommand):
                             )
                             counts['indicators'] += 1
                             for target_data in indicator_data.get('annual_targets', []):
+                                target_value = self._to_decimal(target_data.get('target_value'))
+                                if target_value is None:
+                                    continue
                                 IndicatorYearData.objects.create(
                                     activity_indicator=indicator,
-                                    financial_year=target_data['financial_year'],
-                                    target_value=target_data.get('target_value'),
+                                    financial_year=self._normalise_financial_year(target_data['financial_year']),
+                                    target_value=target_value,
                                 )
                                 counts['targets'] += 1
 
@@ -101,3 +113,17 @@ class Command(BaseCommand):
         if value in (None, ''):
             return None
         return Decimal(str(value)) / KES_PER_MILLION
+
+    @staticmethod
+    def _to_decimal(value):
+        if value is None:
+            return None
+        try:
+            return Decimal(str(value))
+        except InvalidOperation:
+            return None
+
+    @staticmethod
+    def _normalise_financial_year(value):
+        start_year, end_year = value.split('/')
+        return f'{start_year}/{end_year[-2:]}'
