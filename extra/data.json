@@ -622,6 +622,3374 @@
           ]
         }
       ]
+    },
+    {
+      "title": "Improve support to older persons, persons with disabilities, orphans, and vulnerable children",
+      "description": "Commitment 4",
+      "sort_order": 4,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "To increase the core social protection investment",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Finalize and implement the Social Protection Investment Plan for Kenya Vision 2030",
+              "timeline": "2030",
+              "responsibility": "MoL&SP",
+              "budget_amount": 10000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Social Protection Investment Plan % increase in core social protection investment",
+                  "notes": "Social Protection Investment Plan % increase in core social protection investment",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Convene advocacy fora with Parliamentarians, MCAs and development partners",
+              "timeline": "Annual",
+              "responsibility": "NCPD MoL&SP UNFPA",
+              "budget_amount": 105000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of advocacy forums held",
+                  "notes": "No. of advocacy forums held",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Implement the graduation model",
+              "timeline": "Annually",
+              "responsibility": "MoL&SP SDASAL UNICEF World Bank DFID WFP",
+              "budget_amount": 17120000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "Implementation status",
+                  "notes": "Implementation status",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To enhance management and coverage of core social protection investment",
+          "sort_order": 2,
+          "activities": [
+            {
+              "title": "Finalize the review of Social Protection Policy, 2011",
+              "timeline": "2020",
+              "responsibility": "MoL&SP",
+              "budget_amount": 10000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Reviewed Social Protection Policy",
+                  "notes": "Reviewed Social Protection Policy",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Operationalize the National Steering committee for Social Protection (NSCSP)",
+              "timeline": "2030",
+              "responsibility": "MoL&SP",
+              "budget_amount": 500000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of meetings held annually",
+                  "notes": "No. of meetings held annually",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Finalize the development of the Social Protection Co-ordination Bill, 2018",
+              "timeline": "2021",
+              "responsibility": "MoL&SP",
+              "budget_amount": 20000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "Social Protection Co-ordination Act",
+                  "notes": "Social Protection Co-ordination Act",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop and implement the social registry for Social Protection programmes",
+              "timeline": "2021",
+              "responsibility": "MoL&SP KNBS",
+              "budget_amount": 50000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "Operational Social Registry",
+                  "notes": "Operational Social Registry",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Support and care to older persons, persons with disabilities and orphans and vulnerable children increased",
+          "sort_order": 3,
+          "activities": [
+            {
+              "title": "Implement Universal Older Persons (OP) cash transfer",
+              "timeline": "2030",
+              "responsibility": "MoL&SP",
+              "budget_amount": 264000000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "% of older persons covered",
+                  "notes": "% of older persons covered",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support Persons with Severe Disabilities (PwSD) with Cash transfer",
+              "timeline": "2030",
+              "responsibility": "MoL&SP",
+              "budget_amount": 14900000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "% of PwSD covered",
+                  "notes": "% of PwSD covered",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support orphans and vulnerable children (OVC) with Cash transfer",
+              "timeline": "2030",
+              "responsibility": "MoL&SP",
+              "budget_amount": 111700000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "% of OVC covered",
+                  "notes": "% of OVC covered",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Register Persons with Disabilities and link to MFI",
+              "timeline": "2030",
+              "responsibility": "MoL&SP NCPWD",
+              "budget_amount": 300000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of PWD registered and linked to MFI",
+                  "notes": "No. of PWD registered and linked to MFI",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Provide sunscreen lotion to persons with albinism",
+              "timeline": "2030",
+              "responsibility": "MoL&SP NCPWD MoH",
+              "budget_amount": 3000000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of persons with albinism provided sunscreen lotion",
+                  "notes": "No. of persons with albinism provided sunscreen lotion",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Establish rescue centres for abused and neglected older persons",
+              "timeline": "2030",
+              "responsibility": "MoL&SP NCPWD MoH",
+              "budget_amount": 4700000000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "No. of rescue centres for older persons established",
+                  "notes": "No. of rescue centres for older persons established",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Provide Educational scholarships to OVCs (Presidential bursary programme)",
+              "timeline": "2030",
+              "responsibility": "MoL&SP NCPWD MoE, County Governments",
+              "budget_amount": 4000000000,
+              "budget_currency": "KES",
+              "sort_order": 7,
+              "indicators": [
+                {
+                  "name": "No. of OVCs awarded educational scholarships",
+                  "notes": "No. of OVCs awarded educational scholarships",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Rehabilitate and re-integrate street families to communities",
+              "timeline": "2030",
+              "responsibility": "MoL&SP SFRTF",
+              "budget_amount": 1000000000,
+              "budget_currency": "KES",
+              "sort_order": 8,
+              "indicators": [
+                {
+                  "name": "No. of street families rehabilitated and re-integrated",
+                  "notes": "No. of street families rehabilitated and re-integrated",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Enhance integration of population, health and development programmes and projects into Medium Term Plans (MTPs) and the Medium Term Expenditure Framework (MTEF)",
+      "description": "Commitment 5",
+      "sort_order": 5,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "To integrate population issues into the formulation, implementation, monitoring and evaluation of all policies and programmes relating to sustainable development at national, county and sub-county levels by 2030",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Review/develop and implement integration guidelines for population dynamics",
+              "timeline": "2022 2027",
+              "responsibility": "NCPD",
+              "budget_amount": 33000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of MTPs and CIDPs that have integrated population dynamics",
+                  "notes": "No. of MTPs and CIDPs that have integrated population dynamics",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Conduct further analysis to establish the interlinkages between population dynamics and other variables",
+              "timeline": "2030",
+              "responsibility": "NCPD",
+              "budget_amount": 15000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of further analysis",
+                  "notes": "No. of further analysis",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Build capacity of planning officers on how to integrate population dynamics at all levels (national and county)",
+              "timeline": "2030",
+              "responsibility": "NCPD",
+              "budget_amount": 15000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of planning officers trained on integrating population dynamics.",
+                  "notes": "No. of planning officers trained on integrating population dynamics.",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Advocate for integration of population dynamics at both county and national level",
+              "timeline": "2030",
+              "responsibility": "NCPD",
+              "budget_amount": 20000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of advocacy fora held",
+                  "notes": "No. of advocacy fora held",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Review CIDPs to ensure the population dynamics have been integrated",
+              "timeline": "2020 2027",
+              "responsibility": "NCPD",
+              "budget_amount": 3000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of CIDPs reviewed",
+                  "notes": "No. of CIDPs reviewed",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To increase domestic financing for population programme by 2030",
+          "sort_order": 2,
+          "activities": [
+            {
+              "title": "Advocate for increased budgetary allocation during the MTEF budgeting",
+              "timeline": "2020 -2030",
+              "responsibility": "NCPD",
+              "budget_amount": 50000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "% annual change in amount allocated to population programme",
+                  "notes": "% annual change in amount allocated to population programme",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Strengthen the national and county coordination mechanism for efficient implementation of the population and development programme",
+              "timeline": "2020 -2030",
+              "responsibility": "NCPD",
+              "budget_amount": 20000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "Annual completion rate",
+                  "notes": "Annual completion rate",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Enhance the capacity of relevant Government institutions to increase availability and accessibility to high-quality, timely and reliable population and related data",
+      "description": "Commitment 6",
+      "sort_order": 6,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "To enhance the capacity of relevant Government institutions to increase availability and accessibility to population data",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Undertake institutional capacity assessment of relevant government institutions to provide quality, timely and reliable population data",
+              "timeline": "2022",
+              "responsibility": "KNBS NCPD PSRI",
+              "budget_amount": 15000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of relevant government institutions",
+                  "notes": "12 institutions targeted",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Undertake capacity building on data collection and management among the relevant government institutions",
+              "timeline": "2030",
+              "responsibility": "KNBS NCPD PSRI",
+              "budget_amount": 600000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of relevant government institutions",
+                  "notes": "12 institutions targeted",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Promote data use for decision making",
+              "timeline": "2030",
+              "responsibility": "KNBS NCPD PSRI",
+              "budget_amount": 20000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of data users training workshops held",
+                  "notes": "No. of data users training workshops held",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Increase availability of timely, reliable and high quality SRH data through annual nationwide SRH DAAs and Capacity building",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 640000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of annual SRH DAAs and capacity building undertaken",
+                  "notes": "No. of annual SRH DAAs and capacity building undertaken",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop and operationalize an SRH data dash board of key indicators disaggregated by gender, age, ethnicity, migratory status, disability and geographic location",
+              "timeline": "2026",
+              "responsibility": "MoH",
+              "budget_amount": 6000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "Operational SRH dash board",
+                  "notes": "Operational SRH dash board",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Automate SRH information flow from communities and non-health sector through use of technology such as m-platform",
+              "timeline": "2025",
+              "responsibility": "MoH",
+              "budget_amount": 32000000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "Automated SRH information collation system",
+                  "notes": "Automated SRH information collation system",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "National population Centre established",
+          "sort_order": 2,
+          "activities": [
+            {
+              "title": "Seek alternative land for establishing the population center",
+              "timeline": "2022",
+              "responsibility": "TNT&P NCPD",
+              "budget_amount": 3000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Existence of land to establish the population center",
+                  "notes": "Proposal has been developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Establish national population Centre",
+              "timeline": "2030",
+              "responsibility": "TNT&P NCPD",
+              "budget_amount": 500000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "Existence of operational National population Centre",
+                  "notes": "Existence of operational National population Centre",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Integrate population issues into the formulation, implementation, monitoring and evaluation of all policies and programmes relating to sustainable development",
+      "description": "Commitment 7",
+      "sort_order": 7,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "To integrate population issues into the formulation, implementation, monitoring and evaluation of all policies and programmes relating to sustainable development at national, county and sub-county levels by 2030",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Conduct analysis of population and development Policies to identify the gaps",
+              "timeline": "2030",
+              "responsibility": "NCPD",
+              "budget_amount": 30000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of policies analyzed",
+                  "notes": "No. of policies analyzed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Build capacities to policy makers and implementers on integration of population issues",
+              "timeline": "2030",
+              "responsibility": "NCPD",
+              "budget_amount": 15000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of capacity building forums held",
+                  "notes": "No. of capacity building forums held",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Harness the demographic dividend through investments in health and citizens wellbeing; education and skills training; employment creation and entrepreneurship; and rights, governance and empowerment of young people",
+      "description": "Commitment 8",
+      "sort_order": 8,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "Improve coordination of the implementation of Kenya's Demographic Dividend Roadmap at national and county levels",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Review and update the Kenya Demographic Dividend Roadmap in line with the relevant national and international protocols",
+              "timeline": "2021",
+              "responsibility": "NCPD",
+              "budget_amount": 10000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Existence of an up-dated DD roadmap",
+                  "notes": "Existence of an up-dated DD roadmap",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Disseminate the reviewed DD Roadmap at national and county level",
+              "timeline": "2021-2023",
+              "responsibility": "NCPD",
+              "budget_amount": 60000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "Dissemination report",
+                  "notes": "Dissemination report",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Build capacity of national and county planning teams to incorporate DD in annual development plans",
+              "timeline": "2021-2025",
+              "responsibility": "NCPD",
+              "budget_amount": 50000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of counties capacity built",
+                  "notes": "No. of counties capacity built",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Monitoring /Follow-up implementation of DD",
+              "timeline": "2020-2030",
+              "responsibility": "NCPD",
+              "budget_amount": 20000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "DD implementation annual report",
+                  "notes": "DD implementation annual report",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To coordinate all stakeholders involved in delivering on demographic dividend",
+          "sort_order": 2,
+          "activities": [
+            {
+              "title": "Reconstitute the demographic dividend national steering and technical Committees",
+              "timeline": "2020",
+              "responsibility": "NCPD",
+              "budget_amount": 200000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Demographic Dividend Committee constituted",
+                  "notes": "Demographic Dividend Committee constituted",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Hold quarterly meetings of the demographic dividend national steering and technical committees",
+              "timeline": "2020-2030",
+              "responsibility": "NCPD",
+              "budget_amount": 5000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of quarterly meeting held",
+                  "notes": "No. of quarterly meeting held",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Establish county coordination mechanism for DD",
+              "timeline": "2020-2023",
+              "responsibility": "NCPD",
+              "budget_amount": 200000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of counties with DD coordination mechanism",
+                  "notes": "No. of counties with DD coordination mechanism",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Hold demographic dividend quarterly coordination meetings at county level",
+              "timeline": "2020-2030",
+              "responsibility": "NCPD",
+              "budget_amount": 58000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of quarterly meeting held",
+                  "notes": "No. of quarterly meeting held",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Compile reports on the progress made in harnessing demographic dividend",
+              "timeline": "2020-2030",
+              "responsibility": "NCPD",
+              "budget_amount": 15000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of annual reports compiled",
+                  "notes": "No. of annual reports compiled",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To mobilize and capacity build youth on health and wellbeing by the year 2022",
+          "sort_order": 3,
+          "activities": [
+            {
+              "title": "Develop Kenya Youth Development Index (Composite index for education, income and health)",
+              "timeline": "2022",
+              "responsibility": "MIYA (State Department for Youth Affairs)",
+              "budget_amount": 30000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Kenya Youth Development Index",
+                  "notes": "Kenya Youth Development Index",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Build capacity of youth on health and wellbeing Promote universal health care coverage among the youth; Mobilize youth to participate in health Promotion programmes",
+              "timeline": "2022",
+              "responsibility": "MIYA (State Department for Youth)",
+              "budget_amount": 102000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of youth sensitized on UHC, health and wellbeing",
+                  "notes": "No. of youth sensitized on UHC, health and wellbeing",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of youth enrolled in NHIF",
+                  "notes": "No. of youth enrolled in NHIF",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Generate and disseminate county specific data on adolescent health issues on a continuous basis for decision making",
+              "timeline": "2022",
+              "responsibility": "Council of Governors",
+              "budget_amount": 60000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of counties generating and disseminating data on adolescent health issues",
+                  "notes": "No. of counties generating and disseminating data on adolescent health issues",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Mainstream ASRH policy in CIDPs and county annual work plans",
+              "timeline": "2022",
+              "responsibility": "Council of Governors",
+              "budget_amount": 20000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of counties mainstreaming ASRH policy in CIDPs and annual work plans",
+                  "notes": "No. of counties mainstreaming ASRH policy in CIDPs and annual work plans",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Integrate Sexual and Reproductive health into primary, secondary and tertiary level core examinable curriculum",
+              "timeline": "2022",
+              "responsibility": "Ministry of Education (Kenya Institute of Curriculum Development) TVETA",
+              "budget_amount": 60000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of curriculums developed integrating sexual and reproductive health",
+                  "notes": "No. of curriculums developed integrating sexual and reproductive health",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Empower the county RH teams to advocate for ASRH issues",
+              "timeline": "2030",
+              "responsibility": "NCPD",
+              "budget_amount": 240000000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "No. of county RH teams empowered to advocate for ASRH issues",
+                  "notes": "No. of county RH teams empowered to advocate for ASRH issues",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Undertake targeted advocacy in Counties with low CPR",
+              "timeline": "2030",
+              "responsibility": "NCPD",
+              "budget_amount": 250000000,
+              "budget_currency": "KES",
+              "sort_order": 7,
+              "indicators": [
+                {
+                  "name": "No. of counties with low CPR where advocacy has been undertaken",
+                  "notes": "No. of counties with low CPR where advocacy has been undertaken",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Advocate among religious and community gatekeepers at all levels to support family planning",
+              "timeline": "2030",
+              "responsibility": "NCPD",
+              "budget_amount": 200000000,
+              "budget_currency": "KES",
+              "sort_order": 8,
+              "indicators": [
+                {
+                  "name": "No. of advocacy activities on FP undertaken among religious and community gate keepers",
+                  "notes": "No. of advocacy activities on FP undertaken among religious and community gate keepers",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Establish and operationalize a national citizen literacy and education framework and online platform for SRH",
+              "timeline": "2022",
+              "responsibility": "MoH",
+              "budget_amount": 26500000,
+              "budget_currency": "KES",
+              "sort_order": 9,
+              "indicators": [
+                {
+                  "name": "Operational framework and online platform",
+                  "notes": "Operational framework and online platform",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Increase skills development among the youth by the year 2022",
+          "sort_order": 4,
+          "activities": [
+            {
+              "title": "Life, entrepreneurial, technical and vocational skills training among the youth",
+              "timeline": "2030",
+              "responsibility": "MIIYA (State Department for Youth Affairs)",
+              "budget_amount": 240000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of youth trained on life, entrepreneurial, technical and vocational skills",
+                  "notes": "No. of youth trained on life, entrepreneurial, technical and vocational skills",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Align skills development programme to ensure inclusivity",
+              "timeline": "2022",
+              "responsibility": "MIIYA (State Department for Youth Affairs)",
+              "budget_amount": 10000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of youth that overcome poverty and exclusion",
+                  "notes": "No. of youth that overcome poverty and exclusion",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Enhance coaching and mentorship for youth",
+              "timeline": "2030",
+              "responsibility": "MIIYA (State Department for Youth Affairs)",
+              "budget_amount": 50000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of youth coached and mentored",
+                  "notes": "No. of youth coached and mentored",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Train Youth in paramilitary and increase participation in national service",
+              "timeline": "2030",
+              "responsibility": "National Youth Service",
+              "budget_amount": 1600000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of youth recruits trained and engaged in national service",
+                  "notes": "No. of youth recruits trained and engaged in national service",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Strengthen the innovation centres transition to actualize the skills",
+              "timeline": "2030",
+              "responsibility": "MIIYA",
+              "budget_amount": 60000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of innovation centres strengthened",
+                  "notes": "No. of innovation centres strengthened",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Expand and strengthen the centres of excellence in tertiary institutions",
+              "timeline": "2022",
+              "responsibility": "Ministry of Education",
+              "budget_amount": 500000000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "No. of centres of excellence expanded and strengthened",
+                  "notes": "No. of centres of excellence expanded and strengthened",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Inculcate professional counseling, mentorship and career services in education system",
+              "timeline": "2022",
+              "responsibility": "Ministry of Education",
+              "budget_amount": 100000000,
+              "budget_currency": "KES",
+              "sort_order": 7,
+              "indicators": [
+                {
+                  "name": "Professional counseling, mentorship and career services in the education system in place",
+                  "notes": "Professional counseling, mentorship and career services in the education system in place",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Revitalize the apprenticeship programme to increase number of youth benefiting",
+              "timeline": "2030",
+              "responsibility": "MIIYA",
+              "budget_amount": 20000000,
+              "budget_currency": "KES",
+              "sort_order": 8,
+              "indicators": [
+                {
+                  "name": "No. of youth placed in apprenticeship programme",
+                  "notes": "No. of youth placed in apprenticeship programme",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To invest in employment opportunities for youth by the year 2022",
+          "sort_order": 5,
+          "activities": [
+            {
+              "title": "Implement youth internship programs",
+              "timeline": "2030",
+              "responsibility": "MIYA (State Department for Youth Affairs)",
+              "budget_amount": 10800000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of youth on the internship programme",
+                  "notes": "No. of youth on the internship programme",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Promote awareness creation on access to Government Procurement Opportunities (AGPO) among the youth",
+              "timeline": "2030",
+              "responsibility": "MIYA",
+              "budget_amount": 20000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of youth reached",
+                  "notes": "No. of youth reached",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Hold innovation challenge and nurture talent development among the youth",
+              "timeline": "2022",
+              "responsibility": "MIYA",
+              "budget_amount": 180000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of youth mobilized and supported",
+                  "notes": "No. of youth mobilized and supported",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of talented youth profiled",
+                  "notes": "No. of talented youth profiled",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Organize business plan competition for youth and support plan realization",
+              "timeline": "2022",
+              "responsibility": "MIYA",
+              "budget_amount": 1100000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of youth facilitated to participate in the business plan competition",
+                  "notes": "No. of youth facilitated to participate in the business plan competition",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Set up job centers for youth at the youth empowerment centers",
+              "timeline": "2026",
+              "responsibility": "MIYA",
+              "budget_amount": 50000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of youth seeking information on job opportunities",
+                  "notes": "No. of youth seeking information on job opportunities",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of Youth Empowerment centers with internet connectivity",
+                  "notes": "No. of Youth Empowerment centers with internet connectivity",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Extend credit to youth and youth owned enterprises through innovative financial mechanism",
+              "timeline": "2023",
+              "responsibility": "MIYA, Youth Enterprise Development Fund",
+              "budget_amount": 3926000000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "Amount disbursed to youth",
+                  "notes": "Amount disbursed to youth",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of youth beneficiaries",
+                  "notes": "No. of youth beneficiaries",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support youth to market locally produced goods",
+              "timeline": "2023",
+              "responsibility": "MIYA(YEDF)",
+              "budget_amount": 40000000,
+              "budget_currency": "KES",
+              "sort_order": 7,
+              "indicators": [
+                {
+                  "name": "No. of youth beneficiaries supported to market their products locally",
+                  "notes": "No. of youth beneficiaries supported to market their products locally",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Built capacity of youth through provision of business development services",
+              "timeline": "2023",
+              "responsibility": "MIYA(YEDF)",
+              "budget_amount": 80000000,
+              "budget_currency": "KES",
+              "sort_order": 8,
+              "indicators": [
+                {
+                  "name": "No. of youth benefiting from business development services",
+                  "notes": "No. of youth benefiting from business development services",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support youth access to business incubation and innovative services",
+              "timeline": "2023",
+              "responsibility": "MIYA(YEDF)",
+              "budget_amount": 80000000,
+              "budget_currency": "KES",
+              "sort_order": 9,
+              "indicators": [
+                {
+                  "name": "No. of sustainable business enterprises created and upscale",
+                  "notes": "No. of sustainable business enterprises created and upscale",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support youth innovations",
+              "timeline": "2030",
+              "responsibility": "MIYA",
+              "budget_amount": 50000000,
+              "budget_currency": "KES",
+              "sort_order": 10,
+              "indicators": [
+                {
+                  "name": "No. of youth innovations supported",
+                  "notes": "No. of youth innovations supported",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Increase access to online jobs in Business Process Outsourcing and other online jobs",
+              "timeline": "2030",
+              "responsibility": "MIYA",
+              "budget_amount": 290000000,
+              "budget_currency": "KES",
+              "sort_order": 11,
+              "indicators": [
+                {
+                  "name": "No. of youth trained and connected to online jobs",
+                  "notes": "No. of youth trained and connected to online jobs",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To promote and integrate youth participation in decision making and nation building by the year 2022",
+          "sort_order": 6,
+          "activities": [
+            {
+              "title": "Establish a structured system of participation of the youth at all levels of governance",
+              "timeline": "2022",
+              "responsibility": "MIYA",
+              "budget_amount": 3000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Guidelines and structured developed",
+                  "notes": "Guidelines and structured developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Build capacity of youth leadership",
+              "timeline": "2022",
+              "responsibility": "MIYA",
+              "budget_amount": 3000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of youth capacity built",
+                  "notes": "No. of youth capacity built",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To engage youth to participate in country's socio-economic development and empowerment by the year 2022",
+          "sort_order": 7,
+          "activities": [
+            {
+              "title": "Youth access youth centric services in youth empowerment centres (YECs)",
+              "timeline": "2030",
+              "responsibility": "MIYA",
+              "budget_amount": 200000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of youths accessing Information and youth centric services",
+                  "notes": "No. of youths accessing Information and youth centric services",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "To involve youth in volunteerism and community service (planting trees and engagement in food and nutritional security)",
+              "timeline": "2030",
+              "responsibility": "MIYA",
+              "budget_amount": 2350000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of youths involved in volunteerism and community service",
+                  "notes": "No. of youths involved in volunteerism and community service",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Hold intergenerational Dialogue and Indigenous Knowledge sharing forums in all counties",
+              "timeline": "2023",
+              "responsibility": "MIYA",
+              "budget_amount": 10000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of dialogues held",
+                  "notes": "No. of dialogues held",
+                  "annual_targets": []
+                },
+                {
+                  "name": "Documented indigenous knowledge",
+                  "notes": "Documented indigenous knowledge",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Sensitize youth on National values in the 47 counties",
+              "timeline": "2023",
+              "responsibility": "MIYA",
+              "budget_amount": 10000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of counties reached",
+                  "notes": "No. of counties reached",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Undertake periodic surveys and research to inform legal framework, and evidenced-based policies and programs on youth issues",
+              "timeline": "2030",
+              "responsibility": "MIYA KNBS",
+              "budget_amount": 100000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. or researches",
+                  "notes": "No. or researches",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Leveraging on partnership and stakeholder engagement to spearhead youth empowerment",
+              "timeline": "2030",
+              "responsibility": "MIYA",
+              "budget_amount": 4500000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "No. of partnership linkages established and strengthened",
+                  "notes": "No. of partnership linkages established and strengthened",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Eliminate legal, policy and programmatic barriers that impede youth participation in decision making, planning and implementation of development activities",
+      "description": "Commitment 9",
+      "sort_order": 9,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "To align all laws to Kenya Youth Development Policy 2019 to ensure youth intervention become part of achieving the ICPD POA Commitments",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Disseminate, implement, monitor and evaluate the Kenya Youth Development Policy, 2019",
+              "timeline": "2030",
+              "responsibility": "MIYA",
+              "budget_amount": 50000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of disseminations forums for Kenya Youth Development Policy 2019",
+                  "notes": "No. of disseminations forums for Kenya Youth Development Policy 2019",
+                  "annual_targets": []
+                },
+                {
+                  "name": "Implementation status",
+                  "notes": "Implementation status",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Enact and amend youth related legislations",
+              "timeline": "2028",
+              "responsibility": "MIYA",
+              "budget_amount": 20000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of Youth related laws Enacted or amended",
+                  "notes": "No. of Youth related laws Enacted or amended",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Analysis of youth related policies",
+              "timeline": "2022",
+              "responsibility": "MIYA",
+              "budget_amount": 400000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of Youth related policies reviewed",
+                  "notes": "No. of Youth related policies reviewed",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Attain universal basic education by ensuring 100 percent transition of pupils, including those with special needs and disabilities, from early learning to secondary education",
+      "description": "Commitment 10",
+      "sort_order": 10,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "To attain 100% transition of learners at all levels by 2022 and maintain the same",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Sensitive stakeholders and communities on the role and value of education in development and the need for pre-primary education especially in areas of low enrolment in preprimary",
+              "timeline": "2020-2025",
+              "responsibility": "MoE",
+              "budget_amount": 300000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of stakeholders-sensitized",
+                  "notes": "No. of stakeholders-sensitized",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of communities sensitized",
+                  "notes": "No. of communities sensitized",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Improve education infrastructure and equip public education centers at all levels to ensure that they meet the required standards",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 5520000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. education centers improved and equipped to meet standards",
+                  "notes": "No. education centers improved and equipped to meet standards",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of additional infrastructure constructed",
+                  "notes": "No. of additional infrastructure constructed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Monitor and evaluate level of transition of learners at all levels of basic education",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 460000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of MAE reports",
+                  "notes": "No. of MAE reports",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To promote inclusivity of all learners in the education and training institutions",
+          "sort_order": 2,
+          "activities": [
+            {
+              "title": "Carry out assessment on inclusivity in educational institution",
+              "timeline": "2020-2025",
+              "responsibility": "MoE",
+              "budget_amount": 552000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Inclusivity assessment",
+                  "notes": "Inclusivity assessment",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Review and implement existing guidelines (selection, placement, transition) to ensure inclusivity of all learners at all levels of basic education",
+              "timeline": "2022",
+              "responsibility": "MoE",
+              "budget_amount": 50000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of guidelines reviewed",
+                  "notes": "No. of guidelines reviewed",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of guidelines being implemented",
+                  "notes": "No. of guidelines being implemented",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop a standard design for disability friendly infrastructure, teaching and learning resources at all levels of basic education.",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 500000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of infrastructure constructed",
+                  "notes": "No. of infrastructure constructed",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of teaching and learning resources developed",
+                  "notes": "No. of teaching and learning resources developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Establish additional low cost boarding schools in all areas including ASAL and marginalized communities.",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 368000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of low cost boarding schools established",
+                  "notes": "No. of low cost boarding schools established",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Provide mobile learning kits to mobile schools in nomadic communities.",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 276000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of mobile learning kits provided",
+                  "notes": "No. of mobile learning kits provided",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To achieve 100% completion rate of all learners in basic education by 2030",
+          "sort_order": 3,
+          "activities": [
+            {
+              "title": "Develop curriculum support materials to facilitate completion especially for overage learners.",
+              "timeline": "2025",
+              "responsibility": "MoE",
+              "budget_amount": 376000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of accelerated curriculum support material.",
+                  "notes": "No. of accelerated curriculum support material.",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop a framework for funding of learners from vulnerable backgrounds at all levels of basic education",
+              "timeline": "2025",
+              "responsibility": "MoE",
+              "budget_amount": 22000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "Framework for funding education",
+                  "notes": "Framework for funding education",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Enhance implementation of the school re-entry guidelines",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 56000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of learners who complete school after re-entry",
+                  "notes": "No. of learners who complete school after re-entry",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop a framework to guide education intervention in vulnerable areas",
+              "timeline": "2022",
+              "responsibility": "MoE",
+              "budget_amount": 22000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "Framework developed",
+                  "notes": "Framework developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Sensitize stakeholders and communities on cultural attitudes on completion of basic education for all",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 100000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of stakeholders sensitized",
+                  "notes": "No. of stakeholders sensitized",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of communities sensitized",
+                  "notes": "No. of communities sensitized",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Conduct community sensitization and prevention of child marriage.",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 50000000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "No. of stakeholders sensitized",
+                  "notes": "No. of stakeholders sensitized",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of communities sensitized",
+                  "notes": "No. of communities sensitized",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Improve the employability and life-skills of youths by enhancing quality and relevance of Technical Vocational Education and Training (TVET) in partnership with industries and private sector",
+      "description": "Commitment 11",
+      "sort_order": 11,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "To promote quality and access to TVET by 2030",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Conduct an assessment on capacity of physical facilities in TVETs",
+              "timeline": "2020-2025",
+              "responsibility": "MoE",
+              "budget_amount": 368000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Capacity assessment",
+                  "notes": "Capacity assessment",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Expand TVETs and construct at least one TVC in every constituency",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 565000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of TVCs constructed",
+                  "notes": "No. of TVCs constructed",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of TVETs expanded",
+                  "notes": "No. of TVETs expanded",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Rehabilitate existing TTIs and equip them with state of Art equipment",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 175000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of TTIs rehabilitated and equipped",
+                  "notes": "No. of TTIs rehabilitated and equipped",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Recruit and retain adequate human resource for effective implementation of CBET",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 500000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of trainers recruited and retained",
+                  "notes": "No. of trainers recruited and retained",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Establish Sector Skills Advisory Councils (SSACs)",
+              "timeline": "2022",
+              "responsibility": "MoE",
+              "budget_amount": 45000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of SSACs established",
+                  "notes": "No. of SSACs established",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop CBET framework and guidelines to guide trainers in its implementation",
+              "timeline": "2024",
+              "responsibility": "MoE",
+              "budget_amount": 20000000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "CBET framework and guidelines developed",
+                  "notes": "CBET framework and guidelines developed",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To provide opportunities for learners in TVET for skills development that match job opportunities",
+          "sort_order": 2,
+          "activities": [
+            {
+              "title": "Develop guidelines on TVET career guidance, counselling and mentorship.",
+              "timeline": "2024",
+              "responsibility": "MoE",
+              "budget_amount": 75000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of guidelines developed",
+                  "notes": "No. of guidelines developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop a framework for engaging TVET graduates in national projects and exchange programmes, and build partnership for TVETs graduates' internship",
+              "timeline": "2024",
+              "responsibility": "MoE",
+              "budget_amount": 50000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "Framework developed",
+                  "notes": "Framework developed",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of partnerships established",
+                  "notes": "No. of partnerships established",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Provide start up kitty for TVET graduates",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 125000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of startup kits provided",
+                  "notes": "No. of startup kits provided",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Conduct TVET advocacy campaigns",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 105000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of advocacy campaigns",
+                  "notes": "No. of advocacy campaigns",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Fully implement the Competence Based Curriculum (CBC) so that learners are equipped with relevant competencies and skills from an early stage for sustainable development",
+      "description": "Commitment 12",
+      "sort_order": 12,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "To ensure 100% implementation of the Competence Based Curriculum by 2022 to improve early talent and competency development",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Develop a framework for rolling out the CBC and providing transition for the proposed structure",
+              "timeline": "2022",
+              "responsibility": "MoE",
+              "budget_amount": 240000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Framework developed",
+                  "notes": "Framework developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Capacity build basic education teachers, county ECD officers and other curriculum implementers on Competence Based Curriculum",
+              "timeline": "2022",
+              "responsibility": "MoE",
+              "budget_amount": 335000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of implementers capacity build",
+                  "notes": "No. of implementers capacity build",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop Competence Based Curriculum support materials for all levels",
+              "timeline": "2022",
+              "responsibility": "MoE",
+              "budget_amount": 240000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of CBC support materials developed",
+                  "notes": "No. of CBC support materials developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop a Competency-Based Assessment tool for education",
+              "timeline": "2022",
+              "responsibility": "MoE",
+              "budget_amount": 50000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "CBC assessment tool developed",
+                  "notes": "CBC assessment tool developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Build the capacity of technical officers on conceptualization, design and implementation of CBA.",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 150000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of technical officers trained",
+                  "notes": "No. of technical officers trained",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Establish a web-based portal to facilitate access to formative assessment at school level",
+              "timeline": "2022",
+              "responsibility": "MoE",
+              "budget_amount": 45000000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "Web-based portal established",
+                  "notes": "Web-based portal established",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop digital content for all subjects of the CBC",
+              "timeline": "2022",
+              "responsibility": "MoE",
+              "budget_amount": 75000000,
+              "budget_currency": "KES",
+              "sort_order": 7,
+              "indicators": [
+                {
+                  "name": "Percentage of digital content developed",
+                  "notes": "Percentage of digital content developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Establish an ICT integration in education support system at the national, county, sub-county and institutional level.",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 125000000,
+              "budget_currency": "KES",
+              "sort_order": 8,
+              "indicators": [
+                {
+                  "name": "Percentage of ICT integrated",
+                  "notes": "Percentage of ICT integrated",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Monitor and assess the implementation of CBC",
+              "timeline": "2030",
+              "responsibility": "MoE",
+              "budget_amount": 368000000,
+              "budget_currency": "KES",
+              "sort_order": 9,
+              "indicators": [
+                {
+                  "name": "Monitoring and evaluation of implementation of CBC done",
+                  "notes": "Monitoring and evaluation of implementation of CBC done",
+                  "annual_targets": []
+                },
+                {
+                  "name": "CBC implementation status",
+                  "notes": "CBC implementation status",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "End Female Genital Mutilation by strengthening coordination in the area of legislation and policy framework, communication and advocacy, evidence generation and support cross border collaboration on elimination of FGM by 2022",
+      "description": "Commitment 13",
+      "sort_order": 13,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "Public Education and Community Dialogues on FGM promoted",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Support the involvement of media in Anti – FGM campaigns",
+              "timeline": "2030",
+              "responsibility": "AFGMB, SDGA, KICD, MOEST, Media, M&E, MCAs, DCS, ODPP, COG",
+              "budget_amount": 25000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of media campaigns carried",
+                  "notes": "No. of media campaigns carried",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Use culture days, Drama and sports to communicate FGM message",
+              "timeline": "2030",
+              "responsibility": "AFGMB, SDGA, KICD, MOEST, Media, M&E, MCAs, DCS, ODPP, COG",
+              "budget_amount": 2000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of cultural and sports days conducted",
+                  "notes": "No. of cultural and sports days conducted",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop IEC materials including bill boards to be used in communicating FGM message",
+              "timeline": "2030",
+              "responsibility": "AFGMB, SDGA, KICD, MOEST, Media, M&E, MCAs, DCS, ODPP, COG",
+              "budget_amount": 4000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of IEC materials developed",
+                  "notes": "No. of IEC materials developed",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Enforcement of the Existing Laws Related to FGM strengthened",
+          "sort_order": 2,
+          "activities": [
+            {
+              "title": "Support capacity building of duty bearers and communities on the provisions of the Prohibition of Female Genital Mutilation Act, 2011 for effective implementation",
+              "timeline": "2030",
+              "responsibility": "AFGMB, KNBS, UNFPA, UNICEF, NCPD, ACCAF, M&E, MCAs, DCS, ODPP, COG",
+              "budget_amount": 2000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of duty bearers and communities trained on the provisions of the act",
+                  "notes": "No. of duty bearers and communities trained on the provisions of the act",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support the reporting and referral of FGM incidences and reintegration of girls and women rescued from FGM",
+              "timeline": "2030",
+              "responsibility": "AFGMB, KNBS, UNFPA, UNICEF, NCPD, ACCAF, M&E, MCAs, DCS, ODPP, COG",
+              "budget_amount": 50000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of referrals done",
+                  "notes": "No. of referrals done",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Promote investigation and prosecution of the perpetrators of FGM",
+              "timeline": "2030",
+              "responsibility": "AFGMB, KNBS, UNFPA, UNICEF, NCPD, ACCAF, M&E, MCAs, DCS, ODPP, COG",
+              "budget_amount": 400000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of perpetrators prosecuted",
+                  "notes": "No. of perpetrators prosecuted",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "FGM Content in the Curriculum of Learning Institutions included",
+          "sort_order": 3,
+          "activities": [
+            {
+              "title": "Support the inclusion of Anti-FGM content in the curriculum of learning institutions;",
+              "timeline": "2022",
+              "responsibility": "AFGMB, SDGA KICD, MOEST, partners",
+              "budget_amount": 250000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Content in the curriculum",
+                  "notes": "Content in the curriculum",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Promote the inclusion of Anti-FGM materials in correctional centres and in-service training;",
+              "timeline": "2022",
+              "responsibility": "AFGMB, SDGA KICD, MOEST, partners",
+              "budget_amount": 500000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of AFGM material disseminated",
+                  "notes": "No. of AFGM material disseminated",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Promote capacity building of Trainer of Trainers (TOT) on FGM",
+              "timeline": "2022",
+              "responsibility": "AFGMB, SDGA KICD, MOEST, partners",
+              "budget_amount": 300000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. (TOT) on FGM trained",
+                  "notes": "No. (TOT) on FGM trained",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Capacity of Institutions and Communities to Prevent and Respond to FGM Strengthened",
+          "sort_order": 4,
+          "activities": [
+            {
+              "title": "Finalize preparation of strategic plan",
+              "timeline": "2022",
+              "responsibility": "AFGMB, SDGA, partners, COG",
+              "budget_amount": 200000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "SP document",
+                  "notes": "SP document",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support the establishment of temporary rescue centres for women and girls at risk of FGM",
+              "timeline": "2022",
+              "responsibility": "AFGMB, SDGA, partners, COG",
+              "budget_amount": 10000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of rescue centres established",
+                  "notes": "No. of rescue centres established",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Promote the development of a clear structure of communication channels in order to respond to distress",
+              "timeline": "2022",
+              "responsibility": "AFGMB, SDGA, partners, COG",
+              "budget_amount": 250000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "Clear structure on communication channel developed",
+                  "notes": "Clear structure on communication channel developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Disseminate FGM materials in institutions and communities",
+              "timeline": "2022",
+              "responsibility": "AFGMB, SDGA, partners, COG",
+              "budget_amount": 10000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of FGM materials disseminated",
+                  "notes": "No. of FGM materials disseminated",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support the establishment and strengthening of the Anti-FGM multi-sectoral working groups at the National, County and sub-County levels",
+              "timeline": "2022",
+              "responsibility": "AFGMB, SDGA, partners, COG",
+              "budget_amount": 5000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of Anti-FGM multi-sectoral working groups established",
+                  "notes": "No. of Anti-FGM multi-sectoral working groups established",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Facilitate counselling and rehabilitation of the girls and women who have undergone FGM",
+              "timeline": "2022",
+              "responsibility": "AFGMB, SDGA, partners, COG",
+              "budget_amount": 450000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "No. of girls counselled",
+                  "notes": "No. of girls counselled",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support the establishment of a system for anonymous reporting",
+              "timeline": "2022",
+              "responsibility": "AFGMB, SDGA, partners, COG",
+              "budget_amount": 20000,
+              "budget_currency": "KES",
+              "sort_order": 7,
+              "indicators": [
+                {
+                  "name": "Anonymous reporting system in place",
+                  "notes": "Anonymous reporting system in place",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To address emerging trends and practices of FGM",
+          "sort_order": 5,
+          "activities": [
+            {
+              "title": "Ensure the provision of medical and psychosocial support to survivors of FGM in humanitarian and emergency situations",
+              "timeline": "2022",
+              "responsibility": "AFGMB, MINC, Media, MEAC, COG, UNFPA, DCS, IRC, ODPP, SDG",
+              "budget_amount": 500000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of survivors of FGM in humanitarian and emergency receiving support",
+                  "notes": "No. of survivors of FGM in humanitarian and emergency receiving support",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support prosecution of FGM perpetrators in humanitarian and emergency situations",
+              "timeline": "2022",
+              "responsibility": "AFGMB, MINC, Media, MEAC, COG, UNFPA, DCS, IRC, ODPP, SDG",
+              "budget_amount": 350000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of prosecution of FGM perpetrators",
+                  "notes": "No. of prosecution of FGM perpetrators",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Build the capacity of duty bearers in humanitarian and emergency situations",
+              "timeline": "2022",
+              "responsibility": "AFGMB, MINC, Media, MEAC, COG, UNFPA, DCS, IRC, ODPP, SDG",
+              "budget_amount": 450000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of duty bearers in humanitarian and emergency situations sensitised",
+                  "notes": "No. of duty bearers in humanitarian and emergency situations sensitised",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support provision of dignity packs",
+              "timeline": "2022",
+              "responsibility": "AFGMB, MINC, Media, MEAC, COG, UNFPA, DCS, IRC, ODPP, SDG",
+              "budget_amount": 560000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of dignity packs provided",
+                  "notes": "No. of dignity packs provided",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To address the social and cultural norms that propagate FGM",
+          "sort_order": 6,
+          "activities": [
+            {
+              "title": "Support girls and women with life skills to enable them reject FGM and support anti-FGM campaigns",
+              "timeline": "2022",
+              "responsibility": "AFGMB, SDGA, CHILDREN’S DEPT., ODPP, Judiciary.",
+              "budget_amount": 1200000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of girls and women sensitized on life skills",
+                  "notes": "No. of girls and women sensitized on life skills",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Organise women and girls into saving and loaning groups",
+              "timeline": "2022",
+              "responsibility": "AFGMB, SDGA, CHILDREN’S DEPT., ODPP, Judiciary.",
+              "budget_amount": 800000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of groups formed",
+                  "notes": "No. of groups formed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Enhance the awareness of girls and women on the impact of FGM on their social, health and economic rights",
+              "timeline": "2022",
+              "responsibility": "AFGMB, SDGA, CHILDREN’S DEPT., ODPP, Judiciary.",
+              "budget_amount": 1200000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of Girls sensitized",
+                  "notes": "No. of Girls sensitized",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support the engagement of men and boys to support women and girls’ education and socio-economic empowerment",
+              "timeline": "2022",
+              "responsibility": "AFGMB, SDGA, CHILDREN’S DEPT., ODPP, Judiciary.",
+              "budget_amount": 500000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of men and boys to support women and girls’ education and socio-economic empowerment",
+                  "notes": "No. of men and boys to support women and girls’ education and socio-economic empowerment",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Monitoring and Evaluation Framework developed and implemented",
+          "sort_order": 7,
+          "activities": [
+            {
+              "title": "Support periodic surveys on prevalence/incidence and other socio-economic aspects of FGM",
+              "timeline": "2022",
+              "responsibility": "AFGMB, KNBS, UNFPA, UNICEF, NCPD, ACCAF",
+              "budget_amount": 1000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of periodic surveys done",
+                  "notes": "No. of periodic surveys done",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Enhance documentation and knowledge transfer between policy makers, researchers, communities and other FGM data consumers",
+              "timeline": "2022",
+              "responsibility": "AFGMB, KNBS, UNFPA, UNICEF, NCPD, ACCAF",
+              "budget_amount": 200000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of documentation done",
+                  "notes": "No. of documentation done",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support development and management of a databank on FGM",
+              "timeline": "2022",
+              "responsibility": "AFGMB, KNBS, UNFPA, UNICEF, NCPD, ACCAF",
+              "budget_amount": 4000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "Data bank developed",
+                  "notes": "Data bank developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support coordination of FGM reporting across sectors and partners",
+              "timeline": "2022",
+              "responsibility": "AFGMB, KNBS, UNFPA, UNICEF, NCPD, ACCAF",
+              "budget_amount": 200000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "A coordinated approach on FGM put in place",
+                  "notes": "A coordinated approach on FGM put in place",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support the development and implementation of a monitoring and evaluation framework",
+              "timeline": "2022",
+              "responsibility": "AFGMB, KNBS, UNFPA, UNICEF, NCPD, ACCAF",
+              "budget_amount": 2500000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "M&E framework in place",
+                  "notes": "M&E framework in place",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Improve access to quality health care services for SGBV and FGM survivors",
+          "sort_order": 8,
+          "activities": [
+            {
+              "title": "Develop and implement a health sector response action plan for FGM",
+              "timeline": "2020",
+              "responsibility": "MoH",
+              "budget_amount": 18000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "FGM health sector response plan",
+                  "notes": "FGM health sector response plan",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Finalization and dissemination of the training package for healthcare workers against the medicalization of FGM",
+              "timeline": "2021",
+              "responsibility": "MoH",
+              "budget_amount": 28000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "Training package for health workers",
+                  "notes": "Training package for health workers",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of disseminations",
+                  "notes": "No. of disseminations",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Establishment of a tracking and reporting mechanism for FGM within health systems. Using Integrated Digital Systems e.g. (USSD, Online Platforms and Messaging)",
+              "timeline": "2021",
+              "responsibility": "MoH",
+              "budget_amount": 25000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "Tracking and reporting mechanism for FGM within health systems",
+                  "notes": "Tracking and reporting mechanism for FGM within health systems",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Strengthen generation and use of evidence as well as data management systems including integration of FGM indicators in HIS in FGM response",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 75000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "FGM indicators integrated in HIS",
+                  "notes": "FGM indicators integrated in HIS",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Further decentralization of quality SGBV, FGM and ASRH services to county and community level",
+              "timeline": "2022",
+              "responsibility": "MoH",
+              "budget_amount": 48000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "Fully decentralized SGBV, FGM and ASRH services",
+                  "notes": "Fully decentralized SGBV, FGM and ASRH services",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Establish model GBV and FGM rehabilitation and recovery centers in every county(G-BVRC)",
+              "timeline": "2022-2025",
+              "responsibility": "MoH",
+              "budget_amount": 170000000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "No. of model GBV and FGM recovery centres",
+                  "notes": "No. of model GBV and FGM recovery centres",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Eliminate, by 2030, all forms of gender based violence, including child and forced marriages, by addressing social and cultural norms that propagate the practice while providing support to women and girls who have been affected.",
+      "description": "Commitment 14",
+      "sort_order": 14,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "To increase access to quality and comprehensive response and support services across sectors",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Support capacity development for GBV prevention service providers.",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 50000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of service providers on GBV prevention trained",
+                  "notes": "No. of service providers on GBV prevention trained",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Coordinate provision of legal aid services for GBV survivors.",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 40000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of legal aid providers brought on board",
+                  "notes": "No. of legal aid providers brought on board",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of survivors who accessed legal aid",
+                  "notes": "No. of survivors who accessed legal aid",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Promote the establishment of Recovery centers, Safe Houses/Rescue centers for GBV survivors at the county level",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 800000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of recovery centers, safe houses/rescue centers established",
+                  "notes": "No. of recovery centers, safe houses/rescue centers established",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Support the establishment and operationalization of GBV Response Centers by offering quality services at County referral hospitals",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 200000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of GBVRC Centers established and operational",
+                  "notes": "No. of GBVRC Centers established and operational",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Fast-track dissemination and implementation of minimum standards for service delivery for survivors in government facilities",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 3000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of government facilities implementing minimum standards",
+                  "notes": "No. of government facilities implementing minimum standards",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Strengthen GBV data availability quality (including printing and dissemination of PRC forms, P3 forms and GBV registers): GBV data digitization (GBVMIS)",
+              "timeline": "2021",
+              "responsibility": "MoH",
+              "budget_amount": 60000000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "GBVMIS digitized",
+                  "notes": "GBVMIS digitized",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Finalization and dissemination of the training package and other policy materials for healthcare workers, police workforce and judiciary and other relevant duty bearers in the context SGBV",
+              "timeline": "2021",
+              "responsibility": "MoH",
+              "budget_amount": 160000000,
+              "budget_currency": "KES",
+              "sort_order": 7,
+              "indicators": [
+                {
+                  "name": "Training package and policy materials finalized and disseminated",
+                  "notes": "Training package and policy materials finalized and disseminated",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To improve coordination and sustainability for effective programming for GBV prevention and response",
+          "sort_order": 2,
+          "activities": [
+            {
+              "title": "Strengthen through training the multi-stakeholder Gender Technical Working Groups GBV interventions at County government levels",
+              "timeline": "2020-2030",
+              "responsibility": "MPSG",
+              "budget_amount": 50000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of Gender Technical Working Groups strengthened through training",
+                  "notes": "No. of Gender Technical Working Groups strengthened through training",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Strengthen referral mechanisms on GBV prevention within and across sectors",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 80000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of stakeholders offering GBV prevention services mapped and in the data bank",
+                  "notes": "No. of stakeholders offering GBV prevention services mapped and in the data bank",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Sensitize community, medical practitioners, law enforcement and legal linkages to improve on evidence management",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 200000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of communities, medical practitioners, and law enforcement agencies sensitized on evidence preservation",
+                  "notes": "No. of communities, medical practitioners, and law enforcement agencies sensitized on evidence preservation",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Strengthen advocacy and messaging on Anti-GBV",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 200000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of reports, publications distributed",
+                  "notes": "No. of reports, publications distributed",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of print and electronic media engagements",
+                  "notes": "No. of print and electronic media engagements",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop a national directory for GBV service providers to enhance a multi-sectoral and referral mechanism",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 500000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of AGBV multi-sectoral service providers mapped",
+                  "notes": "No. of AGBV multi-sectoral service providers mapped",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Undertake Gender Mainstreaming across laws, policies and programmes",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 10000000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "No. of laws, policies and programmes mainstreamed",
+                  "notes": "No. of laws, policies and programmes mainstreamed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Facilitate development of County policies and laws on GBV",
+              "timeline": "2020-2022",
+              "responsibility": "MPS&G",
+              "budget_amount": 100000000,
+              "budget_currency": "KES",
+              "sort_order": 7,
+              "indicators": [
+                {
+                  "name": "No. of Counties with by-laws and policies on SGBV",
+                  "notes": "No. of Counties with by-laws and policies on SGBV",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Preventive Laws and policies implemented and enforced",
+          "sort_order": 3,
+          "activities": [
+            {
+              "title": "Develop work plan policies addressing GBV prevention and response in public and private set ups.",
+              "timeline": "2020-2022",
+              "responsibility": "MPS&G",
+              "budget_amount": 10000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of work plans on GBV prevention developed",
+                  "notes": "No. of work plans on GBV prevention developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Sensitize court users of criminal justice and law enforcement institutions to enhance delivery of justice for GBV survivors.",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 200000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of Legal literacy and rights awareness sensitization forums",
+                  "notes": "No. of Legal literacy and rights awareness sensitization forums",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Enhance the capacity of criminal justice and law enforcement institutions to ensure perpetrators of GBV are prosecuted",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 150000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of law and justice enforcement units sensitized on GBV prevention measures",
+                  "notes": "No. of law and justice enforcement units sensitized on GBV prevention measures",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Protect vulnerable persons through the Witness Protection Programmes for GBV survivors",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 90000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of Survivors in the WPP",
+                  "notes": "No. of Survivors in the WPP",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To eliminate social cultural norms that affect women and girls",
+          "sort_order": 4,
+          "activities": [
+            {
+              "title": "Enjoin men and boys as allies, advocates, role models, champions and change agents in advocacy against GBV",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 100000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of male champions against harmful practices identified and sensitized",
+                  "notes": "No. of male champions against harmful practices identified and sensitized",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Engage community and religious leaders in the fight against harmful practices and norms",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 50000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of leaders partnered",
+                  "notes": "No. of leaders partnered",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Development of popular version of GBV legal instruments including training manuals affecting women and girls in English and Swahili",
+              "timeline": "2020-2023",
+              "responsibility": "MPSG",
+              "budget_amount": 4000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of English and Kiswahili popular versions developed",
+                  "notes": "No. of English and Kiswahili popular versions developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Participate and Support advocacy forums to eliminate socio cultural norms",
+              "timeline": "2020-2030",
+              "responsibility": "MPSG",
+              "budget_amount": 2000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of advocacy forums",
+                  "notes": "No. of advocacy forums",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop national action plan to address harmful cultural practices",
+              "timeline": "2020-2023",
+              "responsibility": "MPSG",
+              "budget_amount": 5000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "National Action plan on harmful practices developed",
+                  "notes": "National Action plan on harmful practices developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Enforcement prevention, protection and care services on child marriage",
+              "timeline": "2020-2030",
+              "responsibility": "MPSG",
+              "budget_amount": 20000000,
+              "budget_currency": "KES",
+              "sort_order": 6,
+              "indicators": [
+                {
+                  "name": "No. of rescued girls back to school",
+                  "notes": "No. of rescued girls back to school",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Facilitate development of County policies and laws on GBV",
+              "timeline": "2020-2030",
+              "responsibility": "MPS&G",
+              "budget_amount": 10000000,
+              "budget_currency": "KES",
+              "sort_order": 7,
+              "indicators": [
+                {
+                  "name": "No. of County governments with by-laws and policies on SGBV developed",
+                  "notes": "No. of County governments with by-laws and policies on SGBV developed",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "End gender and other forms of discrimination by 2030 through enforcing the anti-discrimination laws and providing adequate budgetary allocations to institutions mandated to promote gender equality, equity and empowerment of women and girls.",
+      "description": "Commitment 15",
+      "sort_order": 15,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "To reduce violations of the principle of equality and freedom from discrimination for the Special Interest Groups",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Develop and operationalize an automated complaints handling system",
+              "timeline": "2020-2022",
+              "responsibility": "NGEC",
+              "budget_amount": 50000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Automated CMS operationalized",
+                  "notes": "Automated CMS operationalized",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Conduct investigations on violations of the principles of equality and inclusion",
+              "timeline": "2020-2030",
+              "responsibility": "NGEC",
+              "budget_amount": 21000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of investigations and inquiries handled",
+                  "notes": "No. of investigations and inquiries handled",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Facilitate legal redress for SIGs",
+              "timeline": "2020-2030",
+              "responsibility": "NGEC",
+              "budget_amount": 10000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of public interest litigations, Alternative Dispute Resolution and SIGs reached through legal aid clinics.",
+                  "notes": "No. of public interest litigations, Alternative Dispute Resolution and SIGs reached through legal aid clinics.",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Review, facilitate and advise on policy, laws, regulations, standards and guides to aid compliance with principles of equality and inclusion",
+              "timeline": "2020-2030",
+              "responsibility": "NGEC County Governments",
+              "budget_amount": 16000000,
+              "budget_currency": "KES",
+              "sort_order": 4,
+              "indicators": [
+                {
+                  "name": "No. of Policies, laws, regulations reviewed",
+                  "notes": "No. of Policies, laws, regulations reviewed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Facilitate development of model legislative frameworks for policies, laws and legislations that undermine equality and inclusion.",
+              "timeline": "2030",
+              "responsibility": "NGEC",
+              "budget_amount": 10000000,
+              "budget_currency": "KES",
+              "sort_order": 5,
+              "indicators": [
+                {
+                  "name": "No. of model legislative frameworks, guides and standards developed.",
+                  "notes": "No. of model legislative frameworks, guides and standards developed.",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To enhance compliance with the principles of equality and inclusion in state and non-state actors",
+          "sort_order": 2,
+          "activities": [
+            {
+              "title": "Issue advisories on inclusion of SIGs in Development agenda",
+              "timeline": "2020-2030",
+              "responsibility": "NGEC",
+              "budget_amount": 1000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of advisories issued",
+                  "notes": "No. of advisories issued",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Collate and analyze biannual reports on implementation of constitutional and statutory requirements on the principles of equality and freedom from discrimination from Ministries, Counties, Departments and Agencies.",
+              "timeline": "2020-2030",
+              "responsibility": "NGEC",
+              "budget_amount": 1000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of reports collated and analyzed",
+                  "notes": "No. of reports collated and analyzed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Monitor implementation of the concluding observations of treaties and conventions relating to SIG, equality and non-discrimination ratified by Kenya",
+              "timeline": "2020-2030",
+              "responsibility": "NGEC",
+              "budget_amount": 15000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of National Action Plans on implementation of concluding remarks Monitored",
+                  "notes": "No. of National Action Plans on implementation of concluding remarks Monitored",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To promote public awareness on principles of equality and inclusion",
+          "sort_order": 3,
+          "activities": [
+            {
+              "title": "Develop guidelines on integration of principles of equality and inclusion in Public education",
+              "timeline": "2020-2021",
+              "responsibility": "NGEC",
+              "budget_amount": 1000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Approved Guidelines on integration of principles of equality and inclusion in Public education",
+                  "notes": "Approved Guidelines on integration of principles of equality and inclusion in Public education",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Establish new and strengthen existing Equality and Inclusion Technical working Groups (EITWGs) in all the counties",
+              "timeline": "2020-2024",
+              "responsibility": "NGEC",
+              "budget_amount": 10000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of EITWGs established",
+                  "notes": "No. of EITWGs established",
+                  "annual_targets": []
+                },
+                {
+                  "name": "No. of EITWGs strengthened",
+                  "notes": "No. of EITWGs strengthened",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Hold Public and SIG sensitization forums on principles of equality and inclusion.",
+              "timeline": "2020-2030",
+              "responsibility": "NGEC",
+              "budget_amount": 28000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of public education forums held",
+                  "notes": "No. of public education forums held",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To promote implementation of affirmative action policies",
+          "sort_order": 4,
+          "activities": [
+            {
+              "title": "Monitor implementation of affirmative action policies",
+              "timeline": "2020-2030",
+              "responsibility": "NGEC",
+              "budget_amount": 41000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of affirmative action policies monitored",
+                  "notes": "No. of affirmative action policies monitored",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Facilitate development of model standards, guidelines, and policy on affirmative action",
+              "timeline": "2020-2024",
+              "responsibility": "NGEC",
+              "budget_amount": 15000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of standards and guidelines developed",
+                  "notes": "No. of standards and guidelines developed",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Audit and document the status of inclusion of SIGs in leadership",
+              "timeline": "2020-2030",
+              "responsibility": "NGEC Government",
+              "budget_amount": 15000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of Audits conducted",
+                  "notes": "No. of Audits conducted",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "To increase evidence-based decision making on issues of equality and inclusion through research and knowledge management",
+          "sort_order": 5,
+          "activities": [
+            {
+              "title": "Coordinate research activities on matters relating to equality and freedom from discrimination",
+              "timeline": "2020-2030",
+              "responsibility": "GoK, NGEC, County Government",
+              "budget_amount": 20000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of research consultative meetings held",
+                  "notes": "No. of research consultative meetings held",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop and maintain databases on issues relating to equality and freedom from discrimination for SIGs",
+              "timeline": "2020-2024",
+              "responsibility": "GoK, NGEC, County Government",
+              "budget_amount": 500000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "Functional information management systems on equality and inclusion",
+                  "notes": "Functional information management systems on equality and inclusion",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Ensure universal access to quality reproductive health services, including prevention and management of GBV, in humanitarian and fragile contexts by 2030",
+      "description": "Commitment 16",
+      "sort_order": 16,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "Improve the management of GBV in fragile and humanitarian settings",
+          "sort_order": 1,
+          "activities": [
+            {
+              "title": "Develop and disseminate SOPs/guideline on integration of GBV prevention and response in humanitarian settings.",
+              "timeline": "2021",
+              "responsibility": "MoH",
+              "budget_amount": 14000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "No. of SOPs/guidelines developed and disseminated",
+                  "notes": "No. of SOPs/guidelines developed and disseminated",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Develop national and county framework on GBV prevention and response in humanitarian settings",
+              "timeline": "2021",
+              "responsibility": "MoH",
+              "budget_amount": 14000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "National and county framework on GBV",
+                  "notes": "National and county framework on GBV",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Improve access to Reproductive Health Services in Humanitarian settings",
+          "sort_order": 2,
+          "activities": [
+            {
+              "title": "Ensure national F&Q, procurements and distribution of life saving RH commodities include needs for emergency/humanitarian settings including SGBV kits and drugs",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 2000000,
+              "budget_currency": "KES",
+              "sort_order": 1,
+              "indicators": [
+                {
+                  "name": "Needs of people in humanitarian settings included in RH commodities",
+                  "notes": "Needs of people in humanitarian settings included in RH commodities",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Strengthen coordination and integration with key partners working on SRH and SGBV in humanitarian settings",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 14000000,
+              "budget_currency": "KES",
+              "sort_order": 2,
+              "indicators": [
+                {
+                  "name": "No. of coordination meetings held annually",
+                  "notes": "No. of coordination meetings held annually",
+                  "annual_targets": []
+                }
+              ]
+            },
+            {
+              "title": "Increase access to timely, quality and comprehensive SRH and GBV service & data from humanitarian setting through targeted capacity building and mentorship",
+              "timeline": "2030",
+              "responsibility": "MoH",
+              "budget_amount": 20000000,
+              "budget_currency": "KES",
+              "sort_order": 3,
+              "indicators": [
+                {
+                  "name": "No. of people trained and mentored",
+                  "notes": "No. of people trained and mentored",
+                  "annual_targets": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Track and monitor the implementation of the ICPD25 Nairobi Summit commitments through the National Council for Population and Development in the State Department of Planning",
+      "description": "Commitment 17",
+      "sort_order": 17,
+      "is_active": true,
+      "objectives": [
+        {
+          "title": "To provide the government and other stakeholders implementation status of ICPD25 Nairobi summit commitments on annual basis",
+          "sort_order": 1,
+          "activities": []
+        }
+      ]
     }
   ]
 }
