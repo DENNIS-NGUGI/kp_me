@@ -5,13 +5,15 @@ from django.conf.urls.static import static
 from django.shortcuts import redirect
 from django.shortcuts import render
 from users.views import ajax_captcha_refresh 
-from .views import handler403, handler404, handler500
+from .views import handler403, handler404, handler500, service_worker, web_manifest
 
 # Custom error handlers
 def handler403(request, exception):
     return render(request, 'errors/403.html', status=403)
 
 urlpatterns = [
+    path('manifest.webmanifest', web_manifest, name='web_manifest'),
+    path('service-worker.js', service_worker, name='service_worker'),
     path('admin/', admin.site.urls),
     path('captcha/refresh/', ajax_captcha_refresh, name='captcha-refresh'),  
     path('captcha/', include('captcha.urls')), 

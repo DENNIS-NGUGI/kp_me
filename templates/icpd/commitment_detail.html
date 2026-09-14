@@ -12,8 +12,20 @@
     <div class="d-flex gap-2">{% if is_icpd_admin and can_add_objective %}<a class="btn btn-primary" href="{% url 'icpd:objective_create' %}?commitment={{ commitment.pk }}"><i class="bi bi-plus-circle me-1"></i>Add Objective</a>{% endif %}{% if is_icpd_admin and can_change_commitment %}<a class="btn btn-outline-secondary" href="{% url 'icpd:commitment_update' commitment.pk %}" title="Edit commitment"><i class="bi bi-pencil"></i></a>{% endif %}{% if is_icpd_admin and can_delete_commitment %}<a class="btn btn-outline-danger" href="{% url 'icpd:commitment_delete' commitment.pk %}" title="Delete commitment"><i class="bi bi-trash"></i></a>{% endif %}</div>
 </div>
 
+<div class="card mb-4">
+    <div class="card-body">
+        <label class="form-label" for="commitment-search">Find an objective, activity, indicator, year, or target</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="search" id="commitment-search" class="form-control" placeholder="Start typing to filter this commitment" autocomplete="off">
+            <button type="button" id="clear-commitment-search" class="btn btn-outline-secondary" title="Clear search"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div id="commitment-search-results" class="form-text" aria-live="polite"></div>
+    </div>
+</div>
+
 {% for objective in commitment.objectives.all %}
-<section class="card mb-4">
+<section class="card mb-4 commitment-objective">
     <div class="card-header">
         <div class="d-flex justify-content-between gap-2"><h5 class="mb-0">{{ objective.title }}</h5><span>{% if is_icpd_admin and can_add_activity %}<a class="btn btn-sm btn-outline-primary" href="{% url 'icpd:activity_create' %}?objective={{ objective.pk }}" title="Add activity"><i class="bi bi-plus"></i></a>{% endif %}{% if is_icpd_admin and can_change_objective %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'icpd:objective_update' objective.pk %}" title="Edit objective"><i class="bi bi-pencil"></i></a>{% endif %}</span></div>
         {% if objective.description %}<small class="text-muted">{{ objective.description }}</small>{% endif %}
@@ -44,4 +56,38 @@
 {% empty %}
 <div class="card"><div class="card-body text-center text-muted py-5">No objectives have been configured for this commitment.</div></div>
 {% endfor %}
+<div id="commitment-search-empty" class="card d-none"><div class="card-body text-center text-muted py-5">No matching objectives, activities, indicators, years, or target values.</div></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('commitment-search');
+    const clearButton = document.getElementById('clear-commitment-search');
+    const objectives = Array.from(document.querySelectorAll('.commitment-objective'));
+    const results = document.getElementById('commitment-search-results');
+    const emptyState = document.getElementById('commitment-search-empty');
+
+    function filterCommitment() {
+        const query = searchInput.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        objectives.forEach(function (objective) {
+            const matches = !query || objective.textContent.toLowerCase().includes(query);
+            objective.classList.toggle('d-none', !matches);
+            if (matches) visibleCount += 1;
+        });
+
+        emptyState.classList.toggle('d-none', !query || visibleCount > 0);
+        results.textContent = query ? visibleCount + ' matching objective' + (visibleCount === 1 ? '' : 's') : '';
+    }
+
+    searchInput.addEventListener('input', filterCommitment);
+    clearButton.addEventListener('click', function () {
+        searchInput.value = '';
+        filterCommitment();
+        searchInput.focus();
+    });
+});
+</script>
 {% endblock %}

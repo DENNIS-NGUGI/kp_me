@@ -175,6 +175,7 @@ WHITENOISE_AUTOREFRESH = False
 
 # Session settings
 SESSION_COOKIE_AGE = 30 * 60  # 30 minutes in seconds
+SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # Default primary key field type

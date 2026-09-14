@@ -3,5 +3,7 @@ venv/
 staticfiles/
 scripts/
 extra/
+db.sqlite3
+
 
 
