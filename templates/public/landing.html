@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a5632">
+    <link rel="manifest" href="{% url 'web_manifest' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/pwa-icon-192.png' %}">
     <title>KPPIMES - Kenya Population Programme</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -541,6 +544,7 @@
                     <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
                 </ul>
                 <div class="nav-buttons">
+                    <button type="button" id="install-app-button" class="btn-nav d-none"><i class="bi bi-download me-1"></i>Install App</button>
                     <a href="{% url 'users:login' %}" class="btn-nav">Login</a>
                     <a href="{% url 'users:register' %}" class="btn-nav-primary">Register</a>
                 </div>
@@ -751,6 +755,34 @@
         document.querySelectorAll('.feature-card, .thematic-item').forEach(el => {
             observer.observe(el);
         });
+
+        let deferredInstallPrompt;
+        const installAppButton = document.getElementById('install-app-button');
+
+        window.addEventListener('beforeinstallprompt', function (event) {
+            event.preventDefault();
+            deferredInstallPrompt = event;
+            installAppButton.classList.remove('d-none');
+        });
+
+        installAppButton.addEventListener('click', async function () {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            installAppButton.classList.add('d-none');
+        });
+
+        window.addEventListener('appinstalled', function () {
+            deferredInstallPrompt = null;
+            installAppButton.classList.add('d-none');
+        });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('{% url "service_worker" %}');
+            });
+        }
     </script>
 </body>
 </html>

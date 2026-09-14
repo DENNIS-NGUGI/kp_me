@@ -719,6 +719,9 @@
         </div>
         
         <div class="topbar-right">
+            <button class="btn-icon d-none" id="install-app-button" type="button" title="Install KPPIMES" aria-label="Install KPPIMES">
+                <i class="bi bi-download"></i>
+            </button>
             <button class="btn-icon position-relative" onclick="window.location.href='{% url 'notifications:center' %}'" title="Notifications">
                 <i class="bi bi-bell"></i>
                 <span class="badge-dot" id="unread-badge" style="display: none;"></span>
@@ -850,6 +853,28 @@
 
     {% block extra_js %}{% endblock %}
     <script>
+        let deferredInstallPrompt;
+        const installAppButton = document.getElementById('install-app-button');
+
+        window.addEventListener('beforeinstallprompt', function (event) {
+            event.preventDefault();
+            deferredInstallPrompt = event;
+            installAppButton?.classList.remove('d-none');
+        });
+
+        installAppButton?.addEventListener('click', async function () {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            installAppButton.classList.add('d-none');
+        });
+
+        window.addEventListener('appinstalled', function () {
+            deferredInstallPrompt = null;
+            installAppButton?.classList.add('d-none');
+        });
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function () {
                 navigator.serviceWorker.register('{% url "service_worker" %}');
