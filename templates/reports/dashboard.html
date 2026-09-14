@@ -679,10 +679,6 @@
             preferCanvas: true,
             renderer: countyRenderer,
         }).setView([0.3, 37.8], 6);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 10,
-            attribution: '&copy; OpenStreetMap contributors',
-        }).addTo(countyMap);
 
         function performanceColor(performance) {
             if (performance === undefined) return '#d8dfda';
