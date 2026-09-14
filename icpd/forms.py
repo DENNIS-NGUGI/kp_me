@@ -67,6 +67,23 @@ class IndicatorYearDataForm(BootstrapModelForm):
         model = IndicatorYearData
         fields = ('activity_indicator', 'financial_year', 'target_value')
 
+    def __init__(self, *args, activity_indicator=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk or activity_indicator is None:
+            return
+        used_years = IndicatorYearData.objects.filter(
+            activity_indicator=activity_indicator,
+        ).values_list('financial_year', flat=True)
+        self.fields['activity_indicator'].queryset = ActivityIndicator.objects.filter(
+            pk=activity_indicator.pk,
+        )
+        self.fields['activity_indicator'].initial = activity_indicator
+        self.fields['activity_indicator'].disabled = True
+        self.fields['financial_year'].choices = [
+            choice for choice in self.fields['financial_year'].choices
+            if choice[0] not in used_years
+        ]
+
 
 class IndicatorYearActualsForm(BootstrapModelForm):
     class Meta:
@@ -81,6 +98,21 @@ class ActivityYearDataForm(BootstrapModelForm):
         fields = ('activity', 'financial_year', 'expenditure_amount', 'remarks')
         widgets = {'remarks': forms.Textarea(attrs={'rows': 3})}
         labels = {'expenditure_amount': 'Actual Expenditure (KES millions)'}
+
+    def __init__(self, *args, activity=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk or activity is None:
+            return
+        used_years = ActivityYearData.objects.filter(
+            activity=activity,
+        ).values_list('financial_year', flat=True)
+        self.fields['activity'].queryset = Activity.objects.filter(pk=activity.pk)
+        self.fields['activity'].initial = activity
+        self.fields['activity'].disabled = True
+        self.fields['financial_year'].choices = [
+            choice for choice in self.fields['financial_year'].choices
+            if choice[0] not in used_years
+        ]
 
 
 class ActivityYearActualsForm(BootstrapModelForm):

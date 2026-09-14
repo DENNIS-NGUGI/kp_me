@@ -36,21 +36,8 @@ def _commitment_detail_url(instance):
 	return 'icpd:commitment_detail', instance.activity_indicator.activity.objective.commitment_id
 
 
-def _is_icpd_admin(user):
-	return user.is_superuser or user.is_admin_user
-
-
-def _require_icpd_admin(request):
-	if _is_icpd_admin(request.user):
-		return True
-	messages.error(request, 'Only ICPD administrators can change preconfigured planning data.')
-	return False
-
-
 def _user_can_access_commitment(user, commitment):
 	"""Return whether a user is assigned to a commitment's optional access policy."""
-	if _is_icpd_admin(user):
-		return True
 	policy = getattr(commitment, 'access_policy', None)
 	if not policy or not policy.is_restricted:
 		return True
@@ -62,8 +49,6 @@ def _user_can_access_commitment(user, commitment):
 
 def _visible_commitments(user):
 	commitments = Commitment.objects.filter(is_active=True)
-	if _is_icpd_admin(user):
-		return commitments
 	return commitments.filter(
 		Q(access_policy__isnull=True)
 		| Q(access_policy__is_restricted=False)
@@ -141,10 +126,15 @@ def _instance_commitment(instance):
 	return instance.activity_indicator.activity.objective.commitment
 
 
-def _form_view(request, form_class, title, instance=None, initial=None):
+def _form_view(request, form_class, title, instance=None, initial=None, form_kwargs=None):
 	if instance and not _require_commitment_access(request, _instance_commitment(instance)):
 		return redirect('icpd:dashboard')
-	form = form_class(request.POST or None, instance=instance, initial=initial)
+	form = form_class(
+		request.POST or None,
+		instance=instance,
+		initial=initial,
+		**(form_kwargs or {}),
+	)
 	if request.method == 'POST' and form.is_valid():
 		saved_instance = form.save()
 		messages.success(request, f'{title} saved successfully.')
@@ -187,9 +177,9 @@ def dashboard(request):
 		'indicator_count': ActivityIndicator.objects.filter(activity__objective__commitment__in=commitments).count(),
 		'on_track_count': IndicatorYearData.objects.filter(activity_indicator__activity__objective__commitment__in=commitments, status='on_track').count(),
 		'at_risk_count': IndicatorYearData.objects.filter(activity_indicator__activity__objective__commitment__in=commitments, status='at_risk').count(),
-		'can_add_commitment': _is_icpd_admin(request.user) and request.user.has_permission('add_commitment'),
+		'can_add_commitment': request.user.has_permission('add_commitment'),
 		'can_view_activity_indicators': request.user.has_permission('view_activityindicator'),
-		'can_manage_access': _is_icpd_admin(request.user) and request.user.has_permission('change_commitment'),
+		'can_manage_access': request.user.has_permission('view_commitmentaccesspolicy'),
 	}
 	return render(request, 'icpd/dashboard.html', context)
 
@@ -235,7 +225,6 @@ def commitment_detail(request, pk):
 	}
 	return render(request, 'icpd/commitment_detail.html', {
 		'commitment': commitment,
-		'is_icpd_admin': _is_icpd_admin(request.user),
 		**permissions,
 	})
 
@@ -268,7 +257,8 @@ def activity_indicator_list(request):
 		'selected_commitment': commitment_id,
 		'selected_objective': objective_id,
 		'selected_activity': activity_id,
-		'is_icpd_admin': _is_icpd_admin(request.user),
+		'can_add_activity_indicator': request.user.has_permission('add_activityindicator'),
+		'can_change_activity_indicator': request.user.has_permission('change_activityindicator'),
 	})
 
 
@@ -314,7 +304,7 @@ def report_entry(request):
 			commitment=selected_commitment,
 			financial_year=financial_year,
 		).select_related('author') if selected_commitment else CommitmentNarrativeReport.objects.none()
-		if not _is_icpd_admin(request.user):
+		if not request.user.has_permission('view_commitmentnarrativereport'):
 			saved_narratives = saved_narratives.filter(author=request.user)
 		saved_narratives = [item for item in saved_narratives if _narrative_has_content(item)]
 		return render(request, 'icpd/narrative_report.html', {
@@ -434,7 +424,7 @@ def narrative_report_export(request):
 		commitment=commitment,
 		financial_year=financial_year,
 	).select_related('author')
-	if not _is_icpd_admin(request.user):
+	if not request.user.has_permission('view_commitmentnarrativereport'):
 		narratives = narratives.filter(author=request.user)
 	selected_narrative_ids = request.GET.getlist('narrative')
 	if not selected_narrative_ids:
@@ -510,31 +500,31 @@ def narrative_report_export(request):
 @login_required
 @permission_required('add_commitment')
 def commitment_create(request):
-	if not _require_icpd_admin(request):
-		return redirect('icpd:dashboard')
 	return _form_view(request, CommitmentForm, 'Commitment')
 
 
 @login_required
 @permission_required('change_commitment')
 def commitment_update(request, pk):
-	if not _require_icpd_admin(request):
-		return redirect('icpd:dashboard')
 	return _form_view(request, CommitmentForm, 'Commitment', get_object_or_404(Commitment, pk=pk))
 
 
 @login_required
-@permission_required('change_commitment')
+@permission_required('view_commitmentaccesspolicy')
 def commitment_access(request):
 	"""Assign roles and users that may work on each ICPD commitment."""
-	if not _require_icpd_admin(request):
-		return redirect('icpd:dashboard')
 	commitments = Commitment.objects.filter(is_active=True)
 	if request.method == 'POST':
 		roles = Role.objects.filter(is_active=True)
 		users = User.objects.filter(is_active=True, is_verified=True)
 		for commitment in commitments:
-			policy, _ = CommitmentAccessPolicy.objects.get_or_create(commitment=commitment)
+			policy = CommitmentAccessPolicy.objects.filter(commitment=commitment).first()
+			permission = 'change_commitmentaccesspolicy' if policy else 'add_commitmentaccesspolicy'
+			if not request.user.has_permission(permission):
+				messages.error(request, 'You do not have permission to update ICPD commitment access settings.')
+				return redirect('icpd:commitment_access')
+			if policy is None:
+				policy = CommitmentAccessPolicy.objects.create(commitment=commitment)
 			policy.is_restricted = request.POST.get(f'restricted_{commitment.pk}') == 'on'
 			policy.save()
 			policy.allowed_roles.set(roles.filter(pk__in=request.POST.getlist(f'roles_{commitment.pk}')))
@@ -564,16 +554,12 @@ def commitment_access(request):
 @login_required
 @permission_required('delete_commitment')
 def commitment_delete(request, pk):
-	if not _require_icpd_admin(request):
-		return redirect('icpd:dashboard')
 	return _delete_view(request, get_object_or_404(Commitment, pk=pk), 'Commitment')
 
 
 @login_required
 @permission_required('add_objective')
 def objective_create(request):
-	if not _require_icpd_admin(request):
-		return redirect('icpd:dashboard')
 	commitment = get_object_or_404(Commitment, pk=request.GET.get('commitment') or request.POST.get('commitment'))
 	if not _require_commitment_access(request, commitment):
 		return redirect('icpd:dashboard')
@@ -583,24 +569,18 @@ def objective_create(request):
 @login_required
 @permission_required('change_objective')
 def objective_update(request, pk):
-	if not _require_icpd_admin(request):
-		return redirect('icpd:dashboard')
 	return _form_view(request, ObjectiveForm, 'Objective', get_object_or_404(Objective, pk=pk))
 
 
 @login_required
 @permission_required('delete_objective')
 def objective_delete(request, pk):
-	if not _require_icpd_admin(request):
-		return redirect('icpd:dashboard')
 	return _delete_view(request, get_object_or_404(Objective, pk=pk), 'Objective')
 
 
 @login_required
 @permission_required('add_activity')
 def activity_create(request):
-	if not _require_icpd_admin(request):
-		return redirect('icpd:dashboard')
 	objective = get_object_or_404(Objective.objects.select_related('commitment'), pk=request.GET.get('objective') or request.POST.get('objective'))
 	if not _require_commitment_access(request, objective.commitment):
 		return redirect('icpd:dashboard')
@@ -610,24 +590,18 @@ def activity_create(request):
 @login_required
 @permission_required('change_activity')
 def activity_update(request, pk):
-	if not _require_icpd_admin(request):
-		return redirect('icpd:dashboard')
 	return _form_view(request, ActivityForm, 'Activity', get_object_or_404(Activity, pk=pk))
 
 
 @login_required
 @permission_required('delete_activity')
 def activity_delete(request, pk):
-	if not _require_icpd_admin(request):
-		return redirect('icpd:dashboard')
 	return _delete_view(request, get_object_or_404(Activity, pk=pk), 'Activity')
 
 
 @login_required
 @permission_required('add_activityindicator')
 def activity_indicator_create(request):
-	if not _require_icpd_admin(request):
-		return redirect('icpd:activity_indicator_list')
 	activity_id = request.GET.get('activity') or request.POST.get('activity')
 	if not activity_id:
 		return _form_view(request, ActivityIndicatorForm, 'Activity Indicator')
@@ -640,66 +614,71 @@ def activity_indicator_create(request):
 @login_required
 @permission_required('change_activityindicator')
 def activity_indicator_update(request, pk):
-	if not _require_icpd_admin(request):
-		return redirect('icpd:activity_indicator_list')
 	return _form_view(request, ActivityIndicatorForm, 'Activity Indicator', get_object_or_404(ActivityIndicator, pk=pk))
 
 
 @login_required
 @permission_required('delete_activityindicator')
 def activity_indicator_delete(request, pk):
-	if not _require_icpd_admin(request):
-		return redirect('icpd:activity_indicator_list')
 	return _delete_view(request, get_object_or_404(ActivityIndicator, pk=pk), 'Activity Indicator')
 
 
 @login_required
 @permission_required('add_indicatoryeardata')
 def indicator_year_data_create(request):
-	if not _require_icpd_admin(request):
-		return redirect('icpd:dashboard')
 	indicator = get_object_or_404(
 		ActivityIndicator.objects.select_related('activity__objective__commitment'),
 		pk=request.GET.get('activity_indicator') or request.POST.get('activity_indicator'),
 	)
 	if not _require_commitment_access(request, indicator.activity.objective.commitment):
 		return redirect('icpd:dashboard')
-	return _form_view(request, IndicatorYearDataForm, 'Annual Target', initial={'activity_indicator': indicator.pk})
+	if IndicatorYearData.objects.filter(activity_indicator=indicator).count() >= len(FINANCIAL_YEAR_CHOICES):
+		messages.info(request, 'All financial years already have annual targets. Use the edit action to update an existing target.')
+		return redirect('icpd:commitment_detail', pk=indicator.activity.objective.commitment_id)
+	return _form_view(
+		request,
+		IndicatorYearDataForm,
+		'Annual Target',
+		initial={'activity_indicator': indicator.pk},
+		form_kwargs={'activity_indicator': indicator},
+	)
 
 
 @login_required
 @permission_required('change_indicatoryeardata')
 def indicator_year_data_update(request, pk):
 	year_data = get_object_or_404(IndicatorYearData, pk=pk)
-	form_class = IndicatorYearDataForm if _is_icpd_admin(request.user) else IndicatorYearActualsForm
-	title = 'Annual Target' if _is_icpd_admin(request.user) else 'Yearly Indicator Actuals'
-	return _form_view(request, form_class, title, year_data)
+	return _form_view(request, IndicatorYearDataForm, 'Annual Target', year_data)
 
 
 @login_required
 @permission_required('delete_indicatoryeardata')
 def indicator_year_data_delete(request, pk):
-	if not _require_icpd_admin(request):
-		return redirect('icpd:dashboard')
 	return _delete_view(request, get_object_or_404(IndicatorYearData, pk=pk), 'Yearly Indicator Data')
 
 
 @login_required
 @permission_required('add_activityyeardata')
 def activity_year_data_create(request):
-	if not _require_icpd_admin(request):
-		return redirect('icpd:dashboard')
 	activity = get_object_or_404(Activity.objects.select_related('objective__commitment'), pk=request.GET.get('activity') or request.POST.get('activity'))
 	if not _require_commitment_access(request, activity.objective.commitment):
 		return redirect('icpd:dashboard')
-	return _form_view(request, ActivityYearDataForm, 'Activity Expenditure', initial={'activity': activity.pk})
+	if ActivityYearData.objects.filter(activity=activity).count() >= len(FINANCIAL_YEAR_CHOICES):
+		messages.info(request, 'All financial years already have expenditure entries. Use the edit action to update an existing entry.')
+		return redirect('icpd:commitment_detail', pk=activity.objective.commitment_id)
+	return _form_view(
+		request,
+		ActivityYearDataForm,
+		'Activity Expenditure',
+		initial={'activity': activity.pk},
+		form_kwargs={'activity': activity},
+	)
 
 
 @login_required
 @permission_required('change_activityyeardata')
 def activity_year_data_update(request, pk):
 	year_data = get_object_or_404(ActivityYearData, pk=pk)
-	form_class = ActivityYearDataForm if _is_icpd_admin(request.user) else ActivityYearActualsForm
-	return _form_view(request, form_class, 'Activity Expenditure', year_data)
+	return _form_view(request, ActivityYearDataForm, 'Activity Expenditure', year_data)
 
 # Create your views here.

@@ -27,6 +27,12 @@ class Commitment(models.Model):
 
 	class Meta:
 		ordering = ['sort_order', 'title']
+		constraints = [
+			models.UniqueConstraint(
+				fields=['title'],
+				name='unique_icpd_commitment_title',
+			),
+		]
 
 	def __str__(self):
 		return self.title
@@ -118,6 +124,12 @@ class Objective(models.Model):
 
 	class Meta:
 		ordering = ['commitment', 'sort_order', 'title']
+		constraints = [
+			models.UniqueConstraint(
+				fields=['commitment', 'title'],
+				name='unique_icpd_objective_per_commitment',
+			),
+		]
 
 	def __str__(self):
 		return self.title
@@ -141,6 +153,12 @@ class Activity(models.Model):
 
 	class Meta:
 		ordering = ['objective', 'sort_order', 'id']
+		constraints = [
+			models.UniqueConstraint(
+				fields=['objective', 'title'],
+				name='unique_icpd_activity_per_objective',
+			),
+		]
 
 	def __str__(self):
 		return self.title
@@ -193,6 +211,10 @@ class ActivityIndicator(models.Model):
 			models.UniqueConstraint(
 				fields=['activity', 'code'],
 				name='unique_icpd_indicator_per_activity',
+			),
+			models.UniqueConstraint(
+				fields=['activity', 'name'],
+				name='unique_icpd_indicator_name_per_activity',
 			),
 		]
 

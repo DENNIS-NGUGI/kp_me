@@ -170,6 +170,114 @@ class IcpdPlanningModelTests(TestCase):
 
 
 class IcpdPermissionTests(TestCase):
+	def test_role_with_add_commitment_permission_can_see_and_open_create_form(self):
+		role = Role.objects.create(name='commitment_creator')
+		role.permissions.add(
+			Permission.objects.get(codename='view_commitment'),
+			Permission.objects.get(codename='add_commitment'),
+		)
+		user = User.objects.create_user(
+			username='commitment_creator', password='test-password', role=role,
+		)
+		self.client.force_login(user)
+
+		dashboard_response = self.client.get(reverse('icpd:dashboard'))
+		create_response = self.client.get(reverse('icpd:commitment_create'))
+
+		self.assertContains(dashboard_response, reverse('icpd:commitment_create'))
+		self.assertEqual(create_response.status_code, 200)
+
+	def test_commitment_access_requires_its_own_view_permission(self):
+		role = Role.objects.create(name='commitment_editor_without_access_policy')
+		role.permissions.add(
+			Permission.objects.get(codename='view_commitment'),
+			Permission.objects.get(codename='change_commitment'),
+		)
+		user = User.objects.create_user(
+			username='commitment_editor', password='test-password', role=role,
+		)
+		self.client.force_login(user)
+
+		dashboard_response = self.client.get(reverse('icpd:dashboard'))
+		access_response = self.client.get(reverse('icpd:commitment_access'))
+
+		self.assertNotContains(dashboard_response, reverse('icpd:commitment_access'))
+		self.assertRedirects(
+			access_response,
+			reverse('users:permission_denied'),
+			fetch_redirect_response=False,
+		)
+
+	def test_duplicate_planning_entries_are_rejected_by_their_create_forms(self):
+		user = User.objects.create_superuser(
+			username='duplicate_planning_admin', email='duplicate-planning@example.com', password='test-password',
+		)
+		commitment = Commitment.objects.create(title='Duplicate Commitment')
+		objective = Objective.objects.create(commitment=commitment, title='Duplicate Objective')
+		activity = Activity.objects.create(objective=objective, title='Duplicate Activity')
+		ActivityIndicator.objects.create(activity=activity, name='Duplicate Indicator')
+		self.client.force_login(user)
+
+		responses = [
+			self.client.post(reverse('icpd:commitment_create'), {
+				'title': commitment.title, 'sort_order': 0,
+			}),
+			self.client.post(reverse('icpd:objective_create'), {
+				'commitment': commitment.pk, 'title': objective.title, 'sort_order': 0,
+			}),
+			self.client.post(reverse('icpd:activity_create'), {
+				'objective': objective.pk, 'title': activity.title, 'sort_order': 0,
+			}),
+			self.client.post(reverse('icpd:activity_indicator_create'), {
+				'activity': activity.pk, 'name': 'Duplicate Indicator',
+			}),
+		]
+
+		self.assertTrue(all(response.status_code == 200 for response in responses))
+		self.assertEqual(Commitment.objects.filter(title=commitment.title).count(), 1)
+		self.assertEqual(Objective.objects.filter(commitment=commitment, title=objective.title).count(), 1)
+		self.assertEqual(Activity.objects.filter(objective=objective, title=activity.title).count(), 1)
+		self.assertEqual(ActivityIndicator.objects.filter(activity=activity, name='Duplicate Indicator').count(), 1)
+
+	def test_annual_target_create_excludes_already_recorded_financial_years(self):
+		user = User.objects.create_superuser(
+			username='annual_target_admin', email='annual-target@example.com', password='test-password',
+		)
+		commitment = Commitment.objects.create(title='Target Commitment')
+		objective = Objective.objects.create(commitment=commitment, title='Target Objective')
+		activity = Activity.objects.create(objective=objective, title='Target Activity')
+		indicator = ActivityIndicator.objects.create(activity=activity, name='Target Indicator')
+		IndicatorYearData.objects.create(
+			activity_indicator=indicator, financial_year='2025/26', target_value=10,
+		)
+		self.client.force_login(user)
+
+		response = self.client.get(reverse('icpd:indicator_year_data_create'), {
+			'activity_indicator': indicator.pk,
+		})
+
+		self.assertNotContains(response, '<option value="2025/26">', html=False)
+		self.assertContains(response, '<option value="2026/27">', html=False)
+
+	def test_activity_expenditure_create_excludes_already_recorded_financial_years(self):
+		user = User.objects.create_superuser(
+			username='expenditure_admin', email='expenditure@example.com', password='test-password',
+		)
+		commitment = Commitment.objects.create(title='Expenditure Commitment')
+		objective = Objective.objects.create(commitment=commitment, title='Expenditure Objective')
+		activity = Activity.objects.create(objective=objective, title='Expenditure Activity')
+		ActivityYearData.objects.create(
+			activity=activity, financial_year='2025/26', expenditure_amount=10,
+		)
+		self.client.force_login(user)
+
+		response = self.client.get(reverse('icpd:activity_year_data_create'), {
+			'activity': activity.pk,
+		})
+
+		self.assertNotContains(response, '<option value="2025/26">', html=False)
+		self.assertContains(response, '<option value="2026/27">', html=False)
+
 	def test_activity_indicator_create_url_resolves_for_an_icpd_administrator(self):
 		user = User.objects.create_superuser(
 			username='activity_indicator_admin',
