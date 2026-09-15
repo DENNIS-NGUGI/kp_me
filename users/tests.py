@@ -22,6 +22,32 @@ class PasswordResetTests(TestCase):
 
 
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+class OtpResendTests(TestCase):
+	def setUp(self):
+		self.user = User.objects.create_user(
+			username='otp_user',
+			email='otp@example.com',
+			password='test-password',
+		)
+		session = self.client.session
+		session['pending_verification_user_id'] = self.user.pk
+		session.save()
+
+	def test_verify_page_uses_a_post_form_to_resend_an_otp(self):
+		response = self.client.get(reverse('users:verify_otp'))
+
+		self.assertContains(response, '<form method="post" action="/users/resend-otp/"', html=False)
+
+	def test_resend_otp_accepts_post_and_rejects_get(self):
+		self.assertEqual(self.client.get(reverse('users:resend_otp')).status_code, 405)
+
+		response = self.client.post(reverse('users:resend_otp'))
+
+		self.assertRedirects(response, reverse('users:verify_otp'))
+		self.assertEqual(len(mail.outbox), 1)
+
+
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
 class AdminUserRegistrationTests(TestCase):
 	def setUp(self):
 		self.admin = User.objects.create_superuser(
