@@ -15,7 +15,7 @@ from django.http import JsonResponse
 from captcha.models import CaptchaStore
 from captcha.helpers import captcha_image_url
 
-from ..models import User, Role, AuditLog, AuthConstants
+from ..models import User, Role, AuditLog, AuthConstants, Organization
 from ..decorators import permission_required
 from ..validators import validate_password_strength, validate_phone_number
 from ..utils import send_otp_email, validate_captcha, get_captcha_context
@@ -145,7 +145,7 @@ def register(request):
         email = request.POST.get('email', '').strip().lower()
         password1 = request.POST.get('password1', '')
         password2 = request.POST.get('password2', '')
-        organization = request.POST.get('organization', '').strip()
+        organization_id = request.POST.get('organization')
         phone_number = request.POST.get('phone_number', '').strip()
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
@@ -154,6 +154,9 @@ def register(request):
         captcha_value = request.POST.get('captcha_1', '')
         
         errors = []
+        organization = Organization.objects.filter(pk=organization_id, is_active=True).first() if organization_id else None
+        if organization_id and not organization:
+            errors.append('Please select a valid organization.')
         
         # Validate email
         if not email:
@@ -204,13 +207,14 @@ def register(request):
                 'form_data': {
                     'username': username,
                     'email': email,
-                    'organization': organization,
+                    'organization': organization_id,
                     'phone_number': phone_number,
                     'first_name': first_name,
                     'last_name': last_name,
                     'terms_accepted': terms_accepted,
                 }
             })
+            context['organizations'] = Organization.objects.filter(is_active=True)
             return render(request, 'users/register.html', context)
         
         # Create user
@@ -265,6 +269,7 @@ def register(request):
     context.update({
         'site_name': settings.SITE_NAME,
         'allow_registration': getattr(settings, 'ALLOW_REGISTRATION', True),
+        'organizations': Organization.objects.filter(is_active=True),
     })
     return render(request, 'users/register.html', context)
 

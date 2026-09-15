@@ -39,7 +39,7 @@
                         </div>
                         <div class="col-md-6">
                             <label for="id_organization" class="form-label">Organization</label>
-                            <input type="text" name="organization" id="id_organization" class="form-control" value="{{ form_data.organization|default:'' }}">
+                            <select name="organization" id="id_organization" class="form-select"><option value="">Select organization</option>{% for organization in organizations %}<option value="{{ organization.pk }}" {% if form_data.organization == organization.pk|stringformat:'s' %}selected{% endif %}>{{ organization.name }}</option>{% endfor %}</select>
                         </div>
                         <div class="col-md-6">
                             <label for="id_role" class="form-label">Role</label>

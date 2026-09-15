@@ -24,6 +24,7 @@ urlpatterns = [
     path('permission-denied/', views.permission_denied, name='permission_denied'),
     
     # User Management
+    path('organizations/', views.organization_management, name='organization_management'),
     path('users/', views.user_management, name='user_management'),
     path('users/add/', views.user_add, name='user_add'),
     path('users/<int:pk>/edit/', views.user_edit, name='user_edit'),

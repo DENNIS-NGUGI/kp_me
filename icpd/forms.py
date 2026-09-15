@@ -1,6 +1,8 @@
 from django import forms
+from django.db.models import Q
 
-from .models import Activity, ActivityIndicator, ActivityYearData, Commitment, CommitmentNarrativeReport, IndicatorYearData, Objective
+from .models import Activity, ActivityIndicator, ActivityYearData, Commitment, CommitmentNarrativeReport, IcpdActualSubmission, IcpdExpenditureSubmission, IndicatorYearData, Objective
+from users.models import Organization
 
 
 class ActivityChoiceField(forms.ModelChoiceField):
@@ -38,14 +40,30 @@ class ActivityForm(BootstrapModelForm):
     class Meta:
         model = Activity
         fields = (
-            'objective', 'title', 'timeline', 'responsibility', 'budget_amount',
-            'budget_currency', 'remarks', 'sort_order',
+            'objective', 'title', 'timeline', 'responsible_organizations', 'budget_amount',
+			'budget_currency', 'cumulative_target_is_static', 'remarks', 'sort_order',
         )
         widgets = {
             'title': forms.Textarea(attrs={'rows': 3}),
             'remarks': forms.Textarea(attrs={'rows': 3}),
         }
-        labels = {'budget_amount': 'Budget (KES millions)'}
+        labels = {
+            'budget_amount': 'Budget (KES millions)',
+            'cumulative_target_is_static': 'Static cumulative target (do not add annual targets)',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        queryset = Organization.objects.filter(is_active=True)
+        if self.instance.pk:
+            queryset = Organization.objects.filter(
+                Q(is_active=True) | Q(responsible_activities=self.instance),
+            ).distinct()
+        self.fields['responsible_organizations'].queryset = queryset
+        self.fields['responsible_organizations'].widget.attrs.update({
+            'class': 'form-select',
+            'data-placeholder': 'Select responsible organizations',
+        })
 
 
 class ActivityIndicatorForm(BootstrapModelForm):
@@ -118,6 +136,21 @@ class ActivityYearDataForm(BootstrapModelForm):
 class ActivityYearActualsForm(BootstrapModelForm):
     class Meta:
         model = ActivityYearData
+        fields = ('expenditure_amount', 'remarks')
+        widgets = {'remarks': forms.Textarea(attrs={'rows': 3})}
+        labels = {'expenditure_amount': 'Actual Expenditure (KES millions)'}
+
+
+class IcpdActualSubmissionForm(BootstrapModelForm):
+    class Meta:
+        model = IcpdActualSubmission
+        fields = ('achievement_value', 'remarks')
+        widgets = {'remarks': forms.Textarea(attrs={'rows': 3})}
+
+
+class IcpdExpenditureSubmissionForm(BootstrapModelForm):
+    class Meta:
+        model = IcpdExpenditureSubmission
         fields = ('expenditure_amount', 'remarks')
         widgets = {'remarks': forms.Textarea(attrs={'rows': 3})}
         labels = {'expenditure_amount': 'Actual Expenditure (KES millions)'}

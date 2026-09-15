@@ -292,6 +292,21 @@ class RoleChangeLog(models.Model):
         return f"{self.role.name} - {self.change_type} by {self.changed_by} on {self.changed_at}"
 
 
+class Organization(models.Model):
+    """A government, partner, or other organization represented in KPPIMES."""
+
+    name = models.CharField(max_length=200, unique=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class User(AbstractUser):
     """
     Extended User Model with Role-based permissions
@@ -370,10 +385,13 @@ class User(AbstractUser):
         related_name='assigned_users',
         help_text=_("Counties this user is assigned to")
     )
-    organization = models.CharField(
-        max_length=200, 
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
-        help_text=_("Organization name")
+        related_name='users',
+        help_text=_("Organization the user belongs to"),
     )
     phone_number = models.CharField(
         max_length=15,

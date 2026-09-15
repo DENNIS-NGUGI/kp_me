@@ -18,6 +18,7 @@ from .profile import (
     change_password,
 )
 from .user_management import (
+    organization_management,
     user_management,
     user_add,
     user_edit,
@@ -55,6 +56,7 @@ __all__ = [
     'change_password',
     
     # User management views
+    'organization_management',
     'user_management',
     'user_add',
     'user_edit',

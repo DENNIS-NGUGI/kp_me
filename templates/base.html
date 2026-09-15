@@ -652,6 +652,12 @@
                 
                 {% if user.can_manage_users %}
                 <li class="nav-item">
+                    <a class="nav-link {% if 'users' in request.resolver_match.app_name and request.resolver_match.url_name == 'organization_management' %}active{% endif %}"
+                    href="{% url 'users:organization_management' %}">
+                        <i class="bi bi-buildings"></i> Organizations
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link {% if 'users' in request.resolver_match.app_name and request.resolver_match.url_name == 'user_management' %}active{% endif %}" 
                     href="{% url 'users:user_management' %}">
                         <i class="bi bi-people"></i> Users

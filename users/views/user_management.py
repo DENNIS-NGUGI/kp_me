@@ -7,13 +7,38 @@ from django.db import transaction
 from django.db.models import Q
 from django.views.decorators.http import require_http_methods
 
-from ..models import User, Role, AuditLog
+from ..models import User, Role, AuditLog, Organization
 from ..decorators import permission_required
 from ..validators import validate_phone_number
 from ..utils import send_registration_email
 from core.models import County
 
 logger = logging.getLogger(__name__)
+
+
+@login_required
+@permission_required('can_manage_users')
+def organization_management(request):
+    if request.method == 'POST':
+        organization_id = request.POST.get('organization_id')
+        name = request.POST.get('name', '').strip()
+        is_active = request.POST.get('is_active') == 'on'
+        if not name:
+            messages.error(request, 'Organization name is required.')
+        elif Organization.objects.exclude(pk=organization_id).filter(name__iexact=name).exists():
+            messages.error(request, 'An organization with this name already exists.')
+        else:
+            organization = get_object_or_404(Organization, pk=organization_id) if organization_id else Organization()
+            organization.name = name
+            organization.is_active = is_active
+            organization.save()
+            messages.success(request, f'Organization "{organization.name}" saved successfully.')
+        return redirect('users:organization_management')
+
+    return render(request, 'users/organization_management.html', {
+        'organizations': Organization.objects.all(),
+    })
+
 
 @login_required
 @permission_required('can_manage_users')
@@ -40,7 +65,7 @@ def user_management(request):
             Q(first_name__icontains=search_query) |
             Q(last_name__icontains=search_query) |
             Q(email__icontains=search_query) |
-            Q(organization__icontains=search_query)
+            Q(organization__name__icontains=search_query)
         )
     if status_filter == 'active':
         users = users.filter(is_active=True)
@@ -54,6 +79,7 @@ def user_management(request):
     
     roles = Role.objects.filter(is_active=True)
     counties = County.objects.filter(is_active=True)
+    organizations = Organization.objects.filter(is_active=True)
     
     context = {
         'users': users,
@@ -76,6 +102,7 @@ def user_add(request):
     """Create a verified user and send a temporary password by email."""
     roles = Role.objects.filter(is_active=True)
     counties = County.objects.filter(is_active=True)
+    organizations = Organization.objects.filter(is_active=True)
 
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
@@ -83,7 +110,7 @@ def user_add(request):
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
         phone_number = request.POST.get('phone_number', '').strip()
-        organization = request.POST.get('organization', '').strip()
+        organization = organizations.filter(pk=request.POST.get('organization')).first() if request.POST.get('organization') else None
         role_id = request.POST.get('role')
         county_ids = request.POST.getlist('counties')
         errors = []
@@ -118,6 +145,7 @@ def user_add(request):
             return render(request, 'users/user_add.html', {
                 'roles': roles,
                 'counties': counties,
+                'organizations': organizations,
                 'form_data': request.POST,
             })
 
@@ -163,7 +191,7 @@ def user_add(request):
         messages.success(request, f'User "{user.get_full_name() or user.username}" was created and sent their temporary password.')
         return redirect('users:user_management')
 
-    return render(request, 'users/user_add.html', {'roles': roles, 'counties': counties})
+    return render(request, 'users/user_add.html', {'roles': roles, 'counties': counties, 'organizations': organizations})
 
 @login_required
 @permission_required('can_manage_users')
@@ -188,7 +216,7 @@ def user_edit(request, pk):
         last_name = request.POST.get('last_name', '').strip()
         email = request.POST.get('email', '').strip().lower()
         phone_number = request.POST.get('phone_number', '').strip()
-        organization = request.POST.get('organization', '').strip()
+        organization = Organization.objects.filter(pk=request.POST.get('organization'), is_active=True).first() if request.POST.get('organization') else None
         is_active = request.POST.get('is_active') == 'on'
         is_verified = request.POST.get('is_verified') == 'on'
         role_id = request.POST.get('role')
@@ -211,7 +239,12 @@ def user_edit(request, pk):
         if errors:
             for error in errors:
                 messages.error(request, error)
-            return render(request, 'users/user_edit.html', {'edit_user': user_obj})
+            return render(request, 'users/user_edit.html', {
+                'edit_user': user_obj,
+                'roles': Role.objects.filter(is_active=True),
+                'counties': County.objects.filter(is_active=True),
+                'organizations': Organization.objects.filter(is_active=True),
+            })
         
         # Track changes
         if user_obj.first_name != first_name:
@@ -231,7 +264,7 @@ def user_edit(request, pk):
             user_obj.phone_number = phone_number
         
         if user_obj.organization != organization:
-            changes['organization'] = {'old': user_obj.organization, 'new': organization}
+            changes['organization'] = {'old': str(user_obj.organization or ''), 'new': str(organization or '')}
             user_obj.organization = organization
         
         if user_obj.is_active != is_active:
@@ -290,11 +323,13 @@ def user_edit(request, pk):
     
     counties = County.objects.filter(is_active=True)
     roles = Role.objects.filter(is_active=True)
+    organizations = Organization.objects.filter(is_active=True)
     
     context = {
         'edit_user': user_obj,
         'counties': counties,
         'roles': roles,
+        'organizations': organizations,
     }
     return render(request, 'users/user_edit.html', context)
 

@@ -2,7 +2,7 @@ from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from .models import User
+from .models import Organization, User
 
 
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
@@ -31,12 +31,22 @@ class AdminUserRegistrationTests(TestCase):
 		)
 		self.client.force_login(self.admin)
 
+	def test_user_add_page_lists_active_organizations(self):
+		Organization.objects.create(name='Registration Organization')
+
+		response = self.client.get(reverse('users:user_add'))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Registration Organization')
+
 	def test_admin_can_create_user_and_send_temporary_password(self):
+		organization = Organization.objects.create(name='New User Organization')
 		response = self.client.post(reverse('users:user_add'), {
 			'username': 'new_user',
 			'email': 'new.user@example.com',
 			'first_name': 'New',
 			'last_name': 'User',
+			'organization': organization.pk,
 		})
 
 		self.assertRedirects(response, reverse('users:user_management'))
@@ -44,6 +54,7 @@ class AdminUserRegistrationTests(TestCase):
 		self.assertTrue(user.is_verified)
 		self.assertTrue(user.is_email_verified)
 		self.assertTrue(user.force_password_change)
+		self.assertEqual(user.organization, organization)
 		self.assertEqual(len(mail.outbox), 1)
 		self.assertIn('Username: new_user', mail.outbox[0].body)
 

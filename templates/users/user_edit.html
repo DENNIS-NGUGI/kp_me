@@ -87,11 +87,7 @@
                                 <label for="organization" class="form-label fw-bold">
                                     Organization
                                 </label>
-                                <input type="text" 
-                                       name="organization" 
-                                       id="organization" 
-                                       class="form-control" 
-                                       value="{{ edit_user.organization }}">
+                                <select name="organization" id="organization" class="form-select"><option value="">Select organization</option>{% for organization in organizations %}<option value="{{ organization.pk }}" {% if edit_user.organization_id == organization.pk %}selected{% endif %}>{{ organization.name }}</option>{% endfor %}</select>
                             </div>
                         </div>
 

@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Sum
+from django.utils import timezone
 
 
 FINANCIAL_YEAR_CHOICES = [
@@ -68,7 +69,7 @@ class CommitmentAccessPolicy(models.Model):
 
 
 class CommitmentNarrativeReport(models.Model):
-	"""An author's implementation narrative for one ICPD commitment."""
+	"""One user's narrative for a commitment and financial year."""
 
 	commitment = models.ForeignKey(
 		Commitment,
@@ -92,6 +93,17 @@ class CommitmentNarrativeReport(models.Model):
 	abbreviations = models.TextField(blank=True)
 	executive_summary = models.TextField()
 	references = models.TextField(blank=True)
+	workflow_status = models.CharField(max_length=20, choices=[
+		('draft', 'Draft'),
+		('submitted', 'Submitted for review'),
+		('approved', 'Approved'),
+	], default='submitted')
+	submitted_at = models.DateTimeField(null=True, blank=True)
+	approved_by = models.ForeignKey(
+		'users.User', on_delete=models.SET_NULL, null=True, blank=True,
+		related_name='approved_icpd_narrative_reports',
+	)
+	approved_at = models.DateTimeField(null=True, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 
@@ -99,8 +111,8 @@ class CommitmentNarrativeReport(models.Model):
 		ordering = ['commitment', 'financial_year', 'author']
 		constraints = [
 			models.UniqueConstraint(
-				fields=['commitment', 'author', 'financial_year'],
-				name='unique_icpd_narrative_report_author_year',
+				fields=['commitment', 'financial_year'],
+				name='unique_icpd_narrative_report_per_financial_year',
 			),
 		]
 		verbose_name = 'Commitment narrative report'
@@ -108,6 +120,12 @@ class CommitmentNarrativeReport(models.Model):
 
 	def __str__(self):
 		return f'{self.commitment} - {self.financial_year} - {self.author}'
+
+	def submit(self):
+		self.workflow_status = 'submitted'
+		self.submitted_at = timezone.now()
+		self.approved_by = None
+		self.approved_at = None
 
 
 class Objective(models.Model):
@@ -134,6 +152,10 @@ class Objective(models.Model):
 	def __str__(self):
 		return self.title
 
+	@property
+	def responsible_organization_names(self):
+		return ', '.join(self.responsible_organizations.values_list('name', flat=True))
+
 
 class Activity(models.Model):
 	"""A key action or activity delivered in support of an objective."""
@@ -146,8 +168,17 @@ class Activity(models.Model):
 	title = models.TextField()
 	timeline = models.CharField(max_length=255, blank=True)
 	responsibility = models.CharField(max_length=255, blank=True)
+	responsible_organizations = models.ManyToManyField(
+		'users.Organization',
+		blank=True,
+		related_name='responsible_activities',
+	)
 	budget_amount = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
 	budget_currency = models.CharField(max_length=3, default='KES')
+	cumulative_target_is_static = models.BooleanField(
+		default=False,
+		help_text='Use the latest annual target as the cumulative target instead of adding targets across years.',
+	)
 	remarks = models.TextField(blank=True)
 	sort_order = models.PositiveIntegerField(default=0)
 
@@ -162,6 +193,12 @@ class Activity(models.Model):
 
 	def __str__(self):
 		return self.title
+
+	def approved_expenditure_for_year(self, financial_year):
+		return self.expenditure_submissions.filter(
+			financial_year=financial_year,
+			workflow_status='approved',
+		).aggregate(total=Sum('expenditure_amount'))['total']
 
 
 class ActivityYearData(models.Model):
@@ -189,6 +226,160 @@ class ActivityYearData(models.Model):
 
 	def __str__(self):
 		return f'{self.activity} ({self.financial_year})'
+
+
+class IcpdActualSubmission(models.Model):
+	"""One indicator achievement within a responsible organization's activity report."""
+
+	STATUS_CHOICES = [
+		('draft', 'Draft'),
+		('submitted', 'Submitted for review'),
+		('returned', 'Returned for correction'),
+		('approved', 'Approved'),
+	]
+
+	indicator_year_data = models.ForeignKey(
+		'IndicatorYearData', on_delete=models.CASCADE, related_name='actual_submissions',
+	)
+	activity_report = models.ForeignKey(
+		'IcpdExpenditureSubmission', on_delete=models.CASCADE, related_name='actual_submissions',
+	)
+	submitted_by = models.ForeignKey(
+		'users.User', on_delete=models.PROTECT, related_name='icpd_actual_submissions',
+	)
+	organization = models.CharField(max_length=200, blank=True)
+	achievement_value = models.DecimalField(max_digits=20, decimal_places=4, null=True, blank=True)
+	status = models.CharField(
+		max_length=20,
+		choices=[
+			('not_started', 'Not Started'),
+			('on_track', 'On Track'),
+			('at_risk', 'At Risk'),
+			('achieved', 'Achieved'),
+			('not_reported', 'Not Reported'),
+		],
+		default='not_reported',
+	)
+	remarks = models.TextField(blank=True)
+	workflow_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+	submitted_at = models.DateTimeField(null=True, blank=True)
+	approved_by = models.ForeignKey(
+		'users.User', on_delete=models.SET_NULL, null=True, blank=True,
+		related_name='approved_icpd_actual_submissions',
+	)
+	approved_at = models.DateTimeField(null=True, blank=True)
+	returned_by = models.ForeignKey(
+		'users.User', on_delete=models.SET_NULL, null=True, blank=True,
+		related_name='returned_icpd_actual_submissions',
+	)
+	returned_at = models.DateTimeField(null=True, blank=True)
+	return_reason = models.TextField(blank=True)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		ordering = ['indicator_year_data', 'organization', 'submitted_by']
+		constraints = [
+			models.UniqueConstraint(
+				fields=['indicator_year_data', 'activity_report'],
+				name='unique_icpd_actual_submission_per_activity_report',
+			),
+		]
+
+	def __str__(self):
+		return f'{self.indicator_year_data} - {self.organization or self.submitted_by}'
+
+	@staticmethod
+	def status_for_achievement(target_value, achievement_value):
+		if target_value is None or achievement_value is None or target_value <= 0:
+			return 'not_reported'
+		if achievement_value <= 0:
+			return 'not_started'
+		if achievement_value >= target_value:
+			return 'achieved'
+		if achievement_value / target_value >= 0.75:
+			return 'on_track'
+		return 'at_risk'
+
+	def submit(self):
+		self.workflow_status = 'submitted'
+		self.submitted_at = timezone.now()
+		self.approved_by = None
+		self.approved_at = None
+		self.returned_by = None
+		self.returned_at = None
+		self.return_reason = ''
+
+
+class IcpdExpenditureSubmission(models.Model):
+	"""The responsible organization's report and workflow lock for one activity year."""
+
+	activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name='expenditure_submissions')
+	financial_year = models.CharField(max_length=7, choices=FINANCIAL_YEAR_CHOICES)
+	submitted_by = models.ForeignKey(
+		'users.User', on_delete=models.PROTECT, related_name='icpd_expenditure_submissions',
+	)
+	organization = models.CharField(max_length=200, blank=True)
+	expenditure_amount = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+	remarks = models.TextField(blank=True)
+	workflow_status = models.CharField(max_length=20, choices=IcpdActualSubmission.STATUS_CHOICES, default='draft')
+	submitted_at = models.DateTimeField(null=True, blank=True)
+	approved_by = models.ForeignKey(
+		'users.User', on_delete=models.SET_NULL, null=True, blank=True,
+		related_name='approved_icpd_expenditure_submissions',
+	)
+	approved_at = models.DateTimeField(null=True, blank=True)
+	returned_by = models.ForeignKey(
+		'users.User', on_delete=models.SET_NULL, null=True, blank=True,
+		related_name='returned_icpd_expenditure_submissions',
+	)
+	returned_at = models.DateTimeField(null=True, blank=True)
+	return_reason = models.TextField(blank=True)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		ordering = ['activity', 'financial_year']
+		constraints = [
+			models.UniqueConstraint(
+				fields=['activity', 'financial_year'],
+				name='unique_icpd_activity_report_per_financial_year',
+			),
+		]
+
+	def __str__(self):
+		return f'{self.activity} ({self.financial_year}) - {self.organization or self.submitted_by}'
+
+	def submit(self):
+		self.workflow_status = 'submitted'
+		self.submitted_at = timezone.now()
+		self.approved_by = None
+		self.approved_at = None
+		self.returned_by = None
+		self.returned_at = None
+		self.return_reason = ''
+
+
+class IcpdSubmissionAudit(models.Model):
+	"""Immutable history of ICPD actual and expenditure submission changes."""
+
+	SUBMISSION_TYPE_CHOICES = [('actual', 'Actual'), ('expenditure', 'Expenditure')]
+	ACTION_CHOICES = [('created', 'Created'), ('updated', 'Updated'), ('submitted', 'Submitted'), ('returned', 'Returned'), ('approved', 'Approved')]
+
+	submission_type = models.CharField(max_length=20, choices=SUBMISSION_TYPE_CHOICES)
+	submission_id = models.PositiveBigIntegerField()
+	action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+	actor = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True, related_name='icpd_submission_audit_events')
+	old_value = models.JSONField(null=True, blank=True)
+	new_value = models.JSONField(null=True, blank=True)
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	class Meta:
+		ordering = ['-created_at']
+		indexes = [models.Index(fields=['submission_type', 'submission_id', '-created_at'])]
+
+	def __str__(self):
+		return f'{self.submission_type} {self.submission_id}: {self.action}'
 
 
 class ActivityIndicator(models.Model):
@@ -230,6 +421,9 @@ class ActivityIndicator(models.Model):
 
 	@property
 	def cumulative_target_value(self):
+		if self.activity.cumulative_target_is_static:
+			latest_year_data = self.yearly_data.order_by('-financial_year').first()
+			return latest_year_data.target_value if latest_year_data else None
 		return self.yearly_data.aggregate(total=Sum('target_value'))['total']
 
 	@property
@@ -271,3 +465,9 @@ class IndicatorYearData(models.Model):
 
 	def __str__(self):
 		return f'{self.activity_indicator.code} ({self.financial_year})'
+
+	@property
+	def approved_achievement_value(self):
+		return self.actual_submissions.filter(workflow_status='approved').aggregate(
+			total=Sum('achievement_value'),
+		)['total']

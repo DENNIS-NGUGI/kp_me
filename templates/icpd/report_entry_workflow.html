@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Report ICPD Actuals{% endblock %}
+
+{% block extra_css %}
+<style>
+    .select2-container--bootstrap-5 .select2-selection--single { height: auto; min-height: 38px; }
+    .select2-container--bootstrap-5 .select2-selection__rendered,
+    .select2-container--bootstrap-5 .select2-results__option { overflow-wrap: anywhere; white-space: normal; }
+    .select2-container--bootstrap-5 .select2-selection__rendered { padding: 7px 2.5rem 7px .75rem; }
+    .icpd-reporting .card, .icpd-reporting .alert { overflow-wrap: anywhere; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="icpd-reporting">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div><a href="{% url 'icpd:dashboard' %}" class="text-decoration-none text-muted small"><i class="bi bi-arrow-left"></i> ICPD25 Commitments</a><h3 class="page-title mt-2 mb-1"><i class="bi bi-pencil-square me-2"></i>ICPD Reporting</h3><p class="text-muted mb-0">Only the organization assigned responsibility for an activity can report its actuals.</p></div>
+        {% if can_review_submissions %}<a class="btn btn-outline-primary" href="{% url 'icpd:submission_review' %}"><i class="bi bi-clipboard-check me-1"></i>Review Submissions</a>{% endif %}
+    </div>
+    <ul class="nav nav-tabs mb-4"><li class="nav-item"><a class="nav-link active" href="{% url 'icpd:actual_report_list' %}"><i class="bi bi-graph-up me-1"></i>Actuals</a></li><li class="nav-item"><a class="nav-link" href="{% url 'icpd:narrative_report_list' %}"><i class="bi bi-file-earmark-text me-1"></i>Commitment Narratives</a></li></ul>
+
+    <div class="card mb-4"><div class="card-body"><form method="get" class="row g-3"><div class="col-md-4"><label class="form-label">Commitment</label><select name="commitment" class="form-select"><option value="">Select commitment</option>{% for commitment in commitments %}<option value="{{ commitment.pk }}" {% if selected_commitment == commitment.pk|stringformat:'s' %}selected{% endif %}>{{ commitment.title }}</option>{% endfor %}</select></div><div class="col-md-4"><label class="form-label">Objective</label><select name="objective" class="form-select" {% if not selected_commitment %}disabled{% endif %}><option value="">Select objective</option>{% for objective in objectives %}<option value="{{ objective.pk }}" {% if selected_objective == objective.pk|stringformat:'s' %}selected{% endif %}>{{ objective.title }}</option>{% endfor %}</select></div><div class="col-md-4"><label class="form-label">Activity</label><select name="activity" class="form-select" {% if not selected_objective %}disabled{% endif %}><option value="">Select activity</option>{% for activity in activities %}<option value="{{ activity.pk }}" {% if selected_activity == activity.pk|stringformat:'s' %}selected{% endif %}>{{ activity.title }}</option>{% endfor %}</select></div><div class="col-md-6"><label class="form-label">Activity Indicator</label><select name="activity_indicator" class="form-select" {% if not selected_activity %}disabled{% endif %}><option value="">Select activity indicator</option>{% for indicator in activity_indicators %}<option value="{{ indicator.pk }}" {% if selected_activity_indicator == indicator.pk|stringformat:'s' %}selected{% endif %}>{{ indicator.code }} - {{ indicator.name }}</option>{% endfor %}</select></div><div class="col-md-4"><label class="form-label">Financial Year</label><select name="financial_year" class="form-select" {% if not selected_activity_indicator %}disabled{% endif %}><option value="">Select financial year</option>{% for value, label in financial_years %}<option value="{{ value }}" {% if selected_financial_year == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div></form></div></div>
+
+    {% if selected_activity_indicator and not financial_years %}<div class="alert alert-warning">An administrator must add the annual target before actuals can be reported.</div>{% endif %}
+    {% if year_data %}
+        {% if expenditure_submission %}<div class="alert {% if expenditure_submission.workflow_status == 'approved' %}alert-success{% elif expenditure_submission.workflow_status == 'returned' %}alert-warning{% elif expenditure_submission.workflow_status == 'submitted' %}alert-info{% else %}alert-secondary{% endif %} d-flex flex-wrap justify-content-between align-items-center gap-3"><div><strong>This activity already has a report for {{ selected_financial_year }}.</strong> Submitted by {{ expenditure_submission.organization|default:expenditure_submission.submitted_by }}. Status: {{ expenditure_submission.get_workflow_status_display }}. {% if expenditure_submission.workflow_status == 'submitted' %}The activity is locked until a reviewer approves or returns the report.{% elif expenditure_submission.workflow_status == 'approved' %}The activity is locked. A reviewer must reopen it for correction.{% elif expenditure_submission.return_reason %}Reviewer feedback: {{ expenditure_submission.return_reason }}{% endif %}</div><a class="btn btn-outline-primary" href="{% url 'icpd:actual_report_detail' expenditure_submission.pk %}"><i class="bi bi-eye me-1"></i>View Report</a></div>{% endif %}
+        <div class="card mb-4"><div class="card-header">Configured Plan and Official Aggregate</div><div class="card-body"><div class="row g-3"><div class="col-md-2"><small class="text-muted d-block">Baseline Value</small><strong>{{ year_data.activity_indicator.baseline_value|default:'-' }}</strong></div><div class="col-md-2"><small class="text-muted d-block">Baseline Year</small><strong>{{ year_data.activity_indicator.baseline_year|default:'-' }}</strong></div><div class="col-md-2"><small class="text-muted d-block">Target Value</small><strong>{{ year_data.target_value|default:'-' }}</strong></div><div class="col-md-2"><small class="text-muted d-block">Activity Budget</small><strong>{{ year_data.activity_indicator.activity.budget_amount|default:'-' }} million</strong></div><div class="col-md-2"><small class="text-muted d-block">Responsibility</small><strong>{{ year_data.activity_indicator.activity.responsible_organization_names|default:'-' }}</strong></div><div class="col-md-2"><small class="text-muted d-block">Timeline</small><strong>{{ year_data.activity_indicator.activity.timeline|default:'-' }}</strong></div><div class="col-md-3"><small class="text-muted d-block">Approved Achievement</small><strong>{{ approved_achievement_value|default:'-' }}</strong></div><div class="col-md-3"><small class="text-muted d-block">Approved Expenditure</small><strong>{{ approved_expenditure_amount|default:'-' }} million</strong></div></div></div></div>
+        {% if not activity_is_responsible %}<div class="alert alert-warning">Only <strong>{{ year_data.activity_indicator.activity.responsible_organization_names|default:'the assigned responsible organization' }}</strong> can report actuals for this activity. Your organization is not assigned responsibility.</div>{% endif %}
+        {% if can_edit_submission %}<div class="card"><div class="card-header">Activity Report</div><div class="card-body"><form method="post">{% csrf_token %}<input type="hidden" name="commitment" value="{{ selected_commitment }}"><input type="hidden" name="objective" value="{{ selected_objective }}"><input type="hidden" name="activity" value="{{ selected_activity }}"><input type="hidden" name="activity_indicator" value="{{ selected_activity_indicator }}"><input type="hidden" name="financial_year" value="{{ selected_financial_year }}"><div class="row g-3"><div class="col-md-4"><label class="form-label">Achievement Value</label>{{ year_form.achievement_value }}{{ year_form.achievement_value.errors }}</div><div class="col-md-4"><label class="form-label">Status</label><input class="form-control" id="derived-status" value="Calculated from achievement and target" readonly></div><div class="col-md-4"><label class="form-label">Actual Expenditure (KES millions)</label>{{ expenditure_form.expenditure_amount }}{{ expenditure_form.expenditure_amount.errors }}</div><div class="col-md-6"><label class="form-label">Achievement Remarks</label>{{ year_form.remarks }}{{ year_form.remarks.errors }}</div><div class="col-md-6"><label class="form-label">Expenditure Remarks</label>{{ expenditure_form.remarks }}{{ expenditure_form.remarks.errors }}</div></div><div class="mt-4 d-flex gap-2"><button class="btn btn-outline-secondary" type="submit" name="submission_action" value="draft">Save Draft</button><button class="btn btn-primary" type="submit" name="submission_action" value="submit"><i class="bi bi-send me-1"></i>Submit for Review</button></div></form></div></div>{% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const selectionForm = document.querySelector('form[method="get"]');
+    const fields = ['commitment', 'objective', 'activity', 'activity_indicator', 'financial_year'];
+    $(fields.map(function (name) { return 'select[name="' + name + '"]'; }).join(', ')).select2({ theme: 'bootstrap-5', width: '100%', allowClear: false, closeOnSelect: true });
+    fields.forEach(function (name, index) { $(selectionForm.elements[name]).on('change', function () { fields.slice(index + 1).forEach(function (dependentName) { selectionForm.elements[dependentName].value = ''; }); selectionForm.submit(); }); });
+    const achievementInput = document.getElementById('id_achievement_value');
+    const statusInput = document.getElementById('derived-status');
+    const target = Number('{{ year_data.target_value|default:"" }}');
+    function updateDerivedStatus() {
+        const achievement = Number(achievementInput?.value);
+        if (!achievementInput?.value || !Number.isFinite(target) || target <= 0) { statusInput.value = 'Not Reported'; return; }
+        if (achievement <= 0) { statusInput.value = 'Not Started'; return; }
+        if (achievement >= target) { statusInput.value = 'Achieved'; return; }
+        statusInput.value = achievement / target >= 0.75 ? 'On Track' : 'At Risk';
+    }
+    achievementInput?.addEventListener('input', updateDerivedStatus);
+    updateDerivedStatus();
+});
+</script>
+{% endblock %}

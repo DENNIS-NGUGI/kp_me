@@ -1,6 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, AuditLog, Role
+from .models import User, AuditLog, Organization, Role
+
+
+@admin.register(Organization)
+class OrganizationAdmin(admin.ModelAdmin):
+    list_display = ['name', 'is_active']
+    list_filter = ['is_active']
+    search_fields = ['name']
 
 @admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):
